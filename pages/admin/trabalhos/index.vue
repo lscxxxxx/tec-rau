@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
+import { TooltipProvider } from 'reka-ui'
 
-const UBadge = resolveComponent('UBadge')
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
+const router = useRouter()
+const toast = useToast()
 
 type Trabalho = {
     id: number
     titulo: string
-    data: string // A data virá como string no JSON da API
+    data: string
     status: 'APROVADO' | 'REPROVADO' | 'PENDENTE' | 'PUBLICADO'
     autor1: string
     orientador: string
@@ -21,16 +20,18 @@ type Trabalho = {
     }
 }
 
-// 1. BUSCA DE DADOS (DATA FETCHING)
-// Usamos o useFetch do Nuxt para buscar os trabalhos da sua API.
-// 'pending' é um booleano reativo que será 'true' enquanto os dados estiverem carregando.
-const { data: trabalhos, pending } = useFetch<Trabalho[]>('/api/trabalhos', {
+const { data: trabalhos, pending, refresh } = useFetch<Trabalho[]>('/api/trabalhos', {
     lazy: true,
     default: () => []
 })
 
-// 2. DEFINIÇÃO DAS COLUNAS
-// Este array define cada coluna da tabela, seu cabeçalho e como cada célula será renderizada.
+const statusColorMap = {
+    APROVADO: "primary" as const,
+    PUBLICADO: "success" as const,
+    REPROVADO: "error" as const,
+    PENDENTE: "warning" as const
+}
+
 const columns: TableColumn<Trabalho>[] = [
     {
         accessorKey: 'titulo',
@@ -41,79 +42,89 @@ const columns: TableColumn<Trabalho>[] = [
         header: 'Autor Principal'
     },
     {
-        accessorKey: 'curso',
-        header: 'Curso',
-        cell: ({ row }) => row.original.curso?.curso || 'N/A'
+        accessorKey: 'curso.curso',
+        header: 'Curso'
     },
     {
         accessorKey: 'data',
-        header: 'Data de Publicação',
-        cell: ({ row }) => {
-            const dataFormatada = new Date(row.original.data).toLocaleDateString('pt-BR')
-            return dataFormatada
-        }
+        header: 'Data de Publicação'
     },
     {
         accessorKey: 'status',
-        header: 'Status',
-        cell: ({ row }) => {
-            const statusColorMap = {
-                APROVADO: 'success' as const,
-                PUBLICADO: 'success' as const,
-                REPROVADO: 'error' as const,
-                PENDENTE: 'warning' as const
-            }
-            const status = row.getValue('status') as keyof typeof statusColorMap
-
-            return h(UBadge, {
-                class: 'capitalize',
-                variant: 'subtle',
-                color: statusColorMap[status] || 'neutral'
-            }, () => status.toLowerCase())
-        }
+        header: 'Status'
     },
     {
         id: 'actions',
-        header: 'Ações',
-        cell: ({ row }) => {
-            const items = [
-                [{ label: 'Ver Detalhes' /* onClick: () => ... */ }],
-                [{ label: 'Editar' /* onClick: () => ... */ }],
-                [{ label: 'Excluir', class: 'text-red-500' /* onClick: () => ... */ }]
-            ]
-
-            return h('div', { class: 'text-right' }, h(UDropdownMenu, { items }, () =>
-                h(UButton, {
-                    icon: 'i-lucide-ellipsis-vertical',
-                    color: 'neutral',
-                    variant: 'ghost',
-                    'aria-label': 'Actions dropdown'
-                })
-            ))
-        }
+        header: 'Ações'
     }
 ]
+
+const excluirTrabalho = async (id: number) => {
+    try {
+        await $fetch(`/api/trabalhos/${id}`, { method: 'DELETE' })
+        toast.add({ title: 'Trabalho excluído com sucesso!', color: "success" })
+        refresh()
+    } catch (error) {
+        toast.add({ title: 'Erro ao excluir o trabalho', color: "warning" })
+    }
+}
 </script>
 
 <template>
-    <div class="p-4">
-        <h1 class="text-2xl font-bold mb-4">
-            Listagem de Trabalhos
-        </h1>
+    <TooltipProvider>
+        <div class="p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-bold">Listagem de Trabalhos</h1>
+                <UButton to="/admin/trabalhos/cadastrar" icon="i-lucide-plus">Adicionar Trabalho</UButton>
+            </div>
 
-        <UTable :data="trabalhos" :columns="columns" :loading="pending" class="flex-1">
-            <template #loading-state>
-                <div class="flex items-center justify-center h-32">
-                    <i class="i-lucide-loader-circle text-4xl animate-spin" />
-                </div>
-            </template>
+            <UTable :data="trabalhos" :columns="columns" :loading="pending" class="flex-1">
 
-            <template #empty-state>
-                <div class="flex flex-col items-center justify-center py-6 gap-3">
-                    <span class="text-sm">Nenhum trabalho encontrado.</span>
-                    <UButton label="Adicionar Trabalho" to="/admin/trabalhos/cadastrar" />
-                </div>
-            </template>
-        </UTable>
-    </div>
+                <template #data-cell="{ row }">
+                    <span>{{ new Date(row.original.data).toLocaleDateString('pt-BR') }}</span>
+                </template>
+
+                <template #status-cell="{ row }">
+                    <UBadge :color="statusColorMap[row.original.status]" variant="subtle" class="capitalize">
+                        {{ row.original.status.toLowerCase() }}
+                    </UBadge>
+                </template>
+
+                <!-- Slot para renderizar os botões de ação (sintaxe corrigida) -->
+                <template #actions-cell="{ row }">
+                    <div class="flex items-center justify-end gap-2">
+                        <UTooltip text="Visualizar trabalho">
+                            <UButton icon="i-lucide-eye" variant="ghost" color="info" aria-label="Ver detalhes"
+                                class="cursor-pointer"
+                                @click="toast.add({ title: `Visualizando: ${row.original.titulo}` })" />
+                        </UTooltip>
+
+                        <UTooltip text="Editar trabalho">
+                            <UButton icon="i-lucide-pencil" variant="ghost" color="info" aria-label="Editar"
+                                class="cursor-pointer"
+                                @click="router.push(`/admin/trabalhos/editar/${row.original.id}`)" />
+                        </UTooltip>
+
+                        <UTooltip text="Excluir trabalho">
+                            <UButton icon="i-lucide-trash-2" variant="ghost" color="warning" aria-label="Excluir"
+                                class="cursor-pointer" @click="excluirTrabalho(row.original.id)" />
+                        </UTooltip>
+                    </div>
+                </template>
+
+                <template #loading-state>
+                    <div class="flex items-center justify-center h-32">
+                        <i class="i-lucide-loader-circle text-4xl animate-spin" />
+                    </div>
+                </template>
+
+                <template #empty-state>
+                    <div class="flex flex-col items-center justify-center py-6 gap-3">
+                        <span class="text-sm">Nenhum trabalho encontrado.</span>
+                        <UButton label="Adicionar Trabalho" to="/admin/trabalhos/cadastrar" />
+                    </div>
+                </template>
+            </UTable>
+        </div>
+    </TooltipProvider>
 </template>

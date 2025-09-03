@@ -70,7 +70,7 @@ const router = useRouter()
 const loading = ref(false)
 
 const { data: cursos, error: cursosError } = await useFetch('/api/cursos', {
-    key: 'cursos-para-cadastro', // Usamos uma key diferente para evitar conflito de cache
+    key: 'cursos-para-cadastro',
     transform: (data: any[]) => Array.isArray(data) ? data.map(c => ({ label: c.curso, value: c.id })) : [],
     default: () => []
 })
@@ -116,28 +116,39 @@ const schema = object({
 type Schema = InferType<typeof schema>
 
 async function validate(state: any): Promise<any[]> {
+    console.log('--- [VALIDAÇÃO] A função validate foi chamada! ---');
     try {
         await schema.validate(state, { abortEarly: false })
+        console.log('[VALIDAÇÃO] A validação passou com sucesso.');
         return []
     } catch (err: any) {
+        console.error('[VALIDAÇÃO] A validação FALHOU! Erros encontrados:', err.inner);
         return err.inner
     }
 }
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
+    console.log('--- [FORMULÁRIO] Função onSubmit foi chamada! ---');
     loading.value = true
     try {
+        console.log('[FORMULÁRIO] 1. Dados a serem enviados:', event.data);
+        console.log('[FORMULÁRIO] 2. A tentar executar $fetch...');
         await $fetch('/api/trabalhos/cadastrar', {
             method: 'POST',
             body: event.data
         })
+        console.log('[FORMULÁRIO] 3. $fetch concluído com sucesso!');
 
         toast.add({ title: 'Trabalho cadastrado com sucesso!', color: 'success', icon: 'i-lucide-check-circle' })
         await router.push('/admin/trabalhos')
 
     } catch (err: any) {
+        console.error('--- [FORMULÁRIO] OCORREU UM ERRO ---');
+        console.error('Este é o objeto de erro completo:', err);
+        console.error('--- FIM DO ERRO ---');
         toast.add({ title: 'Erro ao cadastrar', description: err.data?.statusMessage || 'Tente novamente.', color: 'error', icon: 'i-lucide-x-circle' })
     } finally {
+        console.log('[FORMULÁRIO] 4. Bloco finally executado.');
         loading.value = false
     }
 }
