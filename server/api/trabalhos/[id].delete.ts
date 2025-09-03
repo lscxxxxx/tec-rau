@@ -1,0 +1,28 @@
+import prisma from '~/server/lib/prisma'
+
+export default defineEventHandler(async (event) => {
+    try {
+        const trabalhoId = getRouterParam(event, 'id')
+        if (!trabalhoId) {
+            throw new Error('ID do trabalho não fornecido')
+        }
+        await prisma.trabalho.delete({
+            where: {
+                id: Number(trabalhoId),
+            }
+        })
+        setResponseStatus(event, 204)
+        return
+    } catch (error: any) {
+        if (error.code === 'P2025') {
+            throw createError({
+                statusCode: 404,
+                statusMessage: 'Trabalho não encontrado',
+            })
+        }
+        throw createError({
+            statusCode: 505,
+            statusMessage: 'Não foi possível excluir o trabalho',
+        })
+    }
+})

@@ -2,21 +2,35 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxt/eslint', '@nuxt/image', '@nuxt/ui', '@prisma/nuxt'],
   css: ['~/assets/css/main.css'],
+  modules: ['@nuxt/eslint', '@nuxt/image', '@nuxt/ui', '@nuxtjs/google-fonts', '@prisma/nuxt'],
   app: {
-    pageTransition: { name: 'page', mode: 'out-in'},
-    layoutTransition: { name: 'layout', mode: 'out-in' },
     head: {
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
-      title: 'Nuxt', // default fallback title
-      htmlAttrs: {
-        lang: 'pt-br',
+      title: 'Nuxt',
+      htmlAttrs: { lang: 'pt-br', },
+      link: [ { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }, ]
+    }
+  },
+  prisma: {
+  skipPrompts: true,
+  autoSetupPrisma: true
+},
+  googleFonts: {
+    families: {
+      Roboto: true,
+      'Josefin+Sans': true,
+      Lato: [100, 300],
+      Raleway: {
+        wght: [100, 400],
+        ital: [100]
       },
-      link: [
-        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
-      ]
+      Inter: '200..700',
+      'Crimson Pro': {
+        wght: '200..900',
+        ital: '200..700',
+      }
     }
   },
   runtimeConfig: {

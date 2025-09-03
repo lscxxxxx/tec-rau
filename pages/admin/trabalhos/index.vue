@@ -1,9 +1,24 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { TooltipProvider } from 'reka-ui'
+import ConfirmDeleteModal from '~/components/ConfirmDeleteModal.vue'
 
 const router = useRouter()
 const toast = useToast()
+const overlay = useOverlay()
+console.log('overlay:', overlay)
+
+const confirmDelete = overlay.create(ConfirmDeleteModal)
+
+const modalExcluirTrabalho = async (id: number) => {
+    console.log('clicou para excluir', id)
+    const instance = confirmDelete.open()
+    const result = await instance.result as boolean
+    console.log('resultado do modal:', result)
+    if (result) {
+        await excluirTrabalho(id)
+    }
+}
 
 type Trabalho = {
     id: number
@@ -71,60 +86,62 @@ const excluirTrabalho = async (id: number) => {
 </script>
 
 <template>
-    <TooltipProvider>
-        <div class="p-4">
-            <div class="flex justify-between items-center mb-4">
-                <h1 class="text-2xl font-bold">Listagem de Trabalhos</h1>
-                <UButton to="/admin/trabalhos/cadastrar" icon="i-lucide-plus">Adicionar Trabalho</UButton>
-            </div>
+    <div class="min-h-screen bg-gray-100 text-gray-800 font-sans flex flex-col">
+        <TooltipProvider>
+            <main class="flex-1 max-w-6xl mx-auto w-full p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-3xl font-bold">Listagem de Trabalhos</h1>
+                    <UButton to="/admin/trabalhos/cadastrar" icon="i-lucide-plus">Adicionar Trabalho</UButton>
+                </div>
 
-            <UTable :data="trabalhos" :columns="columns" :loading="pending" class="flex-1">
+                <UTable :data="trabalhos" :columns="columns" :loading="pending"
+                    class="bg-white shadow-md rounded-md overflow-hidden">
 
-                <template #data-cell="{ row }">
-                    <span>{{ new Date(row.original.data).toLocaleDateString('pt-BR') }}</span>
-                </template>
+                    <template #data-cell="{ row }">
+                        <span>{{ new Date(row.original.data).toLocaleDateString('pt-BR') }}</span>
+                    </template>
 
-                <template #status-cell="{ row }">
-                    <UBadge :color="statusColorMap[row.original.status]" variant="subtle" class="capitalize">
-                        {{ row.original.status.toLowerCase() }}
-                    </UBadge>
-                </template>
+                    <template #status-cell="{ row }">
+                        <UBadge :color="statusColorMap[row.original.status]" variant="subtle" class="capitalize">
+                            {{ row.original.status.toLowerCase() }}
+                        </UBadge>
+                    </template>
 
-                <!-- Slot para renderizar os botões de ação (sintaxe corrigida) -->
-                <template #actions-cell="{ row }">
-                    <div class="flex items-center justify-end gap-2">
-                        <UTooltip text="Visualizar trabalho">
-                            <UButton icon="i-lucide-eye" variant="ghost" color="info" aria-label="Ver detalhes"
-                                class="cursor-pointer"
-                                @click="toast.add({ title: `Visualizando: ${row.original.titulo}` })" />
-                        </UTooltip>
+                    <template #actions-cell="{ row }">
+                        <div class="flex items-center justify-end gap-2">
+                            <UTooltip text="Visualizar trabalho">
+                                <UButton icon="i-lucide-eye" variant="ghost" color="info" aria-label="Ver detalhes"
+                                    class="cursor-pointer"
+                                    @click="toast.add({ title: `Visualizando: ${row.original.titulo}` })" />
+                            </UTooltip>
 
-                        <UTooltip text="Editar trabalho">
-                            <UButton icon="i-lucide-pencil" variant="ghost" color="info" aria-label="Editar"
-                                class="cursor-pointer"
-                                @click="router.push(`/admin/trabalhos/editar/${row.original.id}`)" />
-                        </UTooltip>
+                            <UTooltip text="Editar trabalho">
+                                <UButton icon="i-lucide-pencil" variant="ghost" color="info" aria-label="Editar"
+                                    class="cursor-pointer"
+                                    @click="router.push(`/admin/trabalhos/editar/${row.original.id}`)" />
+                            </UTooltip>
 
-                        <UTooltip text="Excluir trabalho">
-                            <UButton icon="i-lucide-trash-2" variant="ghost" color="warning" aria-label="Excluir"
-                                class="cursor-pointer" @click="excluirTrabalho(row.original.id)" />
-                        </UTooltip>
-                    </div>
-                </template>
+                            <UTooltip text="Excluir trabalho">
+                                <UButton icon="i-lucide-trash-2" variant="ghost" color="warning" aria-label="Excluir"
+                                    class="cursor-pointer" @click="modalExcluirTrabalho(row.original.id)" />
+                            </UTooltip>
+                        </div>
+                    </template>
 
-                <template #loading-state>
-                    <div class="flex items-center justify-center h-32">
-                        <i class="i-lucide-loader-circle text-4xl animate-spin" />
-                    </div>
-                </template>
+                    <template #loading-state>
+                        <div class="flex items-center justify-center h-32">
+                            <i class="i-lucide-loader-circle text-4xl animate-spin" />
+                        </div>
+                    </template>
 
-                <template #empty-state>
-                    <div class="flex flex-col items-center justify-center py-6 gap-3">
-                        <span class="text-sm">Nenhum trabalho encontrado.</span>
-                        <UButton label="Adicionar Trabalho" to="/admin/trabalhos/cadastrar" />
-                    </div>
-                </template>
-            </UTable>
-        </div>
-    </TooltipProvider>
+                    <template #empty-state>
+                        <div class="flex flex-col items-center justify-center py-6 gap-3">
+                            <span class="text-sm text-gray-500">Nenhum trabalho encontrado.</span>
+                            <UButton label="Adicionar Trabalho" to="/admin/trabalhos/cadastrar" />
+                        </div>
+                    </template>
+                </UTable>
+            </main>
+        </TooltipProvider>
+    </div>
 </template>
