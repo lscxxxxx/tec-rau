@@ -6,7 +6,6 @@ import ConfirmDeleteModal from '~/components/ConfirmDeleteModal.vue'
 const router = useRouter()
 const toast = useToast()
 const overlay = useOverlay()
-console.log('overlay:', overlay)
 
 const confirmDelete = overlay.create(ConfirmDeleteModal)
 
@@ -112,7 +111,7 @@ const excluirTrabalho = async (id: number) => {
                             <UTooltip text="Visualizar trabalho">
                                 <UButton icon="i-lucide-eye" variant="ghost" color="info" aria-label="Ver detalhes"
                                     class="cursor-pointer"
-                                    @click="toast.add({ title: `Visualizando: ${row.original.titulo}` })" />
+                                    @click="router.push(`/admin/trabalhos/visualizar/${row.original.id}`)" />
                             </UTooltip>
 
                             <UTooltip text="Editar trabalho">

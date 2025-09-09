@@ -1,64 +1,83 @@
 <template>
-    <UForm :state="form" :validate="validate" @submit="onSubmit">
-        <UFormField label="Título" name="titulo">
-            <UInput v-model="form.titulo" />
-        </UFormField>
+    <div class="min-h-screen bg-gray-100 text-gray-800 font-sans flex flex-col">
+        <main class="flex-1 max-w-6xl mx-auto w-full p-6">
 
-        <UFormField label="Data" name="data">
-            <UInput v-model="form.data" type="date" />
-        </UFormField>
+            <UCard>
+                <template #header>
+                    <h2 class="text-xl font-semibold">Novo Trabalho</h2>
+                </template>
 
-        <UFormField label="Resumo" name="resumo">
-            <UTextarea v-model="form.resumo" />
-        </UFormField>
+                <UForm :state="form" :validate="validate" @submit="onSubmit">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <UFormField label="Título" name="titulo" class="col-span-3" error="Por favor, insira o título do trabalho" required>
+                            <UInput v-model="form.titulo" />
+                        </UFormField>
 
-        <UFormField label="Link para o Arquivo" name="arquivo">
-            <UInput v-model="form.arquivo" placeholder="https://..." />
-        </UFormField>
+                        <UFormField label="Data" name="data" error="Por favor, insira a data de publicação do trabalho" required>
+                            <UInput v-model="form.data" type="date" />
+                        </UFormField>
 
-        <UFormField label="Status" name="status">
-            <USelect v-model="form.status" :items="['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']" />
-        </UFormField>
+                        <UFormField label="Status" name="status" error="Por favor, atribua um status ao trabalho" required>
+                            <USelect v-model="form.status"
+                                :items="['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']" />
+                        </UFormField>
 
-        <UFormField label="Autor 1" name="autor1">
-            <UInput v-model="form.autor1" />
-        </UFormField>
+                        <UFormField label="Tipo do trabalho" name="tipoTrabalhoId" error="Por favor, selecione o tipo do trabalho" required>
+                            <USelect v-model="form.tipoTrabalhoId" :items="tiposTrabalho"
+                                placeholder="Selecione o tipo" />
+                        </UFormField>
 
-        <UFormField label="Autor 2 (Opcional)" name="autor2">
-            <UInput v-model="form.autor2" />
-        </UFormField>
+                        <UFormField label="Curso" name="cursoId" error="Por favor, selecione o curso do trabalho" required>
+                            <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso" />
+                        </UFormField>
 
-        <UFormField label="Autor 3 (Opcional)" name="autor3">
-            <UInput v-model="form.autor3" />
-        </UFormField>
+                        <UFormField label="Link para o Arquivo" name="arquivo" class="col-span-3" required>
+                            <UInput v-model="form.arquivo" placeholder="https://..." />
+                        </UFormField>
 
-        <UFormField label="Autor 4 (Opcional)" name="autor4">
-            <UInput v-model="form.autor4" />
-        </UFormField>
+                        <UFormField label="Autor 1" name="autor1" error="Por favor, o trabalho precisa ter pelo menos um autor" required>
+                            <UInput v-model="form.autor1" />
+                        </UFormField>
 
-        <UFormField label="Orientador" name="orientador">
-            <UInput v-model="form.orientador" />
-        </UFormField>
+                        <UFormField label="Autor 2" name="autor2" hint="Opcional">
+                            <UInput v-model="form.autor2" />
+                        </UFormField>
 
-        <UFormField label="Coorientador (Opcional)" name="coorientador">
-            <UInput v-model="form.coorientador" />
-        </UFormField>
+                        <UFormField label="Autor 3" name="autor3" hint="Opcional">
+                            <UInput v-model="form.autor3" />
+                        </UFormField>
 
-        <UFormField label="Referências Bibliográficas" name="refbibliografica">
-            <UTextarea v-model="form.refbibliografica" />
-        </UFormField>
+                        <UFormField label="Autor 4" name="autor4" hint="Opcional">
+                            <UInput v-model="form.autor4" />
+                        </UFormField>
 
-        <UFormField label="Tipo do trabalho" name="tipoTrabalhoId">
-            <USelect v-model="form.tipoTrabalhoId" :items="tiposTrabalho" placeholder="Selecione o tipo" />
-        </UFormField>
+                        <UFormField label="Orientador" name="orientador" error="Por favor, insira o orientador do trabalho" required>
+                            <UInput v-model="form.orientador" />
+                        </UFormField>
 
-        <UFormField label="Curso" name="cursoId">
-            <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso" />
-        </UFormField>
+                        <UFormField label="Coorientador" name="coorientador" hint="Opcional">
+                            <UInput v-model="form.coorientador" />
+                        </UFormField>
 
-        <UButton type="submit" :loading="loading" class="mt-4">Cadastrar</UButton>
-    </UForm>
+                        <UFormField label="Resumo" name="resumo" class="col-span-3" error="Por favor, insira o resumo do trabalho" required>
+                            <UTextarea v-model="form.resumo" />
+                        </UFormField>
+
+                        <UFormField label="Referências Bibliográficas" name="refbibliografica" class="col-span-3" error="Por favor, insira a referência bibliográfica do trabalho" required>
+                            <UTextarea v-model="form.refbibliografica" />
+                        </UFormField>
+                    </div>
+                </UForm>
+                <template #footer>
+                    <div class="flex justify-end">
+                        <UButton type="submit" :loading="loading">Cadastrar</UButton>
+                    </div>
+                </template>
+            </UCard>
+        </main>
+    </div>
 </template>
+
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'

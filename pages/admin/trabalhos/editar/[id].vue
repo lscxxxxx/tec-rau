@@ -1,62 +1,62 @@
 <template>
     <UForm :state="form" :validate="validate" @submit="onSubmit">
-        <UFormField label="Título" name="titulo">
+        <UFormField label="Título" error="Por favor, insira o título do trabalho" name="titulo" required>
             <UInput v-model="form.titulo" />
         </UFormField>
 
-        <UFormField label="Data" name="data">
+        <UFormField label="Data" error="Por favor, insira a data de publicação do trabalho" name="data" required>
             <UInput v-model="form.data" type="date" />
         </UFormField>
 
-        <UFormField label="Resumo" name="resumo">
+        <UFormField label="Resumo" error="Por favor, insira o resumo do trabalho" name="resumo" required>
             <UTextarea v-model="form.resumo" />
         </UFormField>
 
-        <UFormField label="Link para o Arquivo" name="arquivo">
+        <UFormField label="Link para o Arquivo" name="arquivo" required>
             <UInput v-model="form.arquivo" placeholder="https://..." />
         </UFormField>
 
-        <UFormField label="Status" name="status">
+        <UFormField label="Status" error="Por favor, atribua um status ao trabalho" name="status" required>
             <USelect v-model="form.status" :items="['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']" />
         </UFormField>
 
-        <UFormField label="Autor 1" name="autor1">
+        <UFormField label="Autor 1" error="Por favor, o trabalho precisa ter pelo menos um autor" name="autor1" required>
             <UInput v-model="form.autor1" />
         </UFormField>
 
-        <UFormField label="Autor 2 (Opcional)" name="autor2">
+        <UFormField label="Autor 2" hint="Opcional" name="autor2">
             <UInput v-model="form.autor2" />
         </UFormField>
 
-        <UFormField label="Autor 3 (Opcional)" name="autor3">
+        <UFormField label="Autor 3" hint="Opcional" name="autor3">
             <UInput v-model="form.autor3" />
         </UFormField>
 
-        <UFormField label="Autor 4 (Opcional)" name="autor4">
+        <UFormField label="Autor 4" hint="Opcional" name="autor4">
             <UInput v-model="form.autor4" />
         </UFormField>
 
-        <UFormField label="Orientador" name="orientador">
+        <UFormField label="Orientador" error="Por favor, insira o orientador do trabalho" name="orientador" required>
             <UInput v-model="form.orientador" />
         </UFormField>
 
-        <UFormField label="Coorientador (Opcional)" name="coorientador">
+        <UFormField label="Coorientador" hint="Opcional" name="coorientador" required>
             <UInput v-model="form.coorientador" />
         </UFormField>
 
-        <UFormField label="Referências Bibliográficas" name="refbibliografica">
+        <UFormField label="Referências Bibliográficas" error="Por favor, insira a referência bibliográfica do trabalho" name="refbibliografica" required>
             <UTextarea v-model="form.refbibliografica" />
         </UFormField>
 
-        <UFormField label="Tipo do trabalho" name="tipoTrabalhoId">
+        <UFormField label="Tipo do trabalho" error="Por favor, selecione o tipo do trabalho" name="tipoTrabalhoId" required>
             <USelect v-model="form.tipoTrabalhoId" :items="tiposTrabalho" placeholder="Selecione o tipo" />
         </UFormField>
 
-        <UFormField label="Curso" name="cursoId">
+        <UFormField label="Curso" error="Por favor, selecione o curso do trabalho" name="cursoId" required>
             <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso" />
         </UFormField>
 
-        <UButton type="submit" :loading="loading" class="mt-4">Cadastrar</UButton>
+        <UButton type="submit" :loading="loading" class="mt-4">Atualizar</UButton>
     </UForm>
 </template>
 
