@@ -9,25 +9,30 @@
 
                 <UForm :state="form" :validate="validate" @submit="onSubmit">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <UFormField label="Título" name="titulo" class="col-span-3" error="Por favor, insira o título do trabalho" required>
+                        <UFormField label="Título" name="titulo" class="col-span-3"
+                            error="Por favor, insira o título do trabalho" required>
                             <UInput v-model="form.titulo" />
                         </UFormField>
 
-                        <UFormField label="Data" name="data" error="Por favor, insira a data de publicação do trabalho" required>
+                        <UFormField label="Data" name="data" error="Por favor, insira a data de publicação do trabalho"
+                            required>
                             <UInput v-model="form.data" type="date" />
                         </UFormField>
 
-                        <UFormField label="Status" name="status" error="Por favor, atribua um status ao trabalho" required>
+                        <UFormField label="Status" name="status" error="Por favor, atribua um status ao trabalho"
+                            required>
                             <USelect v-model="form.status"
                                 :items="['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']" />
                         </UFormField>
 
-                        <UFormField label="Tipo do trabalho" name="tipoTrabalhoId" error="Por favor, selecione o tipo do trabalho" required>
+                        <UFormField label="Tipo do trabalho" name="tipoTrabalhoId"
+                            error="Por favor, selecione o tipo do trabalho" required>
                             <USelect v-model="form.tipoTrabalhoId" :items="tiposTrabalho"
                                 placeholder="Selecione o tipo" />
                         </UFormField>
 
-                        <UFormField label="Curso" name="cursoId" error="Por favor, selecione o curso do trabalho" required>
+                        <UFormField label="Curso" name="cursoId" error="Por favor, selecione o curso do trabalho"
+                            required>
                             <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso" />
                         </UFormField>
 
@@ -35,7 +40,8 @@
                             <UInput v-model="form.arquivo" placeholder="https://..." />
                         </UFormField>
 
-                        <UFormField label="Autor 1" name="autor1" error="Por favor, o trabalho precisa ter pelo menos um autor" required>
+                        <UFormField label="Autor 1" name="autor1"
+                            error="Por favor, o trabalho precisa ter pelo menos um autor" required>
                             <UInput v-model="form.autor1" />
                         </UFormField>
 
@@ -51,7 +57,8 @@
                             <UInput v-model="form.autor4" />
                         </UFormField>
 
-                        <UFormField label="Orientador" name="orientador" error="Por favor, insira o orientador do trabalho" required>
+                        <UFormField label="Orientador" name="orientador"
+                            error="Por favor, insira o orientador do trabalho" required>
                             <UInput v-model="form.orientador" />
                         </UFormField>
 
@@ -59,20 +66,20 @@
                             <UInput v-model="form.coorientador" />
                         </UFormField>
 
-                        <UFormField label="Resumo" name="resumo" class="col-span-3" error="Por favor, insira o resumo do trabalho" required>
+                        <UFormField label="Resumo" name="resumo" class="col-span-3"
+                            error="Por favor, insira o resumo do trabalho" required>
                             <UTextarea v-model="form.resumo" />
                         </UFormField>
 
-                        <UFormField label="Referências Bibliográficas" name="refbibliografica" class="col-span-3" error="Por favor, insira a referência bibliográfica do trabalho" required>
+                        <UFormField label="Referências Bibliográficas" name="refbibliografica" class="col-span-3"
+                            error="Por favor, insira a referência bibliográfica do trabalho" required>
                             <UTextarea v-model="form.refbibliografica" />
                         </UFormField>
                     </div>
-                </UForm>
-                <template #footer>
                     <div class="flex justify-end">
                         <UButton type="submit" :loading="loading">Cadastrar</UButton>
                     </div>
-                </template>
+                </UForm>
             </UCard>
         </main>
     </div>

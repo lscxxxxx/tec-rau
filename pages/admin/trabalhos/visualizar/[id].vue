@@ -1,50 +1,62 @@
 <template>
-    <div v-if="pending" class="text-center py-10">
-        Carregando trabalho...
-    </div>
+    <div class="min-h-screen bg-gray-100 text-gray-800 font-sans flex flex-col">
+        <main class="flex-1 max-w-6xl mx-auto w-full p-6">
 
-    <div v-else-if="error" class="text-center py-10 text-red-500">
-        <h1>Erro ao carregar trabalho</h1>
-        <p>{{ error.statusMessage || error.message }}</p>
-    </div>
+            <UCard>
+                <template #header>
+                    <h2 class="text-xl font-semibold">Novo Trabalho</h2>
+                </template>
+                <div v-if="pending" class="text-center py-10">
+                    Carregando trabalho...
+                </div>
 
-    <div v-else-if="trabalho" class="overflow-x-auto">
-        <table class="table-auto w-full border border-gray-300 text-sm">
-            <tbody>
-                <tr class="border-b">
-                    <th class="text-left w-48 p-2 font-medium text-gray-600">Título</th>
-                    <td class="p-2 text-gray-800">{{ trabalho?.titulo }}</td>
-                </tr>
-                <tr class="border-b">
-                    <th class="text-left w-48 p-2 font-medium text-gray-600">Autor(es)</th>
-                    <td class="p-2 text-gray-800">{{ autores }}</td>
-                </tr>
-                <tr class="border-b">
-                    <th class="text-left w-48 p-2 font-medium text-gray-600">Orientador(es)</th>
-                    <td class="p-2 text-gray-800">{{ orientadores }}</td>
-                </tr>
-                <tr class="border-b">
-                    <th class="text-left w-48 p-2 font-medium text-gray-600">Tipo documental</th>
-                    <td class="p-2 text-gray-800">{{ trabalho?.tipoTrabalho?.descricao }}</td>
-                </tr>
-                <tr class="border-b">
-                    <th class="text-left w-48 p-2 font-medium text-gray-600">Palavras-chave</th>
-                    <td class="p-2 text-gray-800">{{ '–' }}</td>
-                </tr>
-                <tr class="border-b">
-                    <th class="text-left w-48 p-2 font-medium text-gray-600">Data do documento</th>
-                    <td class="p-2 text-gray-800"><ClientOnly>{{ dataFormatada }}</ClientOnly></td>
-                </tr>
-                <tr class="border-b">
-                    <th class="text-left w-48 p-2 font-medium text-gray-600">Referência bibliográfica</th>
-                    <td class="p-2 text-gray-800">{{ trabalho?.refbibliografica }}</td>
-                </tr>
-                <tr class="border-b">
-                    <th class="text-left w-48 p-2 font-medium text-gray-600">Resumo</th>
-                    <td class="p-2 text-gray-800">{{ trabalho?.resumo }}</td>
-                </tr>
-            </tbody>
-        </table>
+                <div v-else-if="error" class="text-center py-10 text-red-500">
+                    <h1>Erro ao carregar trabalho</h1>
+                    <p>{{ error.statusMessage || error.message }}</p>
+                </div>
+
+                <div v-else-if="trabalho" class="overflow-x-auto">
+                    <table class="table-auto w-full border border-gray-300 text-sm">
+                        <tbody>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Título</th>
+                                <td class="p-2 text-gray-800">{{ trabalho?.titulo }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Autor(es)</th>
+                                <td class="p-2 text-gray-800">{{ autores }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Orientador(es)</th>
+                                <td class="p-2 text-gray-800">{{ orientadores }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Tipo documental</th>
+                                <td class="p-2 text-gray-800">{{ trabalho?.tipoTrabalho?.descricao }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Palavras-chave</th>
+                                <td class="p-2 text-gray-800">{{ '–' }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Data do documento</th>
+                                <td class="p-2 text-gray-800">
+                                    <ClientOnly>{{ dataFormatada }}</ClientOnly>
+                                </td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Referência bibliográfica</th>
+                                <td class="p-2 text-gray-800">{{ trabalho?.refbibliografica }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Resumo</th>
+                                <td class="p-2 text-gray-800">{{ trabalho?.resumo }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </UCard>
+        </main>
     </div>
 </template>
 

@@ -1,66 +1,93 @@
 <template>
-    <UForm :state="form" :validate="validate" @submit="onSubmit">
-        <UFormField label="Título" error="Por favor, insira o título do trabalho" name="titulo" required>
-            <UInput v-model="form.titulo" />
-        </UFormField>
+    <div class="min-h-screen bg-gray-100 text-gray-800 font-sans flex flex-col">
+        <main class="flex-1 max-w-6xl mx-auto w-full p-6">
 
-        <UFormField label="Data" error="Por favor, insira a data de publicação do trabalho" name="data" required>
-            <UInput v-model="form.data" type="date" />
-        </UFormField>
+            <UCard>
+                <template #header>
+                    <h2 class="text-xl font-semibold">Novo Trabalho</h2>
+                </template>
 
-        <UFormField label="Resumo" error="Por favor, insira o resumo do trabalho" name="resumo" required>
-            <UTextarea v-model="form.resumo" />
-        </UFormField>
+                <UForm :state="form" :validate="validate" @submit="onSubmit">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <UFormField label="Título" error="Por favor, insira o título do trabalho" name="titulo"
+                            required>
+                            <UInput v-model="form.titulo" />
+                        </UFormField>
 
-        <UFormField label="Link para o Arquivo" name="arquivo" required>
-            <UInput v-model="form.arquivo" placeholder="https://..." />
-        </UFormField>
+                        <UFormField label="Data" error="Por favor, insira a data de publicação do trabalho" name="data"
+                            required>
+                            <UInput v-model="form.data" type="date" />
+                        </UFormField>
 
-        <UFormField label="Status" error="Por favor, atribua um status ao trabalho" name="status" required>
-            <USelect v-model="form.status" :items="['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']" />
-        </UFormField>
+                        <UFormField label="Resumo" error="Por favor, insira o resumo do trabalho" name="resumo"
+                            required>
+                            <UTextarea v-model="form.resumo" />
+                        </UFormField>
 
-        <UFormField label="Autor 1" error="Por favor, o trabalho precisa ter pelo menos um autor" name="autor1" required>
-            <UInput v-model="form.autor1" />
-        </UFormField>
+                        <UFormField label="Link para o Arquivo" name="arquivo" required>
+                            <UInput v-model="form.arquivo" placeholder="https://..." />
+                        </UFormField>
 
-        <UFormField label="Autor 2" hint="Opcional" name="autor2">
-            <UInput v-model="form.autor2" />
-        </UFormField>
+                        <UFormField label="Status" error="Por favor, atribua um status ao trabalho" name="status"
+                            required>
+                            <USelect v-model="form.status"
+                                :items="['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']" />
+                        </UFormField>
 
-        <UFormField label="Autor 3" hint="Opcional" name="autor3">
-            <UInput v-model="form.autor3" />
-        </UFormField>
+                        <UFormField label="Autor 1" error="Por favor, o trabalho precisa ter pelo menos um autor"
+                            name="autor1" required>
+                            <UInput v-model="form.autor1" />
+                        </UFormField>
 
-        <UFormField label="Autor 4" hint="Opcional" name="autor4">
-            <UInput v-model="form.autor4" />
-        </UFormField>
+                        <UFormField label="Autor 2" hint="Opcional" name="autor2">
+                            <UInput v-model="form.autor2" />
+                        </UFormField>
 
-        <UFormField label="Orientador" error="Por favor, insira o orientador do trabalho" name="orientador" required>
-            <UInput v-model="form.orientador" />
-        </UFormField>
+                        <UFormField label="Autor 3" hint="Opcional" name="autor3">
+                            <UInput v-model="form.autor3" />
+                        </UFormField>
 
-        <UFormField label="Coorientador" hint="Opcional" name="coorientador" required>
-            <UInput v-model="form.coorientador" />
-        </UFormField>
+                        <UFormField label="Autor 4" hint="Opcional" name="autor4">
+                            <UInput v-model="form.autor4" />
+                        </UFormField>
 
-        <UFormField label="Referências Bibliográficas" error="Por favor, insira a referência bibliográfica do trabalho" name="refbibliografica" required>
-            <UTextarea v-model="form.refbibliografica" />
-        </UFormField>
+                        <UFormField label="Orientador" error="Por favor, insira o orientador do trabalho"
+                            name="orientador" required>
+                            <UInput v-model="form.orientador" />
+                        </UFormField>
 
-        <UFormField label="Tipo do trabalho" error="Por favor, selecione o tipo do trabalho" name="tipoTrabalhoId" required>
-            <USelect v-model="form.tipoTrabalhoId" :items="tiposTrabalho" placeholder="Selecione o tipo" />
-        </UFormField>
+                        <UFormField label="Coorientador" hint="Opcional" name="coorientador" required>
+                            <UInput v-model="form.coorientador" />
+                        </UFormField>
 
-        <UFormField label="Curso" error="Por favor, selecione o curso do trabalho" name="cursoId" required>
-            <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso" />
-        </UFormField>
+                        <UFormField label="Referências Bibliográficas"
+                            error="Por favor, insira a referência bibliográfica do trabalho" name="refbibliografica"
+                            required>
+                            <UTextarea v-model="form.refbibliografica" />
+                        </UFormField>
 
-        <UButton type="submit" :loading="loading" class="mt-4">Atualizar</UButton>
-    </UForm>
+                        <UFormField label="Tipo do trabalho" error="Por favor, selecione o tipo do trabalho"
+                            name="tipoTrabalhoId" required>
+                            <USelect v-model="form.tipoTrabalhoId" :items="tiposTrabalho"
+                                placeholder="Selecione o tipo" />
+                        </UFormField>
+
+                        <UFormField label="Curso" error="Por favor, selecione o curso do trabalho" name="cursoId"
+                            required>
+                            <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso" />
+                        </UFormField>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <UButton type="submit" :loading="loading" class="mt-4">Atualizar</UButton>
+                    </div>
+                </UForm>
+            </UCard>
+        </main>
+    </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" async>
 import { ref, onMounted } from 'vue'
 import { object, string, number, date, type InferType } from 'yup'
 import type { FormSubmitEvent } from '#ui/types'

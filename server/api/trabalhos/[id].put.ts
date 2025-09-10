@@ -35,13 +35,20 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
+        const {
+            id: _,
+            curso,
+            tipoTrabalho,
+            ...cleanBody
+        } = body;
+
         const updatedTrabalho = await prisma.trabalho.update({
             where: {
                 id: parseInt(id),
             },
             data: {
-                ...body,
-                data: new Date(body.data),
+                ...cleanBody,
+                data: new Date(cleanBody.data),
             },
         });
 
