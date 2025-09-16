@@ -2,7 +2,7 @@ import prisma from '~/server/lib/prisma'
 
 export default defineEventHandler(async (event) => {
     try {
-        const trabalhoId = getRouterParam(event, 'id')
+        const trabalhoId = event.context.params?.id
         if (!trabalhoId) {
             throw new Error('ID do trabalho não fornecido')
         }

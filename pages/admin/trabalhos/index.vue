@@ -1,23 +1,11 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { TooltipProvider } from 'reka-ui'
-import ConfirmDeleteModal from '~/components/ConfirmDeleteModal.vue'
 
 const router = useRouter()
 const toast = useToast()
-const overlay = useOverlay()
-
-const confirmDelete = overlay.create(ConfirmDeleteModal)
-
-const modalExcluirTrabalho = async (id: number) => {
-    console.log('clicou para excluir', id)
-    const instance = confirmDelete.open()
-    const result = await instance.result as boolean
-    console.log('resultado do modal:', result)
-    if (result) {
-        await excluirTrabalho(id)
-    }
-}
+const isModalOpen = ref(false)
+const trabalhoParaExcluirId = ref<number | null>(null)
 
 type Trabalho = {
     id: number
@@ -35,6 +23,7 @@ type Trabalho = {
 }
 
 const { data: trabalhos, pending, refresh } = useFetch<Trabalho[]>('/api/trabalhos', {
+    key: 'trabalhos-list',
     lazy: true,
     default: () => []
 })
@@ -47,39 +36,43 @@ const statusColorMap = {
 }
 
 const columns: TableColumn<Trabalho>[] = [
-    {
-        accessorKey: 'titulo',
-        header: 'Título'
-    },
-    {
-        accessorKey: 'autor1',
-        header: 'Autor Principal'
-    },
-    {
-        accessorKey: 'curso.curso',
-        header: 'Curso'
-    },
-    {
-        accessorKey: 'data',
-        header: 'Data de Publicação'
-    },
-    {
-        accessorKey: 'status',
-        header: 'Status'
-    },
-    {
-        id: 'actions',
-        header: 'Ações'
-    }
+    { accessorKey: 'titulo', header: 'Título' },
+    { accessorKey: 'autor1', header: 'Autor Principal' },
+    { accessorKey: 'curso.curso', header: 'Curso' },
+    { accessorKey: 'data', header: 'Data de Publicação' },
+    { accessorKey: 'status', header: 'Status' },
+    { id: 'actions', header: 'Ações' }
 ]
 
-const excluirTrabalho = async (id: number) => {
+function abrirModalDeExclusao(id: number) {
+    trabalhoParaExcluirId.value = id
+    isModalOpen.value = true
+}
+
+onMounted(() => {
+    isModalOpen.value = false
+    trabalhoParaExcluirId.value = null
+})
+
+watch(isModalOpen, (val) => {
+    console.log('Modal aberto?', val)
+})
+
+async function confirmarExclusao() {
+    if (trabalhoParaExcluirId.value === null)
+        return
+
     try {
-        await $fetch(`/api/trabalhos/${id}`, { method: 'DELETE' })
-        toast.add({ title: 'Trabalho excluído com sucesso!', color: "success" })
+        await $fetch(`/api/trabalhos/${trabalhoParaExcluirId.value}`, { method: 'DELETE' })
+        toast.add({ title: 'Trabalho excluído com sucesso!', color: 'success' })
         refresh()
-    } catch (error) {
-        toast.add({ title: 'Erro ao excluir o trabalho', color: "warning" })
+    }
+    catch (error) {
+        toast.add({ title: 'Erro ao excluir o trabalho', color: 'error' })
+    }
+    finally {
+        isModalOpen.value = false
+        trabalhoParaExcluirId.value = null
     }
 }
 </script>
@@ -111,18 +104,18 @@ const excluirTrabalho = async (id: number) => {
                             <UTooltip text="Visualizar trabalho">
                                 <UButton icon="i-lucide-eye" variant="ghost" color="info" aria-label="Ver detalhes"
                                     class="cursor-pointer"
-                                    @click="router.push(`/admin/trabalhos/visualizar/${row.original.id}`)" />
+                                    @click="router.push(`/admin/trabalhos/${row.original.id}`)" />
                             </UTooltip>
 
                             <UTooltip text="Editar trabalho">
                                 <UButton icon="i-lucide-pencil" variant="ghost" color="info" aria-label="Editar"
                                     class="cursor-pointer"
-                                    @click="router.push(`/admin/trabalhos/editar/${row.original.id}`)" />
+                                    @click="router.push(`/admin/trabalhos/${row.original.id}/editar`)" />
                             </UTooltip>
 
                             <UTooltip text="Excluir trabalho">
                                 <UButton icon="i-lucide-trash-2" variant="ghost" color="warning" aria-label="Excluir"
-                                    class="cursor-pointer" @click="modalExcluirTrabalho(row.original.id)" />
+                                    class="cursor-pointer" @click="abrirModalDeExclusao(row.original.id)" />
                             </UTooltip>
                         </div>
                     </template>
@@ -141,6 +134,24 @@ const excluirTrabalho = async (id: number) => {
                     </template>
                 </UTable>
             </main>
+            <ClientOnly>
+                <UModal v-if="isModalOpen" v-model="isModalOpen" :ui="{ content: 'flex items-center justify-center min-h-screen' }">
+                    <UCard>
+                        <template #header>
+                            <h2 class="text-lg font-semibold">Confirmar exclusão</h2>
+                        </template>
+
+                        <p>Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+
+                        <template #footer>
+                            <div class="flex justify-end gap-2 mt-4">
+                                <UButton color="neutral" @click="isModalOpen = false">Não, mantenha</UButton>
+                                <UButton color="error" @click="confirmarExclusao">Sim, apague</UButton>
+                            </div>
+                        </template>
+                    </UCard>
+                </UModal>
+            </ClientOnly>
         </TooltipProvider>
     </div>
 </template>
