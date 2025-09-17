@@ -17,12 +17,17 @@ generator erd {
   theme    = "dark"              
 }
 
+enum Role {
+  ADMIN
+  SUPERADMIN
+}
 
 model Admin {
-  id    Int    @id @default(autoincrement())
+  id      Int    @id @default(autoincrement())
   usuario String
-  email String @unique
-  senha String
+  email   String @unique
+  senha   String
+  role    Role   @default(ADMIN)
 
   @@map("admin")
 }
