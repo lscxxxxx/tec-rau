@@ -75,7 +75,7 @@ async function validate(state: any): Promise<any[]> {
 async function onSubmit(event: FormSubmitEvent<Schema>) {
     loading.value = true
     try {
-        await $fetch('/api/admins/cadastrar', {
+        await $fetch('/api/admins', {
             method: 'POST',
             body: {
                 usuario: event.data.usuario,

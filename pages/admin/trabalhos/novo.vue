@@ -159,7 +159,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     try {
         console.log('[FORMULÁRIO] 1. Dados a serem enviados:', event.data);
         console.log('[FORMULÁRIO] 2. A tentar executar $fetch...');
-        await $fetch('/api/trabalhos/cadastrar', {
+        await $fetch('/api/trabalhos', {
             method: 'POST',
             body: event.data
         })
