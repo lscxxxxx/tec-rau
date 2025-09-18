@@ -46,7 +46,6 @@
 </template>
 
 <script setup lang="ts">
-import { UInput } from '#components';
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 
@@ -54,7 +53,7 @@ const route = useRoute()
 const toast = useToast()
 const router = useRouter()
 
-const { data: loggedInUser } = useAuth()
+const { user: loggedInUser } = useAuth()
 const adminIdBeingEdited = Number(route.params.id)
 
 const isSuperAdmin = computed(() => false)

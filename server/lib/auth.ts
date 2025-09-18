@@ -17,10 +17,29 @@ export function gerarToken(admin: Admin): string {
   )
 }
 
+export function gerarResetToken(admin: Admin): string {
+  return jwt.sign(
+    { id: admin.id, purpose: 'password-reset' }, // Adicionamos um "propósito" por segurança
+    JWT_SECRET,
+    { expiresIn: '15m' } // Token válido por apenas 15 minutos
+  )
+}
+
+/*
 export function verificarToken(token: string): { id: number; email: string } | null {
   try {
     return jwt.verify(token, JWT_SECRET) as { id: number; email: string }
   } catch {
+    return null
+  }
+}
+*/
+
+export function verificarToken<T extends object>(token: string): T | null {
+  try {
+    return jwt.verify(token, JWT_SECRET) as T
+  }
+  catch {
     return null
   }
 }
