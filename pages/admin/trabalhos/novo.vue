@@ -7,7 +7,7 @@
                     <h2 class="text-xl font-semibold">Novo Trabalho</h2>
                 </template>
 
-                <UForm :state="form" :validate="validate" @submit="onSubmit">
+                <UForm :schema="schema" :state="form" class="space-y-6" @submit="onSubmit">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <UFormField label="Título" name="titulo" class="col-span-3"
                             error="Por favor, insira o título do trabalho" required>
@@ -36,8 +36,8 @@
                             <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso" />
                         </UFormField>
 
-                        <UFormField label="Link para o Arquivo" name="arquivo" class="col-span-3" required>
-                            <UInput v-model="form.arquivo" placeholder="https://..." />
+                        <UFormField label="Link para o Arquivo" name="arquivo" required>
+                            <UInput type="file" @change="onFileChange" accept=".pdf" />
                         </UFormField>
 
                         <UFormField label="Autor 1" name="autor1"
@@ -88,33 +88,31 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { object, string, number, date, type InferType } from 'yup'
+import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 
 const toast = useToast()
 const router = useRouter()
+const route = useRoute()
 const loading = ref(false)
 
-const { data: cursos, error: cursosError } = await useFetch('/api/cursos', {
-    key: 'cursos-para-cadastro',
-    transform: (data: any[]) => Array.isArray(data) ? data.map(c => ({ label: c.curso, value: c.id })) : [],
+const { data: cursos } = useFetch('/api/cursos', {
+    transform: data => data.map((c: any) => ({ label: c.curso, value: c.id })),
     default: () => []
 })
-const { data: tiposTrabalho, error: tiposError } = await useFetch('/api/tipos-trabalho', {
-    key: 'tipos-para-cadastro',
-    transform: (data: any[]) => Array.isArray(data) ? data.map(t => ({ label: t.descricao, value: t.id })) : [],
+const { data: tiposTrabalho } = useFetch('/api/tipos-trabalho', {
+    transform: data => data.map((t: any) => ({ label: t.descricao, value: t.id })),
     default: () => []
 })
-if (cursosError.value || tiposError.value) {
-    toast.add({ title: 'Erro ao carregar dados', description: 'Não foi possível buscar os cursos ou tipos de trabalho.', color: 'error' })
-}
 
-const form = ref({
+const statusOptions = ['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']
+
+const form = reactive({
     titulo: '',
     data: '',
     resumo: '',
-    status: 'PENDENTE',
-    arquivo: '',
+    status: 'PENDENTE' as const,
+    arquivo: null as File | null,
     autor1: '',
     autor2: '',
     autor3: '',
@@ -126,56 +124,56 @@ const form = ref({
     cursoId: undefined as number | undefined
 })
 
-const schema = object({
-    titulo: string().required('Título é obrigatório'),
-    data: date().required('Data é obrigatória'),
-    resumo: string().required('Resumo é obrigatório'),
-    status: string().oneOf(['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']).required('Status é obrigatório'),
-    arquivo: string().url('Deve ser uma URL válida').required('O link para o arquivo é obrigatório'),
-    autor1: string().required('Pelo menos um autor é obrigatório'),
-    orientador: string().required('Orientador é obrigatório'),
-    refbibliografica: string().required('Referências são obrigatórias'),
-    tipoTrabalhoId: number().typeError('Selecione um tipo').required('Tipo do trabalho é obrigatório'),
-    cursoId: number().typeError('Selecione um curso').required('Curso é obrigatório')
+const schema = z.object({
+    titulo: z.string().min(1, 'Título é obrigatório'),
+    data: z.string().min(1, 'Data é obrigatória'),
+    resumo: z.string().min(1, 'Resumo é obrigatório'),
+    status: z.enum(['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']),
+    arquivo: z.instanceof(File).optional().nullable(),
+    autor1: z.string().min(1, 'Pelo menos um autor é obrigatório'),
+    orientador: z.string().min(1, 'Orientador é obrigatório'),
+    refbibliografica: z.string().min(1, 'Referências são obrigatórias'),
+    tipoTrabalhoId: z.number({ required_error: 'Tipo do trabalho é obrigatório' }),
+    cursoId: z.number({ required_error: 'Curso é obrigatório' }),
+    autor2: z.string().optional(),
+    autor3: z.string().optional(),
+    autor4: z.string().optional(),
+    coorientador: z.string().optional(),
 })
 
-type Schema = InferType<typeof schema>
+type Schema = z.output<typeof schema>
 
-async function validate(state: any): Promise<any[]> {
-    console.log('--- [VALIDAÇÃO] A função validate foi chamada! ---');
-    try {
-        await schema.validate(state, { abortEarly: false })
-        console.log('[VALIDAÇÃO] A validação passou com sucesso.');
-        return []
-    } catch (err: any) {
-        console.error('[VALIDAÇÃO] A validação FALHOU! Erros encontrados:', err.inner);
-        return err.inner
+function onFileChange(event: Event) {
+    const input = event.target as HTMLInputElement
+    if (input.files?.length) {
+        form.arquivo = input.files[0]
     }
 }
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-    console.log('--- [FORMULÁRIO] Função onSubmit foi chamada! ---');
     loading.value = true
+    const formData = new FormData()
+
+    Object.entries(event.data).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+            if (key === 'arquivo')
+                formData.append(key, value as File)
+            else
+                formData.append(key, String(value))
+        }
+    })
+
     try {
-        console.log('[FORMULÁRIO] 1. Dados a serem enviados:', event.data);
-        console.log('[FORMULÁRIO] 2. A tentar executar $fetch...');
-        await $fetch('/api/trabalhos', {
+        await $fetch(`/api/trabalhos`, {
             method: 'POST',
-            body: event.data
+            body: formData,
         })
-        console.log('[FORMULÁRIO] 3. $fetch concluído com sucesso!');
 
-        toast.add({ title: 'Trabalho cadastrado com sucesso!', color: 'success', icon: 'i-lucide-check-circle' })
+        toast.add({ title: 'Trabalho cadastrado com sucesso!', color: 'success' })
         await router.push('/admin/trabalhos')
-
-    } catch (err: any) {
-        console.error('--- [FORMULÁRIO] OCORREU UM ERRO ---');
-        console.error('Este é o objeto de erro completo:', err);
-        console.error('--- FIM DO ERRO ---');
-        toast.add({ title: 'Erro ao cadastrar', description: err.data?.statusMessage || 'Tente novamente.', color: 'error', icon: 'i-lucide-x-circle' })
-    } finally {
-        console.log('[FORMULÁRIO] 4. Bloco finally executado.');
-        loading.value = false
+    }
+    catch (err: any) {
+        toast.add({ title: 'Erro ao cadastrar', description: err.data?.message || 'Tente novamente.', color: 'warning' })
     }
 }
 </script>

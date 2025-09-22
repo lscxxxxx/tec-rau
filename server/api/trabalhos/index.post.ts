@@ -1,63 +1,78 @@
+import { writeFileSync, mkdirSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { nanoid } from 'nanoid'
+import { z } from 'zod'
 import prisma from '~/server/lib/prisma'
-import { object, string, number, date } from 'yup'
+import { form } from '#build/ui'
 
-// O schema continua o mesmo
-const schema = object({
-  titulo: string().required(),
-  data: date().required(),
-  resumo: string().required(),
-  status: string().oneOf(['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']).required(),
-  arquivo: string().url().required(),
-  autor1: string().required(),
-  orientador: string().required(),
-  refbibliografica: string().required(),
-  tipoTrabalhoId: number().required(),
-  cursoId: number().required()
+const schema = z.object({
+  titulo: z.string().min(1),
+  data: z.string().min(1),
+  resumo: z.string().min(1),
+  status: z.enum(['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']),
+  autor1: z.string().min(1),
+  orientador: z.string().min(1),
+  refbibliografica: z.string().min(1),
+  tipoTrabalhoId: z.string().transform(val => Number(val)),
+  cursoId: z.string().transform(val => Number(val)),
+  autor2: z.string().optional(),
+  autor3: z.string().optional(),
+  autor4: z.string().optional(),
+  coorientador: z.string().optional(),
 })
 
 export default defineEventHandler(async (event) => {
-  console.log('\n--- [API cadastrar] Nova requisição recebida ---');
   try {
-    const body = await readBody(event)
-    console.log('[API cadastrar] 1. Corpo da requisição recebido:', body);
+    const formData = await readMultipartFormData(event)
+    const arquivoData = formData?.find(d => d.name === 'arquivo')
+    const textFields = formData?.filter(d => d.name !== 'arquivo')
 
-    console.log('[API cadastrar] 2. A iniciar validação dos dados...');
-    await schema.validate(body)
-    console.log('[API cadastrar] 3. Validação concluída com sucesso.');
+    if (!arquivoData || !textFields)
+      throw new Error('Arquivo ou campos de texto faltando')
 
-    const dadosFormatados = {
-      ...body,
-      data: new Date(body.data),
-      tipoTrabalhoId: Number(body.tipoTrabalhoId),
-      cursoId: Number(body.cursoId)
+    const formValues: Record<string, any> = {}
+    for (const field of textFields) {
+      if (field.name)
+        formValues[field.name] = field.data.toString()
     }
-    console.log('[API cadastrar] 4. Dados formatados para o Prisma:', dadosFormatados);
 
-    console.log('[API cadastrar] 5. A tentar criar registo no banco de dados...');
+    const validatedData = schema.parse(formValues)
+
+    const fileExtension = arquivoData.filename?.split('.').pop() || 'pdf'
+    const uniqueFileName = `${nanoid()}.${fileExtension}`
+    const uploadDir = resolve(process.cwd(), 'public/uploads')
+    const filePath = `${uploadDir}/${uniqueFileName}`
+
+    mkdirSync(uploadDir, { recursive: true })
+    writeFileSync(filePath, arquivoData.data)
+
+    const dadosParaPrisma = {
+      ...validatedData,
+      data: new Date(validatedData.data),
+      arquivo: `/uploads/${uniqueFileName}`
+    }
+
     const novoTrabalho = await prisma.trabalho.create({
-      data: dadosFormatados
+      data: dadosParaPrisma,
     })
-    console.log('[API cadastrar] 6. Registo criado com sucesso! ID:', novoTrabalho.id);
 
     setResponseStatus(event, 201)
     return novoTrabalho
 
   } catch (error: any) {
-    // Log do erro completo no terminal para depuração
-    console.error('\n--- [API cadastrar] OCORREU UM ERRO ---');
-    console.error(error);
-    console.error('--- FIM DO ERRO ---\n');
+    console.error('--- ERRO NA API DE CADASTRO DE TRABALHO ---');
 
-    if (error.name === 'ValidationError') {
+    if (error instanceof z.ZodError) {
       throw createError({
         statusCode: 400,
-        statusMessage: `Erro de validação: ${error.message}`,
+        statusMessage: `Erro de validação`,
+        data: error.errors,
       })
     }
-    
+
     throw createError({
       statusCode: 500,
-      statusMessage: 'Não foi possível criar o trabalho. Consulte o log do servidor para mais detalhes.',
+      statusMessage: 'Não foi possível criar o trabalho.',
     })
   }
 })

@@ -7,7 +7,7 @@
                     <h2 class="text-xl font-semibold">Novo Trabalho</h2>
                 </template>
 
-                <UForm :state="form" :validate="validate" @submit="onSubmit">
+                <UForm :schema="schema" :state="form" class="space-y-6" @submit="onSubmit">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <UFormField label="Título" error="Por favor, insira o título do trabalho" name="titulo"
                             required>
@@ -25,7 +25,7 @@
                         </UFormField>
 
                         <UFormField label="Link para o Arquivo" name="arquivo" required>
-                            <UInput v-model="form.arquivo" placeholder="https://..." />
+                            <UInput type="file" @change="onFileChange" accept=".pdf" />
                         </UFormField>
 
                         <UFormField label="Status" error="Por favor, atribua um status ao trabalho" name="status"
@@ -89,7 +89,7 @@
 
 <script setup lang="ts" async>
 import { ref, onMounted } from 'vue'
-import { object, string, number, date, type InferType } from 'yup'
+import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 
 const toast = useToast()
@@ -99,28 +99,23 @@ const loading = ref(false)
 
 const trabalhoId = computed(() => route.params.id as string)
 
-const { data: trabalhoData, error: trabalhoError } = await useFetch(`/api/trabalhos/${trabalhoId.value}`, { key: `trabalho-${trabalhoId.value}` })
-const { data: cursos, error: cursosError } = await useFetch('/api/cursos', {
-    key: 'cursos-list',
-    transform: (data: any[]) => Array.isArray(data) ? data.map(c => ({ label: c.curso, value: c.id })) : [],
+const { data: cursos } = useFetch('/api/cursos', {
+    transform: data => data.map((c: any) => ({ label: c.curso, value: c.id })),
     default: () => []
 })
-const { data: tiposTrabalho, error: tiposError } = await useFetch('/api/tipos-trabalho', {
-    key: 'tipos-trabalho-list',
-    transform: (data: any[]) => Array.isArray(data) ? data.map(t => ({ label: t.descricao, value: t.id })) : [],
+const { data: tiposTrabalho } = useFetch('/api/tipos-trabalho', {
+    transform: data => data.map((t: any) => ({ label: t.descricao, value: t.id })),
     default: () => []
 })
 
-if (trabalhoError.value) {
-    toast.add({ title: 'Erro', description: 'Não foi possível carregar os dados do trabalho.', color: 'error' })
-}
+const statusOptions = ['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']
 
-const form = ref({
+const form = reactive({
     titulo: '',
     data: '',
     resumo: '',
-    status: 'PENDENTE',
-    arquivo: '',
+    status: 'PENDENTE' as const,
+    arquivo: null as File | null,
     autor1: '',
     autor2: '',
     autor3: '',
@@ -132,55 +127,80 @@ const form = ref({
     cursoId: undefined as number | undefined
 })
 
-watchEffect(() => {
-    if (trabalhoData.value) {
-        const trabalho = trabalhoData.value as any;
-        form.value = {
-            ...trabalho,
-            data: new Date(trabalho.data).toISOString().split('T')[0]
-        }
-    }
+interface Trabalho {
+    titulo: string
+    data: string
+    resumo: string
+    status: 'APROVADO' | 'REPROVADO' | 'PENDENTE' | 'PUBLICADO'
+    arquivo: string | null
+    autor1: string
+    autor2: string | null
+    autor3: string | null
+    autor4: string | null
+    orientador: string
+    coorientador: string | null
+    refbibliografica: string
+    tipoTrabalhoId: number
+    cursoId: number
+}
+
+const { data: trabalhoData } = await useFetch<Trabalho>(`/api/trabalhos/${trabalhoId.value}`)
+if (trabalhoData.value) {
+    Object.assign(form, {
+        ...trabalhoData.value,
+        data: new Date(trabalhoData.value.data).toISOString().split('T')[0],
+        arquivo: null,
+    })
+}
+
+const schema = z.object({
+    titulo: z.string().min(1, 'Título é obrigatório'),
+    data: z.string().min(1, 'Data é obrigatória'),
+    resumo: z.string().min(1, 'Resumo é obrigatório'),
+    status: z.enum(['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']),
+    arquivo: z.instanceof(File).optional().nullable(),
+    autor1: z.string().min(1, 'Pelo menos um autor é obrigatório'),
+    orientador: z.string().min(1, 'Orientador é obrigatório'),
+    refbibliografica: z.string().min(1, 'Referências são obrigatórias'),
+    tipoTrabalhoId: z.number({ required_error: 'Tipo do trabalho é obrigatório' }),
+    cursoId: z.number({ required_error: 'Curso é obrigatório' }),
+    autor2: z.string().optional(),
+    autor3: z.string().optional(),
+    autor4: z.string().optional(),
+    coorientador: z.string().optional(),
 })
 
-const schema = object({
-    titulo: string().required('Título é obrigatório'),
-    data: date().required('Data é obrigatória'),
-    resumo: string().required('Resumo é obrigatório'),
-    status: string().oneOf(['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']).required('Status é obrigatório'),
-    arquivo: string().url('Deve ser uma URL válida').required('O link para o arquivo é obrigatório'),
-    autor1: string().required('Pelo menos um autor é obrigatório'),
-    orientador: string().required('Orientador é obrigatório'),
-    refbibliografica: string().required('Referências são obrigatórias'),
-    tipoTrabalhoId: number().typeError('Selecione um tipo').required('Tipo do trabalho é obrigatório'),
-    cursoId: number().typeError('Selecione um curso').required('Curso é obrigatório')
-})
+type Schema = z.output<typeof schema>
 
-type Schema = InferType<typeof schema>
-
-async function validate(state: any): Promise<any[]> {
-    try {
-        await schema.validate(state, { abortEarly: false })
-        return []
-    } catch (err: any) {
-        return err.inner
+function onFileChange(event: Event) {
+    const input = event.target as HTMLInputElement
+    if (input.files?.length) {
+        form.arquivo = input.files[0]
     }
 }
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
     loading.value = true
+    const formData = new FormData()
+
+    for (const key in event.data) {
+        if (key !== 'arquivo')
+            formData.append(key, (event.data as any)[key])
+    }
+
+    if (form.arquivo)
+        formData.append('arquivo', form.arquivo)
+
     try {
         await $fetch(`/api/trabalhos/${trabalhoId.value}`, {
             method: 'PUT',
-            body: event.data
+            body: formData,
         })
-
         toast.add({ title: 'Trabalho atualizado com sucesso!', color: 'success' })
         await router.push('/admin/trabalhos')
-
-    } catch (err: any) {
-        toast.add({ title: 'Erro ao atualizar', description: err.data?.statusMessage || 'Tente novamente.', color: 'error' })
-    } finally {
-        loading.value = false
+    }
+    catch (err: any) {
+        toast.add({ title: 'Erro ao atualizar', description: err.data?.message || 'Tente novamente.', color: 'warning' })
     }
 }
 </script>

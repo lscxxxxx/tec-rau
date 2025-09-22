@@ -1,63 +1,99 @@
-import prisma from '~/server/lib/prisma';
-import { object, string, number, date } from 'yup';
+import { writeFileSync, mkdirSync, unlinkSync, existsSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { nanoid } from 'nanoid'
+import { z } from 'zod'
+import prisma from '~/server/lib/prisma'
+
+const schema = z.object({
+    titulo: z.string().min(1),
+    data: z.string().min(1),
+    resumo: z.string().min(1),
+    status: z.enum(['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']),
+    autor1: z.string().min(1),
+    orientador: z.string().min(1),
+    refbibliografica: z.string().min(1),
+    tipoTrabalhoId: z.string().transform(val => Number(val)),
+    cursoId: z.string().transform(val => Number(val)),
+    autor2: z.string().optional(),
+    autor3: z.string().optional(),
+    autor4: z.string().optional(),
+    coorientador: z.string().optional(),
+})
 
 export default defineEventHandler(async (event) => {
-    const id = event.context.params?.id;
-    const body = await readBody(event);
+    const trabalhoId = getRouterParam(event, 'id')
 
-    if (!id || isNaN(parseInt(id))) {
+    if (!trabalhoId) {
         throw createError({
             statusCode: 400,
             statusMessage: 'ID do trabalho é inválido.',
         });
     }
 
-    const schema = object({
-        titulo: string().required(),
-        data: date().required(),
-        resumo: string().required(),
-        status: string().oneOf(['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']).required(),
-        arquivo: string().url().required(),
-        autor1: string().required(),
-        orientador: string().required(),
-        refbibliografica: string().required(),
-        tipoTrabalhoId: number().required(),
-        cursoId: number().required(),
-    });
-
     try {
-        await schema.validate(body);
-    } catch (error: any) {
-        throw createError({
-            statusCode: 400,
-            statusMessage: `Erro de validação: ${error.message}`,
-        });
-    }
+        const formData = await readMultipartFormData(event)
+        const arquivoData = formData?.find(d => d.name === 'arquivo')
+        const textFields = formData?.filter(d => d.name !== 'arquivo')
 
-    try {
-        const {
-            id: _,
-            curso,
-            tipoTrabalho,
-            ...cleanBody
-        } = body;
+        const formValues: Record<string, any> = {}
+        if (textFields) {
+            for (const field of textFields) {
+                if (field.name)
+                    formValues[field.name] = field.data.toString()
+            }
+        }
 
-        const updatedTrabalho = await prisma.trabalho.update({
+        const validatedData = schema.parse(formValues)
+        const dadosParaPrisma: any = {
+            ...validatedData,
+            data: new Date(validatedData.data),
+        }
+
+        if (arquivoData) {
+            const trabalhoAntigo = await prisma.trabalho.findUnique({
+                where: {
+                    id: Number(trabalhoId)
+                }
+            })
+
+            const fileExtension = arquivoData.filename?.split('.').pop() || 'pdf'
+            const uniqueFileName = `${nanoid()}.${fileExtension}`
+            const uploadDir = resolve(process.cwd(), 'public/uploads')
+            const filePath = `${uploadDir}/${uniqueFileName}`
+
+            mkdirSync(uploadDir, { recursive: true })
+            writeFileSync(filePath, arquivoData.data)
+
+            dadosParaPrisma.arquivo = `/uploads/${uniqueFileName}`
+
+            if (trabalhoAntigo?.arquivo) {
+                const oldFilePath =  resolve(process.cwd(), `public${trabalhoAntigo.arquivo}`)
+                if (existsSync(oldFilePath)) {
+                    unlinkSync(oldFilePath)
+                }
+            }
+        }
+
+        const trabalhoAtualizado = await prisma.trabalho.update({
             where: {
-                id: parseInt(id),
+                id: Number(trabalhoId),
             },
-            data: {
-                ...cleanBody,
-                data: new Date(cleanBody.data),
-            },
-        });
+            data: dadosParaPrisma,
+        })
 
-        return updatedTrabalho;
-    } catch (error) {
-        console.error('[API] Erro ao atualizar trabalho:', error);
+        return trabalhoAtualizado
+    } catch (error: any) {
+        console.error('--- ERRO NA API DE EDIÇÃO DE TRABALHO ---', error)
+        if (error instanceof z.ZodError) {
+            throw createError({
+                statusCode: 400,
+                statusMessage: 'Erro de validação',
+                data: error.errors
+            })
+        }
         throw createError({
             statusCode: 500,
-            statusMessage: 'Não foi possível atualizar o trabalho.',
-        });
+            statusMessage: 'Não foi possível atualizar o trabalho'
+        })
     }
 });
