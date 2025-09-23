@@ -83,7 +83,7 @@ async function confirmarExclusao() {
             <main class="flex-1 max-w-6xl mx-auto w-full p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h1 class="text-3xl font-bold">Listagem de Trabalhos</h1>
-                    <UButton to="/admin/trabalhos/cadastrar" icon="i-lucide-plus">Adicionar Trabalho</UButton>
+                    <UButton to="/admin/trabalhos/novo" icon="i-lucide-plus">Adicionar Trabalho</UButton>
                 </div>
 
                 <UTable :data="trabalhos" :columns="columns" :loading="pending"
@@ -129,7 +129,7 @@ async function confirmarExclusao() {
                     <template #empty-state>
                         <div class="flex flex-col items-center justify-center py-6 gap-3">
                             <span class="text-sm text-gray-500">Nenhum trabalho encontrado.</span>
-                            <UButton label="Adicionar Trabalho" to="/admin/trabalhos/cadastrar" />
+                            <UButton label="Adicionar Trabalho" to="/admin/trabalhos/novo" />
                         </div>
                     </template>
                 </UTable>

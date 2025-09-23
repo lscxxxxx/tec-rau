@@ -1,79 +1,74 @@
 <template>
     <div class="min-h-screen bg-gray-100 text-gray-800 font-sans flex flex-col">
-        <main class="flex-1 max-w-6xl mx-auto w-full p-6">
+        <main class="flex-1 max-w-4xl mx-auto w-full p-1">
 
             <UCard>
                 <template #header>
                     <h2 class="text-xl font-semibold">Novo Trabalho</h2>
                 </template>
 
-                <UForm :schema="schema" :state="form" class="space-y-6" @submit="onSubmit">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <UFormField label="Título" name="titulo" class="col-span-3"
-                            error="Por favor, insira o título do trabalho" required>
-                            <UInput v-model="form.titulo" />
+                <UForm :schema="schema" :state="form" @submit="onSubmit">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-x-7 gap-y-3">
+                        <UFormField label="Título" name="titulo" class="col-span-3 font-medium text-gray-900" required>
+                            <UInput v-model="form.titulo" class="w-full"/>
                         </UFormField>
 
-                        <UFormField label="Data" name="data" error="Por favor, insira a data de publicação do trabalho"
-                            required>
-                            <UInput v-model="form.data" type="date" />
+                        <UFormField label="Data" name="data" required>
+                            <UInput v-model="form.data" type="date" class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Status" name="status" error="Por favor, atribua um status ao trabalho"
-                            required>
+                        <UFormField label="Status" name="status" required>
                             <USelect v-model="form.status"
-                                :items="['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']" />
+                                :items="['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']" class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Tipo do trabalho" name="tipoTrabalhoId"
-                            error="Por favor, selecione o tipo do trabalho" required>
+                        <UFormField label="Tipo documental" name="tipoTrabalhoId" required>
                             <USelect v-model="form.tipoTrabalhoId" :items="tiposTrabalho"
-                                placeholder="Selecione o tipo" />
+                                placeholder="Selecione o tipo" class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Curso" name="cursoId" error="Por favor, selecione o curso do trabalho"
-                            required>
-                            <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso" />
+                        <UFormField label="Curso" name="cursoId" required>
+                            <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso" class="w-full" />
                         </UFormField>
 
                         <UFormField label="Link para o Arquivo" name="arquivo" required>
-                            <UInput type="file" @change="onFileChange" accept=".pdf" />
+                            <UFileUpload label="Selecione ou arraste o arquivo" description="PDF (max. 5MB)" @change="onFileChange" accept=".pdf" class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Autor 1" name="autor1"
-                            error="Por favor, o trabalho precisa ter pelo menos um autor" required>
-                            <UInput v-model="form.autor1" />
+                        <UFormField label="Autor 1" name="autor1" class="col-span-3" required>
+                            <UInput v-model="form.autor1" class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Autor 2" name="autor2" hint="Opcional">
-                            <UInput v-model="form.autor2" />
+                        <UFormField label="Autor 2" name="autor2" class="col-span-3">
+                            <UInput v-model="form.autor2" class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Autor 3" name="autor3" hint="Opcional">
-                            <UInput v-model="form.autor3" />
+                        <UFormField label="Autor 3" name="autor3" class="col-span-3">
+                            <UInput v-model="form.autor3" class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Autor 4" name="autor4" hint="Opcional">
-                            <UInput v-model="form.autor4" />
+                        <UFormField label="Autor 4" name="autor4" class="col-span-3">
+                            <UInput v-model="form.autor4" class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Orientador" name="orientador"
-                            error="Por favor, insira o orientador do trabalho" required>
-                            <UInput v-model="form.orientador" />
+                        <UFormField label="Orientador" name="orientador" class="col-span-3" required>
+                            <UInput v-model="form.orientador" class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Coorientador" name="coorientador" hint="Opcional">
-                            <UInput v-model="form.coorientador" />
+                        <UFormField label="Coorientador" name="coorientador" class="col-span-3">
+                            <UInput v-model="form.coorientador" class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Resumo" name="resumo" class="col-span-3"
-                            error="Por favor, insira o resumo do trabalho" required>
-                            <UTextarea v-model="form.resumo" />
+                        <UFormField label="Resumo" name="resumo" class="col-span-3" required>
+                            <UTextarea v-model="form.resumo" class="w-full" autoresize />
                         </UFormField>
 
-                        <UFormField label="Referências Bibliográficas" name="refbibliografica" class="col-span-3"
-                            error="Por favor, insira a referência bibliográfica do trabalho" required>
-                            <UTextarea v-model="form.refbibliografica" />
+                        <UFormField label="Referências Bibliográficas" name="refbibliografica" class="col-span-3" required>
+                            <UTextarea v-model="form.refbibliografica" class="w-full" autoresize />
+                        </UFormField>
+
+                        <UFormField label="Palavras-chave" name="palavrasChave" class="col-span-3" required>
+                            <USelectMenu v-model="form.palavrasChave" :options="palavrasChaveExistentes" placeholder="Digite ou selecione as palavras-chave" multiple creatable searchable/>
                         </UFormField>
                     </div>
                     <div class="flex justify-end">
@@ -105,6 +100,11 @@ const { data: tiposTrabalho } = useFetch('/api/tipos-trabalho', {
     default: () => []
 })
 
+const { data: palavrasChaveExistentes } = useFetch('/api/palavras-chave', {
+    transform: data => data.map((pc: any) => pc.texto),
+    default: () => []
+})
+
 const statusOptions = ['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']
 
 const form = reactive({
@@ -121,7 +121,8 @@ const form = reactive({
     coorientador: '',
     refbibliografica: '',
     tipoTrabalhoId: undefined as number | undefined,
-    cursoId: undefined as number | undefined
+    cursoId: undefined as number | undefined,
+    palavrasChave: [] as string[],
 })
 
 const schema = z.object({
@@ -135,6 +136,7 @@ const schema = z.object({
     refbibliografica: z.string().min(1, 'Referências são obrigatórias'),
     tipoTrabalhoId: z.number({ required_error: 'Tipo do trabalho é obrigatório' }),
     cursoId: z.number({ required_error: 'Curso é obrigatório' }),
+    palavrasChave: z.array(z.string()).min(1, 'Adicione pelo menos uma palavra-chave'),
     autor2: z.string().optional(),
     autor3: z.string().optional(),
     autor4: z.string().optional(),

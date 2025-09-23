@@ -3,7 +3,6 @@ import { resolve } from 'node:path'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 import prisma from '~/server/lib/prisma'
-import { form } from '#build/ui'
 
 const schema = z.object({
   titulo: z.string().min(1),
@@ -15,6 +14,7 @@ const schema = z.object({
   refbibliografica: z.string().min(1),
   tipoTrabalhoId: z.string().transform(val => Number(val)),
   cursoId: z.string().transform(val => Number(val)),
+  palavrasChave: z.string().transform(val => val.split(',')),
   autor2: z.string().optional(),
   autor3: z.string().optional(),
   autor4: z.string().optional(),
@@ -49,7 +49,13 @@ export default defineEventHandler(async (event) => {
     const dadosParaPrisma = {
       ...validatedData,
       data: new Date(validatedData.data),
-      arquivo: `/uploads/${uniqueFileName}`
+      arquivo: `/uploads/${uniqueFileName}`,
+      palavrasChave: {
+        connectOrCreate: validatedData.palavrasChave.map((palavra: string) => ({
+          where: { palavra },
+          create: { palavra }
+        }))
+       }
     }
 
     const novoTrabalho = await prisma.trabalho.create({

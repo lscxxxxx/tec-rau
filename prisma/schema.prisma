@@ -50,6 +50,12 @@ model TipoTrabalho {
   @@map("tipotrabalho")
 }
 
+model PalavraChave {
+  id Int @id @default(autoincrement())
+  palavra String @unique
+  trabalhos Trabalho[]
+}
+
 model Trabalho {
   id               Int      @id @default(autoincrement())
   titulo           String
@@ -70,6 +76,8 @@ model Trabalho {
 
   cursoId          Int          @map("id_curso")
   curso            Curso        @relation(fields: [cursoId], references: [id])
+
+  palavrasChave    PalavraChave[]
 
   @@map("trabalho")
 }

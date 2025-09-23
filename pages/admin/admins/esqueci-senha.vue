@@ -54,7 +54,7 @@ type Schema = z.output<typeof schema>
 async function onSubmit(event: FormSubmitEvent<Schema>) {
     loading.value = true
     try {
-        await $fetch('/api/admins/esqueceu-senha', {
+        await $fetch('/api/admins/esqueci-senha', {
             method: 'POST',
             body: event.data,
         })
