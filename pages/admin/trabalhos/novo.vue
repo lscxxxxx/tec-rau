@@ -10,7 +10,7 @@
                 <UForm :schema="schema" :state="form" @submit="onSubmit">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-x-7 gap-y-3">
                         <UFormField label="Título" name="titulo" class="col-span-3 font-medium text-gray-900" required>
-                            <UInput v-model="form.titulo" class="w-full"/>
+                            <UInput v-model="form.titulo" class="w-full" />
                         </UFormField>
 
                         <UFormField label="Data" name="data" required>
@@ -18,21 +18,23 @@
                         </UFormField>
 
                         <UFormField label="Status" name="status" required>
-                            <USelect v-model="form.status"
-                                :items="['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']" class="w-full" />
+                            <USelect v-model="form.status" :items="['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']"
+                                class="w-full" />
                         </UFormField>
 
                         <UFormField label="Tipo documental" name="tipoTrabalhoId" required>
-                            <USelect v-model="form.tipoTrabalhoId" :items="tiposTrabalho"
-                                placeholder="Selecione o tipo" class="w-full" />
+                            <USelect v-model="form.tipoTrabalhoId" :items="tiposTrabalho" placeholder="Selecione o tipo"
+                                class="w-full" />
                         </UFormField>
 
                         <UFormField label="Curso" name="cursoId" required>
-                            <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso" class="w-full" />
+                            <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso"
+                                class="w-full" />
                         </UFormField>
 
                         <UFormField label="Link para o Arquivo" name="arquivo" required>
-                            <UFileUpload label="Selecione ou arraste o arquivo" description="PDF (max. 5MB)" @change="onFileChange" accept=".pdf" class="w-full" />
+                            <UFileUpload label="Selecione ou arraste o arquivo" description="PDF (max. 5MB)"
+                                @change="onFileChange" accept=".pdf" class="w-full" />
                         </UFormField>
 
                         <UFormField label="Autor 1" name="autor1" class="col-span-3" required>
@@ -63,12 +65,14 @@
                             <UTextarea v-model="form.resumo" class="w-full" autoresize />
                         </UFormField>
 
-                        <UFormField label="Referências Bibliográficas" name="refbibliografica" class="col-span-3" required>
+                        <UFormField label="Referências Bibliográficas" name="refbibliografica" class="col-span-3"
+                            required>
                             <UTextarea v-model="form.refbibliografica" class="w-full" autoresize />
                         </UFormField>
 
                         <UFormField label="Palavras-chave" name="palavrasChave" class="col-span-3" required>
-                            <USelectMenu v-model="form.palavrasChave" :options="palavrasChaveExistentes" placeholder="Digite ou selecione as palavras-chave" multiple creatable searchable/>
+                            <USelectMenu v-model="form.palavrasChave" :options="palavrasChaveExistentes"
+                                placeholder="Digite ou selecione as palavras-chave" multiple creatable :searchable="pesquisarPalavrasChave" />
                         </UFormField>
                     </div>
                     <div class="flex justify-end">
@@ -152,16 +156,39 @@ function onFileChange(event: Event) {
     }
 }
 
+async function pesquisarPalavrasChave(q: string) {
+    let opcoes = palavrasChaveExistentes.value
+
+    if (q) {
+        opcoes = palavrasChaveExistentes.value.filter(palavraChave =>
+            palavraChave.toLowerCase().includes(q.toLowerCase())
+        )
+    }
+
+    const existe = palavrasChaveExistentes.value.some(opc =>
+        opc.toLowerCase() === q.toLowerCase()
+    )
+
+    if (q && !existe) {
+        return [q, ...opcoes]
+    }
+
+    return opcoes
+}
+
 async function onSubmit(event: FormSubmitEvent<Schema>) {
     loading.value = true
     const formData = new FormData()
 
     Object.entries(event.data).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
-            if (key === 'arquivo')
-                formData.append(key, value as File)
-            else
+            if (key === 'arquivo' && value instanceof File) {
+                formData.append(key, value)
+            } else if (Array.isArray(value)) {
+                formData.append(key, value.join(','))
+            } else {
                 formData.append(key, String(value))
+            }
         }
     })
 
