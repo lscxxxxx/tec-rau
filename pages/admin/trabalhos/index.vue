@@ -134,24 +134,22 @@ async function confirmarExclusao() {
                     </template>
                 </UTable>
             </main>
-            <ClientOnly>
-                <UModal v-if="isModalOpen" v-model="isModalOpen" :ui="{ content: 'flex items-center justify-center min-h-screen' }">
-                    <UCard>
-                        <template #header>
-                            <h2 class="text-lg font-semibold">Confirmar exclusão</h2>
-                        </template>
+            <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/50">
+                <UCard class="w-full max-w-md mx-auto">
+                    <template #header>
+                        <h2 class="text-lg font-semibold">Confirmar exclusão</h2>
+                    </template>
 
-                        <p>Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+                    <p>Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
 
-                        <template #footer>
-                            <div class="flex justify-end gap-2 mt-4">
-                                <UButton color="neutral" @click="isModalOpen = false">Não, mantenha</UButton>
-                                <UButton color="error" @click="confirmarExclusao">Sim, apague</UButton>
-                            </div>
-                        </template>
-                    </UCard>
-                </UModal>
-            </ClientOnly>
+                    <template #footer>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <UButton color="neutral" @click="isModalOpen = false">Não, mantenha</UButton>
+                            <UButton color="error" @click="confirmarExclusao">Sim, apague</UButton>
+                        </div>
+                    </template>
+                </UCard>
+            </div>
         </TooltipProvider>
     </div>
 </template>
