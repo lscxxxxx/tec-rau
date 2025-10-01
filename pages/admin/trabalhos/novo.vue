@@ -34,7 +34,7 @@
 
                         <UFormField label="Link para o Arquivo" name="arquivo" required>
                             <UFileUpload label="Selecione ou arraste o arquivo" description="PDF (max. 5MB)"
-                                @change="onFileChange" accept=".pdf" class="w-full" />
+                                v-model="form.arquivo" accept=".pdf" class="w-full" />
                         </UFormField>
 
                         <UFormField label="Autor 1" name="autor1" class="col-span-3" required>
@@ -70,9 +70,26 @@
                             <UTextarea v-model="form.refbibliografica" class="w-full" autoresize />
                         </UFormField>
 
-                        <UFormField label="Palavras-chave" name="palavrasChave" class="col-span-3" required>
-                            <USelectMenu v-model="form.palavrasChave" :options="palavrasChaveExistentes"
-                                placeholder="Digite ou selecione as palavras-chave" multiple creatable :searchable="pesquisarPalavrasChave" />
+                        <UFormField label="Palavras-chave" name="palavrasChave" class="col-span-3">
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center gap-2">
+                                    <UInput v-model="novaPalavraInput" placeholder="Digite uma palavra e aperte Enter"
+                                        class="flex-1" @keydown.enter.prevent="adicionarPalavra" />
+                                    <UButton icon="i-heroicons-plus" aria-label="Adicionar palavra-chave"
+                                        @click="adicionarPalavra" />
+                                </div>
+                                <div v-if="form.palavrasChave.length > 0" class="flex flex-wrap gap-2">
+                                    <UBadge v-for="(palavra, index) in form.palavrasChave" :key="`${palavra}-${index}`"
+                                        variant="subtle" size="lg">
+                                        {{ palavra }}
+                                        <UButton icon="i-heroicons-x-mark-20-solid" color="neutral" variant="link"
+                                            size="xs" class="-mr-1" @click="removerPalavra(index)" />
+                                    </UBadge>
+                                </div>
+                                <div v-else>
+                                    <p class="text-sm text-gray-500">Nenhuma palavra-chave adicionada.</p>
+                                </div>
+                            </div>
                         </UFormField>
                     </div>
                     <div class="flex justify-end">
@@ -95,21 +112,21 @@ const router = useRouter()
 const route = useRoute()
 const loading = ref(false)
 
-const { data: cursos } = useFetch('/api/cursos', {
-    transform: data => data.map((c: any) => ({ label: c.curso, value: c.id })),
-    default: () => []
+const novaPalavraInput = ref('')
+
+const { data: cursosRaw, pending: cursosPending, error: cursosError } = useFetch('/api/cursos', {
+    server: false,                // roda só no cliente — evita problemas de SSR
+    default: () => []             // garante array por padrão
 })
-const { data: tiposTrabalho } = useFetch('/api/tipos-trabalho', {
-    transform: data => data.map((t: any) => ({ label: t.descricao, value: t.id })),
+
+const { data: tiposRaw, pending: tiposPending, error: tiposError } = useFetch('/api/tipos-trabalho', {
+    server: false,
     default: () => []
 })
 
-const { data: palavrasChaveExistentes } = useFetch('/api/palavras-chave', {
-    transform: data => data.map((pc: any) => pc.texto),
-    default: () => []
-})
+const cursos = computed(() => (cursosRaw.value ?? []).map((c: any) => ({ label: c.curso, value: String(c.id) })))
 
-const statusOptions = ['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']
+const tiposTrabalho = computed(() => (tiposRaw.value ?? []).map((t: any) => ({ label: t.descricao, value: String(t.id) })))
 
 const form = reactive({
     titulo: '',
@@ -124,8 +141,8 @@ const form = reactive({
     orientador: '',
     coorientador: '',
     refbibliografica: '',
-    tipoTrabalhoId: undefined as number | undefined,
-    cursoId: undefined as number | undefined,
+    tipoTrabalhoId: '' as string,
+    cursoId: '' as string,
     palavrasChave: [] as string[],
 })
 
@@ -138,8 +155,8 @@ const schema = z.object({
     autor1: z.string().min(1, 'Pelo menos um autor é obrigatório'),
     orientador: z.string().min(1, 'Orientador é obrigatório'),
     refbibliografica: z.string().min(1, 'Referências são obrigatórias'),
-    tipoTrabalhoId: z.number({ required_error: 'Tipo do trabalho é obrigatório' }),
-    cursoId: z.number({ required_error: 'Curso é obrigatório' }),
+    tipoTrabalhoId: z.string().min(1, 'Tipo do trabalho é obrigatório'),
+    cursoId: z.string().min(1, 'Curso é obrigatório'),
     palavrasChave: z.array(z.string()).min(1, 'Adicione pelo menos uma palavra-chave'),
     autor2: z.string().optional(),
     autor3: z.string().optional(),
@@ -149,31 +166,27 @@ const schema = z.object({
 
 type Schema = z.output<typeof schema>
 
-function onFileChange(event: Event) {
-    const input = event.target as HTMLInputElement
-    if (input.files?.length) {
-        form.arquivo = input.files[0]
+function adicionarPalavra() {
+    const palavra = novaPalavraInput.value.trim()
+
+    // Validação: não adiciona se estiver vazio
+    if (!palavra) {
+        return
     }
+
+    // Validação: não adiciona se já existir (ignorando maiúsculas/minúsculas)
+    if (form.palavrasChave.some(p => p.toLowerCase() === palavra.toLowerCase())) {
+        toast.add({ title: 'Palavra-chave já adicionada.', color: 'warning' })
+        novaPalavraInput.value = '' // Limpa o input mesmo se for duplicado
+        return
+    }
+
+    form.palavrasChave.push(palavra)
+    novaPalavraInput.value = ''
 }
 
-async function pesquisarPalavrasChave(q: string) {
-    let opcoes = palavrasChaveExistentes.value
-
-    if (q) {
-        opcoes = palavrasChaveExistentes.value.filter(palavraChave =>
-            palavraChave.toLowerCase().includes(q.toLowerCase())
-        )
-    }
-
-    const existe = palavrasChaveExistentes.value.some(opc =>
-        opc.toLowerCase() === q.toLowerCase()
-    )
-
-    if (q && !existe) {
-        return [q, ...opcoes]
-    }
-
-    return opcoes
+function removerPalavra(index: number) {
+    form.palavrasChave.splice(index, 1)
 }
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
@@ -186,6 +199,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 formData.append(key, value)
             } else if (Array.isArray(value)) {
                 formData.append(key, value.join(','))
+            } else if (key === 'tipoTrabalhoId' || key === 'cursoId') {
+                formData.append(key, String(Number(value)))
             } else {
                 formData.append(key, String(value))
             }

@@ -70,7 +70,7 @@ async function onLoginClick() {
       return
     }
 
-    navigateTo('/painel')
+    navigateTo('/admin')
   } catch (err) {
     form.error = 'Erro de conexão.'
   } finally {
