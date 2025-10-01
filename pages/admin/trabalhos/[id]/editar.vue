@@ -190,8 +190,12 @@ const schema = z.object({
     autor1: z.string().min(1, 'Pelo menos um autor é obrigatório'),
     orientador: z.string().min(1, 'Orientador é obrigatório'),
     refbibliografica: z.string().min(1, 'Referências são obrigatórias'),
-    tipoTrabalhoId: z.number({ required_error: 'Tipo do trabalho é obrigatório' }),
-    cursoId: z.number({ required_error: 'Curso é obrigatório' }),
+    tipoTrabalhoId: z.number().refine(val => val !== undefined, {
+        message: 'Tipo documental é obrigatório',
+    }),
+    cursoId: z.number().refine(val => val !== undefined, {
+        message: 'Curso é obrigatório',
+    }),
     autor2: z.string().optional(),
     autor3: z.string().optional(),
     autor4: z.string().optional(),

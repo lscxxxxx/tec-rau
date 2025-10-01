@@ -114,19 +114,30 @@ const loading = ref(false)
 
 const novaPalavraInput = ref('')
 
-const { data: cursosRaw, pending: cursosPending, error: cursosError } = useFetch('/api/cursos', {
-    server: false,                // roda só no cliente — evita problemas de SSR
-    default: () => []             // garante array por padrão
-})
-
-const { data: tiposRaw, pending: tiposPending, error: tiposError } = useFetch('/api/tipos-trabalho', {
+const { data: cursosData, pending: cursosPending } = useFetch('/api/cursos', {
     server: false,
     default: () => []
 })
 
-const cursos = computed(() => (cursosRaw.value ?? []).map((c: any) => ({ label: c.curso, value: String(c.id) })))
+const { data: tiposData, pending: tiposPending } = useFetch('/api/tipos-trabalho', {
+    server: false,
+    default: () => []
+})
 
-const tiposTrabalho = computed(() => (tiposRaw.value ?? []).map((t: any) => ({ label: t.descricao, value: String(t.id) })))
+const cursos = computed(() =>
+    (cursosData.value ?? []).map((c: any) => ({
+        label: c.curso,
+        value: Number(c.id),
+    }))
+)
+
+const tiposTrabalho = computed(() =>
+    (tiposData.value ?? []).map((t: any) => ({
+        label: t.descricao,
+        value: Number(t.id),
+    }))
+)
+
 
 const form = reactive({
     titulo: '',
@@ -141,8 +152,8 @@ const form = reactive({
     orientador: '',
     coorientador: '',
     refbibliografica: '',
-    tipoTrabalhoId: '' as string,
-    cursoId: '' as string,
+    tipoTrabalhoId: undefined as number | undefined,
+    cursoId: undefined as number | undefined,
     palavrasChave: [] as string[],
 })
 
@@ -155,8 +166,13 @@ const schema = z.object({
     autor1: z.string().min(1, 'Pelo menos um autor é obrigatório'),
     orientador: z.string().min(1, 'Orientador é obrigatório'),
     refbibliografica: z.string().min(1, 'Referências são obrigatórias'),
-    tipoTrabalhoId: z.string().min(1, 'Tipo do trabalho é obrigatório'),
-    cursoId: z.string().min(1, 'Curso é obrigatório'),
+    tipoTrabalhoId: z.number().optional().refine(val => val !== undefined, {
+        message: 'Tipo documental é obrigatório',
+    }),
+    cursoId: z.number().optional().refine(val => val !== undefined, {
+        message: 'Curso é obrigatório',
+    }),
+
     palavrasChave: z.array(z.string()).min(1, 'Adicione pelo menos uma palavra-chave'),
     autor2: z.string().optional(),
     autor3: z.string().optional(),
@@ -197,8 +213,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         if (value !== null && value !== undefined) {
             if (key === 'arquivo' && value instanceof File) {
                 formData.append(key, value)
-            } else if (Array.isArray(value)) {
-                value.forEach((v) => formData.append(key, String(v)))
+            } else if (key === 'palavrasChave' && Array.isArray(value)) {
+                formData.append(key, value.join(','))
             } else if (key === 'tipoTrabalhoId' || key === 'cursoId') {
                 formData.append(key, String(Number(value)))
             } else {
