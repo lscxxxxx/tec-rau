@@ -1,70 +1,99 @@
 <template>
     <div class="min-h-screen bg-gray-100 text-gray-800 font-sans flex flex-col">
-        <main class="flex-1 max-w-6xl mx-auto w-full p-6">
+        <main class="flex-1 max-w-4xl mx-auto w-full p-1">
 
             <UCard>
                 <template #header>
-                    <h2 class="text-xl font-semibold">Novo Trabalho</h2>
+                    <h2 class="text-xl font-semibold">Editar Trabalho</h2>
                 </template>
 
-                <UForm :schema="schema" :state="form" class="space-y-6" @submit="onSubmit">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <UFormField label="Título" name="titulo" required>
-                            <UInput v-model="form.titulo" />
+                <UForm :schema="schema" :state="form" @submit="onSubmit">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-x-7 gap-y-3">
+                        <UFormField label="Título" name="titulo" class="col-span-3 font-medium text-gray-900" required>
+                            <UInput v-model="form.titulo" class="w-full" />
                         </UFormField>
 
                         <UFormField label="Data" name="data" required>
-                            <UInput v-model="form.data" type="date" />
-                        </UFormField>
-
-                        <UFormField label="Resumo" name="resumo" required>
-                            <UTextarea v-model="form.resumo" />
-                        </UFormField>
-
-                        <UFormField label="Link para o Arquivo" name="arquivo" required>
-                            <UInput type="file" @change="onFileChange" accept=".pdf" />
+                            <UInput v-model="form.data" type="date" class="w-full" />
                         </UFormField>
 
                         <UFormField label="Status" name="status" required>
-                            <USelect v-model="form.status"
-                                :items="['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']" />
+                            <USelect v-model="form.status" :items="['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']"
+                                class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Autor 1" name="autor1" required>
-                            <UInput v-model="form.autor1" />
-                        </UFormField>
-
-                        <UFormField label="Autor 2" name="autor2">
-                            <UInput v-model="form.autor2" />
-                        </UFormField>
-
-                        <UFormField label="Autor 3" name="autor3">
-                            <UInput v-model="form.autor3" />
-                        </UFormField>
-
-                        <UFormField label="Autor 4" name="autor4">
-                            <UInput v-model="form.autor4" />
-                        </UFormField>
-
-                        <UFormField label="Orientador" name="orientador" required>
-                            <UInput v-model="form.orientador" />
-                        </UFormField>
-
-                        <UFormField label="Coorientador" name="coorientador" required>
-                            <UInput v-model="form.coorientador" />
-                        </UFormField>
-
-                        <UFormField label="Referências Bibliográficas" name="refbibliografica" required>
-                            <UTextarea v-model="form.refbibliografica" />
-                        </UFormField>
-
-                        <UFormField label="Tipo do trabalho" name="tipoTrabalhoId" required>
-                            <USelect v-model="form.tipoTrabalhoId" :items="tiposTrabalho"
-                                placeholder="Selecione o tipo" />
+                        <UFormField label="Tipo documental" name="tipoTrabalhoId" required>
+                            <USelect v-model="form.tipoTrabalhoId" :items="tiposTrabalho" placeholder="Selecione o tipo"
+                                class="w-full" />
                         </UFormField>
 
                         <UFormField label="Curso" name="cursoId" required>
-                            <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso" />
+                            <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso"
+                                class="w-full" />
+                        </UFormField>
+
+                        <UFormField label="Arquivo" name="arquivo" required>
+                            <UFileUpload label="Selecione ou arraste o arquivo" description="PDF (max. 5MB)"
+                                v-model="form.arquivo" accept=".pdf" class="w-full" />
+                            <p v-if="arquivoExistente" class="text-sm text-gray-500 mt-1">
+                                Arquivo atual:
+                                <a :href="arquivoExistente" target="_blank" class="underline text-blue-600">Ver PDF</a>
+                            </p>
+                        </UFormField>
+
+                        <UFormField label="Autor 1" name="autor1" class="col-span-3" required>
+                            <UInput v-model="form.autor1" class="w-full" />
+                        </UFormField>
+
+                        <UFormField label="Autor 2" name="autor2" class="col-span-3">
+                            <UInput v-model="form.autor2" class="w-full" />
+                        </UFormField>
+
+                        <UFormField label="Autor 3" name="autor3" class="col-span-3">
+                            <UInput v-model="form.autor3" class="w-full" />
+                        </UFormField>
+
+                        <UFormField label="Autor 4" name="autor4" class="col-span-3">
+                            <UInput v-model="form.autor4" class="w-full" />
+                        </UFormField>
+
+                        <UFormField label="Orientador" name="orientador" class="col-span-3" required>
+                            <UInput v-model="form.orientador" class="w-full" />
+                        </UFormField>
+
+                        <UFormField label="Coorientador" name="coorientador" class="col-span-3">
+                            <UInput v-model="form.coorientador" class="w-full" />
+                        </UFormField>
+
+                        <UFormField label="Resumo" name="resumo" class="col-span-3" required>
+                            <UTextarea v-model="form.resumo" class="w-full" autoresize />
+                        </UFormField>
+
+                        <UFormField label="Referências Bibliográficas" name="refbibliografica" class="col-span-3"
+                            required>
+                            <UTextarea v-model="form.refbibliografica" class="w-full" autoresize />
+                        </UFormField>
+
+                        <UFormField label="Palavras-chave" name="palavrasChave" class="col-span-3">
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center gap-2">
+                                    <UInput v-model="novaPalavraInput" placeholder="Digite uma palavra e aperte Enter"
+                                        class="flex-1" @keydown.enter.prevent="adicionarPalavra" />
+                                    <UButton icon="i-heroicons-plus" aria-label="Adicionar palavra-chave"
+                                        @click="adicionarPalavra" />
+                                </div>
+                                <div v-if="form.palavrasChave.length > 0" class="flex flex-wrap gap-2">
+                                    <UBadge v-for="(palavra, index) in form.palavrasChave" :key="`${palavra}-${index}`"
+                                        variant="subtle" size="lg">
+                                        {{ palavra }}
+                                        <UButton icon="i-heroicons-x-mark-20-solid" color="neutral" variant="link"
+                                            size="xs" class="-mr-1" @click="removerPalavra(index)" />
+                                    </UBadge>
+                                </div>
+                                <div v-else>
+                                    <p class="text-sm text-gray-500">Nenhuma palavra-chave adicionada.</p>
+                                </div>
+                            </div>
                         </UFormField>
                     </div>
 
@@ -86,6 +115,7 @@ const toast = useToast()
 const router = useRouter()
 const route = useRoute()
 const loading = ref(false)
+const novaPalavraInput = ref('')
 
 const trabalhoId = computed(() => route.params.id as string)
 
@@ -114,7 +144,8 @@ const form = reactive({
     coorientador: '',
     refbibliografica: '',
     tipoTrabalhoId: undefined as number | undefined,
-    cursoId: undefined as number | undefined
+    cursoId: undefined as number | undefined,
+    palavrasChave: [] as string[],
 })
 
 interface Trabalho {
@@ -132,7 +163,10 @@ interface Trabalho {
     refbibliografica: string
     tipoTrabalhoId: number
     cursoId: number
+    palavrasChave: string[]
 }
+
+const arquivoExistente = ref<string | null>(null)
 
 const { data: trabalhoData } = await useFetch<Trabalho>(`/api/trabalhos/${trabalhoId.value}`)
 if (trabalhoData.value) {
@@ -140,7 +174,11 @@ if (trabalhoData.value) {
         ...trabalhoData.value,
         data: new Date(trabalhoData.value.data).toISOString().split('T')[0],
         arquivo: null,
+        palavrasChave: trabalhoData.value.palavrasChave
+            ? trabalhoData.value.palavrasChave.map((p: string) => p.trim())
+            : [],
     })
+    arquivoExistente.value = trabalhoData.value.arquivo
 }
 
 const schema = z.object({
@@ -162,24 +200,39 @@ const schema = z.object({
 
 type Schema = z.output<typeof schema>
 
-function onFileChange(event: Event) {
-    const input = event.target as HTMLInputElement
-    if (input.files?.length) {
-        form.arquivo = input.files[0]
+function adicionarPalavra() {
+    const palavra = novaPalavraInput.value.trim()
+    if (!palavra) return
+    if (form.palavrasChave.some(p => p.toLowerCase() === palavra.toLowerCase())) {
+        toast.add({ title: 'Palavra-chave já adicionada.', color: 'warning' })
+        novaPalavraInput.value = ''
+        return
     }
+    form.palavrasChave.push(palavra)
+    novaPalavraInput.value = ''
+}
+
+function removerPalavra(index: number) {
+    form.palavrasChave.splice(index, 1)
 }
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
     loading.value = true
     const formData = new FormData()
 
-    for (const key in event.data) {
-        if (key !== 'arquivo')
-            formData.append(key, (event.data as any)[key])
-    }
-
-    if (form.arquivo)
-        formData.append('arquivo', form.arquivo)
+    Object.entries(event.data).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+            if (key === 'arquivo' && value instanceof File) {
+                formData.append(key, value)
+            } else if (key === 'palavrasChave' && Array.isArray(value)) {
+                formData.append(key, value.join(','))
+            } else if (key === 'tipoTrabalhoId' || key === 'cursoId') {
+                formData.append(key, String(Number(value)))
+            } else {
+                formData.append(key, String(value))
+            }
+        }
+    })
 
     try {
         await $fetch(`/api/trabalhos/${trabalhoId.value}`, {

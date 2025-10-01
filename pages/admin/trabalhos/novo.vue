@@ -32,7 +32,7 @@
                                 class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Link para o Arquivo" name="arquivo" required>
+                        <UFormField label="Arquivo" name="arquivo" required>
                             <UFileUpload label="Selecione ou arraste o arquivo" description="PDF (max. 5MB)"
                                 v-model="form.arquivo" accept=".pdf" class="w-full" />
                         </UFormField>
@@ -198,7 +198,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             if (key === 'arquivo' && value instanceof File) {
                 formData.append(key, value)
             } else if (Array.isArray(value)) {
-                formData.append(key, value.join(','))
+                value.forEach((v) => formData.append(key, String(v)))
             } else if (key === 'tipoTrabalhoId' || key === 'cursoId') {
                 formData.append(key, String(Number(value)))
             } else {

@@ -7,7 +7,8 @@ export default defineEventHandler(async (event) => {
         where: { id },
         include: {
             tipoTrabalho: true,
-            curso: true
+            curso: true,
+            palavrasChave: true
         }
     })
 
@@ -18,5 +19,9 @@ export default defineEventHandler(async (event) => {
         })
     }
 
-    return trabalho
+    return {
+        ...trabalho,
+        palavrasChave: trabalho.palavrasChave.map((p) => p.palavra),
+        arquivo: trabalho.arquivo ?? null,
+    }
 });
