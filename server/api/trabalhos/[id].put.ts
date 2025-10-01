@@ -18,7 +18,9 @@ const schema = z.object({
     autor3: z.string().optional(),
     autor4: z.string().optional(),
     coorientador: z.string().optional(),
-    palavrasChave: z.string().optional(),
+    palavrasChave: z.string()
+        .transform(val => val.split(',').map(p => p.trim()).filter(Boolean))
+        .optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -51,15 +53,9 @@ export default defineEventHandler(async (event) => {
         }
 
         if (validatedData.palavrasChave) {
-            const palavrasArray = validatedData.palavrasChave
-                .split(',')
-                .map(p => p.trim())
-                .filter(p => p.length > 0)
-
-            // Atualiza o relacionamento com connectOrCreate
-            dadosParaPrisma.palavrasChave = {
+             dadosParaPrisma.palavrasChave = {
                 set: [], // remove palavras antigas
-                connectOrCreate: palavrasArray.map(p => ({
+                connectOrCreate: validatedData.palavrasChave.map(p => ({
                     where: { palavra: p },
                     create: { palavra: p }
                 }))

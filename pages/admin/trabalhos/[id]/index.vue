@@ -36,7 +36,14 @@
                             </tr>
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Palavras-chave</th>
-                                <td class="p-2 text-gray-800">{{ '–' }}</td>
+                                <td class="p-2 text-gray-800">
+                                    <span v-if="trabalho.palavrasChave.length">
+                                        <span v-for="(p, idx) in trabalho.palavrasChave" :key="idx"
+                                            class="inline-block bg-gray-200 px-2 py-1 rounded mr-1 mb-1">
+                                            {{ p }}
+                                        </span>
+                                    </span>
+                                </td>
                             </tr>
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Data do documento</th>
@@ -51,6 +58,18 @@
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Resumo</th>
                                 <td class="p-2 text-gray-800">{{ trabalho?.resumo }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Arquivo</th>
+                                <td class="p-2 text-gray-800">
+                                    <span v-if="trabalho.arquivo">
+                                        <a :href="trabalho.arquivo" target="_blank"
+                                            class="text-blue-600 hover:underline">
+                                            Visualizar PDF
+                                        </a>
+                                    </span>
+                                    <span v-else>–</span>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -82,6 +101,8 @@ interface Trabalho {
     tipoTrabalho?: {
         descricao: string
     }
+    palavrasChave: string[]
+    arquivo?: string | null
 }
 
 const { data: trabalho, pending, error } = useAsyncData(

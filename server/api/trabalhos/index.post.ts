@@ -14,7 +14,8 @@ const schema = z.object({
   refbibliografica: z.string().min(1),
   tipoTrabalhoId: z.string().transform(val => Number(val)),
   cursoId: z.string().transform(val => Number(val)),
-  palavrasChave: z.string().transform(val => val.split(',')),
+  palavrasChave: z.string()
+    .transform(val => val.split(',').map(p => p.trim()).filter(Boolean)),
   autor2: z.string().optional(),
   autor3: z.string().optional(),
   autor4: z.string().optional(),
