@@ -4,7 +4,7 @@
 
             <UCard>
                 <template #header>
-                    <h2 class="text-xl font-semibold">Novo Trabalho</h2>
+                    <h2 class="uppercase text-xl font-semibold"><strong>{{ trabalho?.titulo }}</strong></h2>
                 </template>
                 <div v-if="pending" class="text-center py-10">
                     Carregando trabalho...
@@ -16,7 +16,7 @@
                 </div>
 
                 <div v-else-if="trabalho" class="overflow-x-auto">
-                    <table class="table-auto w-full border border-gray-300 text-sm">
+                    <table class="table-auto w-full text-sm">
                         <tbody>
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Título</th>
@@ -24,15 +24,33 @@
                             </tr>
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Autor(es)</th>
-                                <td class="p-2 text-gray-800">{{ autores }}</td>
+                                <td class="p-2 text-gray-800">
+                                    <span v-if="autoresArray.length">
+                                        <span v-for="(autor, idx) in autoresArray" :key="idx"
+                                            class="inline-block bg-[rgba(47,158,64,0.25)] text-[#2F9E40] px-2 py-1 rounded mr-1 mb-1">
+                                            {{ autor }}
+                                        </span>
+                                    </span>
+                                </td>
                             </tr>
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Orientador(es)</th>
-                                <td class="p-2 text-gray-800">{{ orientadores }}</td>
+                                <td class="p-2 text-gray-800">
+                                    <span v-if="orientadoresArray.length">
+                                        <span v-for="(orientador, idx) in orientadoresArray" :key="idx"
+                                            class="inline-block bg-gray-200 px-2 py-1 rounded mr-1 mb-1">
+                                            {{ orientador }}
+                                        </span>
+                                    </span>
+                                </td>
                             </tr>
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Tipo documental</th>
                                 <td class="p-2 text-gray-800">{{ trabalho?.tipoTrabalho?.descricao }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Curso</th>
+                                <td class="p-2 text-gray-800">{{ trabalho?.curso?.curso }}</td>
                             </tr>
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Palavras-chave</th>
@@ -52,12 +70,13 @@
                                 </td>
                             </tr>
                             <tr class="border-b">
-                                <th class="text-left w-48 p-2 font-medium text-gray-600">Referência bibliográfica</th>
-                                <td class="p-2 text-gray-800">{{ trabalho?.refbibliografica }}</td>
+                                <th class="text-left w-48 p-2 font-medium text-gray-600 leading-relaxed">Referência
+                                    bibliográfica</th>
+                                <td class="p-2 text-gray-800 leading-relaxed">{{ trabalho?.refbibliografica }}</td>
                             </tr>
                             <tr class="border-b">
-                                <th class="text-left w-48 p-2 font-medium text-gray-600">Resumo</th>
-                                <td class="p-2 text-gray-800">{{ trabalho?.resumo }}</td>
+                                <th class="text-left w-48 p-2 font-medium text-gray-600 leading-relaxed">Resumo</th>
+                                <td class="p-2 text-gray-800 leading-relaxed">{{ trabalho?.resumo }}</td>
                             </tr>
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Arquivo</th>
@@ -101,6 +120,9 @@ interface Trabalho {
     tipoTrabalho?: {
         descricao: string
     }
+    curso?: {
+        curso: String
+    }
     palavrasChave: string[]
     arquivo?: string | null
 }
@@ -130,5 +152,21 @@ const orientadores = computed(() => {
         trabalho.value?.orientador,
         trabalho.value?.coorientador
     ].filter(Boolean).join("; ")
+})
+
+const autoresArray = computed(() => {
+    return [
+        trabalho.value?.autor1,
+        trabalho.value?.autor2,
+        trabalho.value?.autor3,
+        trabalho.value?.autor4
+    ].filter(Boolean)
+})
+
+const orientadoresArray = computed(() => {
+    return [
+        trabalho.value?.orientador,
+        trabalho.value?.coorientador
+    ].filter(Boolean)
 })
 </script>
