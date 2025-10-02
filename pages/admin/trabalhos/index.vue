@@ -6,6 +6,7 @@ const router = useRouter()
 const toast = useToast()
 const isModalOpen = ref(false)
 const trabalhoParaExcluirId = ref<number | null>(null)
+const trabalhoSelecionado = ref<Trabalho | null>(null)
 
 type Trabalho = {
     id: number
@@ -44,8 +45,9 @@ const columns: TableColumn<Trabalho>[] = [
     { id: 'actions', header: 'Ações' }
 ]
 
-function abrirModalDeExclusao(id: number) {
-    trabalhoParaExcluirId.value = id
+function abrirModalDeExclusao(trabalho: Trabalho) {
+    trabalhoParaExcluirId.value = trabalho.id
+    trabalhoSelecionado.value = trabalho
     isModalOpen.value = true
 }
 
@@ -73,6 +75,7 @@ async function confirmarExclusao() {
     finally {
         isModalOpen.value = false
         trabalhoParaExcluirId.value = null
+        trabalhoSelecionado.value = null
     }
 }
 </script>
@@ -115,7 +118,7 @@ async function confirmarExclusao() {
 
                             <UTooltip text="Excluir trabalho">
                                 <UButton icon="i-lucide-trash-2" variant="ghost" color="warning" aria-label="Excluir"
-                                    class="cursor-pointer" @click="abrirModalDeExclusao(row.original.id)" />
+                                    class="cursor-pointer" @click="abrirModalDeExclusao(row.original)" />
                             </UTooltip>
                         </div>
                     </template>
@@ -140,7 +143,7 @@ async function confirmarExclusao() {
                         <h2 class="text-lg font-semibold">Confirmar exclusão</h2>
                     </template>
 
-                    <p>Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+                    <p>Tem certeza que deseja excluir o trabalho <strong>"{{ trabalhoSelecionado?.titulo }}"</strong>? Esta ação não pode ser desfeita.</p>
 
                     <template #footer>
                         <div class="flex justify-end gap-2 mt-4">
