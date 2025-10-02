@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen bg-gray-100 text-gray-800 font-sans flex flex-col">
+    <div class="min-h-screen text-gray-800 font-sans flex flex-col">
         <main class="flex-1 max-w-3xl mx-auto w-full p-6">
             <UCard>
                 <template #header>

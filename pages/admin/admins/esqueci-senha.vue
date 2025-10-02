@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen bg-gray-100 text-gray-800 font-sans flex flex-col">
+    <div class="min-h-screen text-gray-800 font-sans flex flex-col">
         <main class="mx-auto w-full max-w-lg flex-1 p-6">
             <UCard>
                 <template #header>
@@ -46,7 +46,7 @@ const form = reactive({
 })
 
 const schema = z.object({
-    email: z.string({ required_error: 'E-mail é obrigatório' }).email('Formato de e-mail inválido'),
+    email: z.string().nonempty('E-mail é obrigatório').email({ message: 'Formato de e-mail inválido' }),
 })
 
 type Schema = z.output<typeof schema>

@@ -78,7 +78,7 @@ async function confirmarExclusao() {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100 text-gray-800 font-sans flex flex-col">
+    <div class="min-h-screen text-gray-800 font-sans flex flex-col">
         <TooltipProvider>
             <main class="flex-1 max-w-6xl mx-auto w-full p-6">
                 <div class="flex justify-between items-center mb-6">

@@ -19,12 +19,13 @@ const form = reactive({
 
 // Schema de validação com Zod
 const schema = z.object({
-    novaSenha: z.string({ required_error: 'Senha é obrigatória' }).min(8, 'A senha deve ter no mínimo 8 caracteres'),
-    confirmarNovaSenha: z.string({ required_error: 'Confirmação é obrigatória' }),
+    novaSenha: z.string().min(1, 'Senha é obrigatória').min(8, 'A senha deve ter no mínimo 8 caracteres'),
+    confirmarNovaSenha: z.string().min(1, 'Confirmação é obrigatória'),
 }).refine(data => data.novaSenha === data.confirmarNovaSenha, {
     message: 'As senhas não coincidem',
     path: ['confirmarNovaSenha'],
 })
+
 
 type Schema = z.output<typeof schema>
 
@@ -59,7 +60,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
-    <div class="flex min-h-screen flex-col bg-gray-100 font-sans text-gray-800">
+    <div class="flex min-h-screen flex-col font-sans text-gray-800">
         <main class="mx-auto w-full max-w-lg flex-1 p-6">
             <UCard>
                 <template #header>
