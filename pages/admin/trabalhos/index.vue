@@ -13,8 +13,12 @@ type Trabalho = {
     titulo: string
     data: string
     status: 'APROVADO' | 'REPROVADO' | 'PENDENTE' | 'PUBLICADO'
-    autor1: string
-    orientador: string
+    autor1?: string
+    autor2?: string
+    autor3?: string
+    autor4?: string
+    orientador?: string
+    coorientador?: string
     curso: {
         curso: string
     }
@@ -38,7 +42,8 @@ const statusColorMap = {
 
 const columns: TableColumn<Trabalho>[] = [
     { accessorKey: 'titulo', header: 'Título' },
-    { accessorKey: 'autor1', header: 'Autor Principal' },
+    { id: 'autores', header: 'Autor(es)' },
+    { id: 'orientadores', header: 'Orientador(es)' },
     { accessorKey: 'curso.curso', header: 'Curso' },
     { accessorKey: 'data', header: 'Data de Publicação' },
     { accessorKey: 'status', header: 'Status' },
@@ -86,7 +91,8 @@ async function confirmarExclusao() {
             <main class="flex-1 max-w-6xl mx-auto w-full p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h1 class="text-3xl font-bold">Listagem de Trabalhos</h1>
-                    <UButton to="/admin/trabalhos/novo" icon="i-lucide-plus">Adicionar Trabalho</UButton>
+                    <UButton to="/admin/trabalhos/novo" icon="i-lucide-plus"
+                        class="uppercase text-[12.5px] font-semibold">Adicionar Trabalho</UButton>
                 </div>
 
                 <UTable :data="trabalhos" :columns="columns" :loading="pending"
@@ -95,6 +101,20 @@ async function confirmarExclusao() {
                     <template #data-cell="{ row }">
                         <span>{{ new Date(row.original.data).toLocaleDateString('pt-BR') }}</span>
                     </template>
+
+                    <template #autores-cell="{ row }">
+                        <span>
+                            {{ [row.original.autor1, row.original.autor2, row.original.autor3,
+                            row.original.autor4].filter(Boolean).join('; ') }}
+                        </span>
+                    </template>
+
+                    <template #orientadores-cell="{ row }">
+                        <span>
+                            {{ [row.original.orientador, row.original.coorientador].filter(Boolean).join('; ') }}
+                        </span>
+                    </template>
+
 
                     <template #status-cell="{ row }">
                         <UBadge :color="statusColorMap[row.original.status]" variant="subtle" class="capitalize">
@@ -143,7 +163,9 @@ async function confirmarExclusao() {
                         <h2 class="text-lg font-semibold">Confirmar exclusão</h2>
                     </template>
 
-                    <p>Tem certeza que deseja excluir o trabalho <strong>"{{ trabalhoSelecionado?.titulo }}"</strong>? Esta ação não pode ser desfeita.</p>
+                    <p>Tem certeza que deseja excluir o trabalho <strong>"{{ trabalhoSelecionado?.titulo }}"</strong>?
+                        Esta ação não
+                        pode ser desfeita.</p>
 
                     <template #footer>
                         <div class="flex justify-end gap-2 mt-4">

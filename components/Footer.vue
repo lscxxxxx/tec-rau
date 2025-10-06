@@ -25,6 +25,9 @@
                         <li><a href="#"
                                 class="py-2 rounded-md text-gray-500 uppercase text-[13px] font-semibold transition hover:text-green-700 active:text-white">Estatísticas</a>
                         </li>
+                        <li><a href="/admin/login"
+                                class="py-2 rounded-md text-gray-500 uppercase text-[13px] font-semibold transition hover:text-green-700 active:text-white">Acesso restrito</a>
+                        </li>
                     </ul>
                 </div>
 
