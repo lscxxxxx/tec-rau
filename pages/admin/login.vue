@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen text-gray-800 font-sans flex items-center justify-center">
+  <div class="text-gray-800 font-sans flex items-center justify-center">
     <div class="w-full max-w-xs">
       <form class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-0" @submit.prevent="onLoginClick">
         <p v-if="form.error"

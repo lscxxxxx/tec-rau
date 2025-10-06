@@ -147,8 +147,8 @@ async function confirmarExclusao() {
 
                     <template #footer>
                         <div class="flex justify-end gap-2 mt-4">
-                            <UButton color="neutral" @click="isModalOpen = false">Não, mantenha</UButton>
-                            <UButton color="error" @click="confirmarExclusao">Sim, apague</UButton>
+                            <UButton color="neutral" @click="isModalOpen = false">Cancelar</UButton>
+                            <UButton color="error" @click="confirmarExclusao">Excluir</UButton>
                         </div>
                     </template>
                 </UCard>

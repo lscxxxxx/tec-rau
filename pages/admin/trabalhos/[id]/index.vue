@@ -27,7 +27,7 @@
                                 <td class="p-2 text-gray-800">
                                     <span v-if="autoresArray.length">
                                         <span v-for="(autor, idx) in autoresArray" :key="idx"
-                                            class="inline-block bg-[rgba(47,158,64,0.25)] text-[#2F9E40] px-2 py-1 rounded mr-1 mb-1">
+                                            class="inline-block border border-[#2F9E40] bg-[rgba(47,158,64,0.25)] text-[#2F9E40] px-2 py-1 rounded mr-1 mb-1">
                                             {{ autor }}
                                         </span>
                                     </span>
@@ -38,7 +38,7 @@
                                 <td class="p-2 text-gray-800">
                                     <span v-if="orientadoresArray.length">
                                         <span v-for="(orientador, idx) in orientadoresArray" :key="idx"
-                                            class="inline-block bg-gray-200 px-2 py-1 rounded mr-1 mb-1">
+                                            class="inline-block border border-[#2F9E40] bg-[rgba(47,158,64,0.25)] text-[#2F9E40] px-2 py-1 rounded mr-1 mb-1">
                                             {{ orientador }}
                                         </span>
                                     </span>
