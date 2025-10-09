@@ -98,19 +98,23 @@ async function confirmarExclusao() {
                 <UTable :data="trabalhos" :columns="columns" :loading="pending"
                     class="bg-white shadow-md rounded-md overflow-hidden">
 
+                    <template #titulo-cell="{ row }">
+                        <span class="break-words whitespace-normal">{{ row.original.titulo }}</span>
+                    </template>
+
                     <template #data-cell="{ row }">
                         <span>{{ new Date(row.original.data).toLocaleDateString('pt-BR') }}</span>
                     </template>
 
                     <template #autores-cell="{ row }">
-                        <span>
+                        <span class="break-words whitespace-normal">
                             {{ [row.original.autor1, row.original.autor2, row.original.autor3,
                             row.original.autor4].filter(Boolean).join('; ') }}
                         </span>
                     </template>
 
                     <template #orientadores-cell="{ row }">
-                        <span>
+                        <span class="break-words whitespace-normal">
                             {{ [row.original.orientador, row.original.coorientador].filter(Boolean).join('; ') }}
                         </span>
                     </template>
@@ -164,8 +168,7 @@ async function confirmarExclusao() {
                     </template>
 
                     <p>Tem certeza que deseja excluir o trabalho <strong>"{{ trabalhoSelecionado?.titulo }}"</strong>?
-                        Esta ação não
-                        pode ser desfeita.</p>
+                        Esta ação não pode ser desfeita.</p>
 
                     <template #footer>
                         <div class="flex justify-end gap-2 mt-4">
