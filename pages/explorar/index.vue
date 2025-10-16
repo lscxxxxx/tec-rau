@@ -40,7 +40,8 @@
                 <FolderCode />
             </div>
             <div>
-                <h3 class="text-lg font-semibold text-gray-800 group-hover:text-green-700">Desenvolvimento de Sistemas</h3>
+                <h3 class="text-lg font-semibold text-gray-800 group-hover:text-green-700">Desenvolvimento de Sistemas
+                </h3>
             </div>
         </a>
     </div>
@@ -74,7 +75,18 @@
             2020 a 2025</div>
     </div>
 
-    <!--- Conteúdos em destaque (no caso, pode ser os mais recentes) -->
+    <h2 class="text-2xl font-semibold mt-10 mb-4">Submissões recentes</h2>
+    <div>
+        <ul>
+            <li v-for="(trabalho, index) in trabalhos" :key="index" :class="index % 2 === 0 ? 'bg-gray-50' : 'bg-white'"
+                class="p-3 border-b border-gray-200 last:border-0">
+                <a href="#" class="text-blue-700 font-medium hover:underline">{{ trabalho.titulo }}</a>
+                <p class="text-sm text-gray-600">{{ trabalho.autor1 }} ({{ trabalho.curso?.curso }}, {{ new
+                    Date(trabalho.data).getFullYear() }})</p>
+            </li>
+        </ul>
+    </div>
+
     <!--- Indicadores rápidos (trabalhos disponíveis, autores cadastrados, última atualização) -->
     <!--- Atalhos -->
 </template>
@@ -101,4 +113,24 @@ const opcoesSelecionadas = ref<number[]>([1])
 const buscar = () => {
 
 }
+
+type Trabalho = {
+    id: number
+    titulo: string
+    data: string
+    autor1?: string
+    curso?: { curso: string }
+    tipoTrabalho?: { descricao: string }
+}
+
+const { data: trabalhos, pending } = useFetch<Trabalho[]>('/api/trabalhos', {
+    key: 'trabalhos-recentes',
+    default: () => [],
+})
+
+const recentes = computed(() =>
+    (trabalhos.value ?? [])
+        .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+        .slice(0, 5)
+)
 </script>
