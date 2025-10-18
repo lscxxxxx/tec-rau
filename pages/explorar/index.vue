@@ -1,6 +1,11 @@
 <template>
-    <div>
-        <img src="/logo.png" alt="Logo do site" class="h-50" />
+    <div class="grid grid-cols-[1fr_3fr] gap-10 py-10 items-center">
+        <img src="/logo.png" alt="Logo do site" class="h-20" />
+        <div>
+            <h2 class="text-2xl font-semibold">Repositório Institucional do Campus Jaraguá do Sul - Rau</h2>
+            <p>Coleta, preserva e divulga a produção acadêmica digital em todas as áreas do conhecimento.<br />
+                São os ativos do repositório, além de teses e dissertações da UFRJ, artigos científicos, livros eletrônicos, capítulos de livros e trabalhos apresentados em eventos por professores, pesquisadores, funcionários administrativos e alunos de mestrado e doutorado.</p>
+        </div>
     </div>
 
     <div class="bg-gray-200 rounded-lg">
@@ -78,9 +83,9 @@
     <h2 class="text-2xl font-semibold mt-10 mb-4">Submissões recentes</h2>
     <div>
         <ul>
-            <li v-for="(trabalho, index) in trabalhos" :key="index" :class="index % 2 === 0 ? 'bg-gray-50' : 'bg-white'"
-                class="p-3 border-b border-gray-200 last:border-0">
-                <a href="#" class="text-blue-700 font-medium hover:underline">{{ trabalho.titulo }}</a>
+            <li v-for="(trabalho, index) in trabalhos" :key="index"
+                class="bg-gray-50 p-3 border-b border-gray-200 hover:bg-gray-100">
+                <a href="#" class="text-blue-700 text-xl font-medium hover:underline">{{ trabalho.titulo }}</a>
                 <p class="text-sm text-gray-600">{{ trabalho.autor1 }} ({{ trabalho.curso?.curso }}, {{ new
                     Date(trabalho.data).getFullYear() }})</p>
             </li>
