@@ -13,14 +13,14 @@
 
         <div class="bg-gray-200 rounded-lg">
             <UFieldGroup size="xl" class="grid grid-cols-[3fr_1fr_auto] gap-4 p-4 items-center">
-                <UInput icon="i-lucide-search" placeholder="Pesquise por..." v-model="queryPesquisa" />
-                <USelect multiple v-model="opcoesSelecionadas" value-key="id" :items="opcoesPesquisa" />
-                <UButton color="primary" class="uppercase font-semibold px-6" @click="buscar">Buscar
+                <UInput size="xl" icon="i-lucide-search" placeholder="Pesquise por..." v-model="queryPesquisa" />
+                <USelect size="xl" multiple v-model="opcoesSelecionadas" value-key="id" :items="opcoesPesquisa" />
+                <UButton size="xl" color="primary" class="uppercase font-semibold px-6" @click="buscar">Buscar
                 </UButton>
             </UFieldGroup>
         </div>
 
-        <h2 class="text-2xl font-semibold mt-10 mb-4">Cursos</h2>
+        <h2 class="text-2xl font-semibold mt-10 mb-4">Comunidades</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 py-5">
             <a href="#"
                 class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer">
@@ -55,43 +55,22 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-4 gap-5 py-5 items-center">
-            <h2 class="text-2xl font-semibold col-span-4">Tipo documental</h2>
-            <div
-                class="flex items-center space-x-5 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 hover:bg-gray-50 hover:shadow-md transition duration-200">
-                Monografia</div>
-            <div
-                class="flex items-center space-x-5 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 hover:bg-gray-50 hover:shadow-md transition duration-200">
-                Artigo</div>
-            <div
-                class="flex items-center space-x-5 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 hover:bg-gray-50 hover:shadow-md transition duration-200">
-                Relatório técnico</div>
-            <div
-                class="flex items-center space-x-5 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 hover:bg-gray-50 hover:shadow-md transition duration-200">
-                Projeto de pesquisa</div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-5 py-5 items-center">
-            <h2 class="text-2xl font-semibold col-span-3">Ano de publicação</h2>
-            <div
-                class="flex items-center space-x-5 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 hover:bg-gray-50 hover:shadow-md transition duration-200">
-                2000 a 2009</div>
-            <div
-                class="flex items-center space-x-5 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 hover:bg-gray-50 hover:shadow-md transition duration-200">
-                2010 a 2019</div>
-            <div
-                class="flex items-center space-x-5 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 hover:bg-gray-50 hover:shadow-md transition duration-200">
-                2020 a 2025</div>
+        <h2 class="text-2xl font-semibold mt-10 mb-4">Facetas</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 py-5">
+            <div><h3 class="text-xl font-semibold">Tipo documental</h3></div>
+            <div><h3 class="text-xl font-semibold">Data de publicação</h3></div>
+            <div><h3 class="text-xl font-semibold">Assunto</h3></div>
         </div>
 
         <h2 class="text-2xl font-semibold mt-10 mb-4">Submissões recentes</h2>
-        <div>
+        <div class="gap-5 py-5">
             <ul>
                 <li v-for="(trabalho, index) in trabalhos" :key="index"
-                    class="bg-gray-50 p-3 border-b border-gray-200 hover:bg-gray-100">
+                    class="bg-gray-50 p-3 border-b border-gray-200 first:border-t hover:bg-gray-100">
                     <a href="#" class="text-blue-700 text-xl font-medium hover:underline">{{ trabalho.titulo }}</a>
                     <p class="text-sm text-gray-600">{{ trabalho.autor1 }} ({{ trabalho.curso?.curso }}, {{ new
                         Date(trabalho.data).getFullYear() }})</p>
+                    <p class="text-sm text-gray-600"></p>
                 </li>
             </ul>
         </div>
