@@ -3,7 +3,7 @@
         <div class="px-20 pb-5">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 py-10">
                 <div class="justify-self-start"> <!-- Identificação -->
-                    <h2 class="uppercase text-2xl font-bold text-[#006633] tracking-wider">Tec-Rau</h2>
+                    <a href="#"><img src="/logo.png" alt="Logo do site" class="h-10" /></a>
                     <p class="uppercase text-[10px] text-gray-600 mt-2">Repositório institucional do campus Jaraguá do
                         Sul - Rau</p>
                 </div>
@@ -26,7 +26,8 @@
                                 class="py-2 rounded-md text-gray-500 uppercase text-[13px] font-semibold transition hover:text-green-700 active:text-white">Estatísticas</a>
                         </li>
                         <li><a href="/admin/login"
-                                class="py-2 rounded-md text-gray-500 uppercase text-[13px] font-semibold transition hover:text-green-700 active:text-white">Acesso restrito</a>
+                                class="py-2 rounded-md text-gray-500 uppercase text-[13px] font-semibold transition hover:text-green-700 active:text-white">Acesso
+                                restrito</a>
                         </li>
                     </ul>
                 </div>
