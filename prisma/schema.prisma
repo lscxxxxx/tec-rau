@@ -3,8 +3,9 @@
 
 // Bloco de configuração do banco de dados e do gerador do client
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 generator client {
@@ -13,78 +14,113 @@ generator client {
 
 generator erd {
   provider = "prisma-erd-generator"
-  output   = "./ERD.png"         
-  theme    = "dark"              
+  output   = "./ERD.png"
+  theme    = "dark"
 }
 
-enum Role {
-  ADMIN
-  SUPERADMIN
+enum PapelAdmin {
+  SUPER
+  PADRAO
+}
+
+enum PapelPessoa {
+  AUTOR
+  ORIENTADOR
+  COORIENTADOR
+}
+
+enum AcaoAuditoria {
+  CREATE
+  UPDATE
+  DELETE
 }
 
 model Admin {
-  id      Int    @id @default(autoincrement())
-  usuario String
-  email   String @unique
-  senha   String
-  role    Role   @default(ADMIN)
+  id    Int        @id @default(autoincrement())
+  nome  String     @unique
+  email String     @unique
+  senha String  
+  papel PapelAdmin
 
-  @@map("admin")
+  auditorias Auditoria[]
+}
+
+model Auditoria {
+  id              Int           @id @default(autoincrement())
+  dataModificacao DateTime      @default(now())
+  acao            AcaoAuditoria
+  log             String
+
+  admin_id    Int
+  trabalho_id Int
+
+  admin    Admin    @relation(fields: [admin_id], references: [id])
+  trabalho Trabalho @relation(fields: [trabalho_id], references: [id])
 }
 
 model Curso {
-  id    Int    @id @default(autoincrement())
-  curso String
-  
+  id        Int        @id @default(autoincrement())
+  nome      String     @unique
   trabalhos Trabalho[]
-
-  @@map("curso")
 }
 
-model TipoTrabalho {
-  id        Int    @id @default(autoincrement())
-  descricao String
-
-  trabalhos Trabalho[]
-
-  @@map("tipotrabalho")
-}
-
-model PalavraChave {
-  id Int @id @default(autoincrement())
-  palavra String @unique
+model TipoDocumental {
+  id        Int        @id @default(autoincrement())
+  nome      String     @unique
   trabalhos Trabalho[]
 }
 
 model Trabalho {
-  id               Int      @id @default(autoincrement())
-  titulo           String
-  data             DateTime
-  resumo           String
-  status           StatusTrabalho
-  arquivo          String
-  autor1           String
-  autor2           String?
-  autor3           String?
-  autor4           String?
-  orientador       String
-  coorientador     String?
-  refbibliografica String
+  id             Int      @id @default(autoincrement())
+  titulo         String   @unique
+  dataPublicacao DateTime @default(now())
+  dataDefesa     DateTime
+  resumo         String
+  arquivo        String
 
-  tipoTrabalhoId   Int          @map("id_tipotrabalho")
-  tipoTrabalho     TipoTrabalho @relation(fields: [tipoTrabalhoId], references: [id])
+  curso_id          Int
+  tipodocumental_id Int
 
-  cursoId          Int          @map("id_curso")
-  curso            Curso        @relation(fields: [cursoId], references: [id])
+  curso          Curso          @relation(fields: [curso_id], references: [id])
+  tipoDocumental TipoDocumental @relation(fields: [tipodocumental_id], references: [id])
 
-  palavrasChave    PalavraChave[]
-
-  @@map("trabalho")
+  audiorias     Auditoria[]
+  pessoas       TrabalhoPessoa[]
+  palavrasChave TrabalhoPalavraChave[]
 }
 
-enum StatusTrabalho {
-  APROVADO
-  REPROVADO
-  PENDENTE
-  PUBLICADO
+model Pessoa {
+  id        Int    @id @default(autoincrement())
+  nome      String
+  sobrenome String
+
+  trabalhos TrabalhoPessoa[]
+}
+
+model PalavraChave {
+  id   Int    @id @default(autoincrement())
+  nome String @unique
+
+  trabalhos TrabalhoPalavraChave[]
+}
+
+model TrabalhoPessoa {
+  trabalho_id Int
+  pessoa_id   Int
+  papel       PapelPessoa
+
+  trabalho Trabalho @relation(fields: [trabalho_id], references: [id])
+  pessoa   Pessoa   @relation(fields: [pessoa_id], references: [id])
+
+  @@id([trabalho_id, pessoa_id])
+}
+
+model TrabalhoPalavraChave {
+  trabalho_id     Int
+  palavrachave_id Int
+
+  trabalho     Trabalho     @relation(fields: [trabalho_id], references: [id])
+  palavraChave PalavraChave @relation(fields: [palavrachave_id], references: [id])
+
+  @@id([trabalho_id, palavrachave_id])
 }

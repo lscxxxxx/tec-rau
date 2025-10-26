@@ -1,4 +1,192 @@
 <template>
+    <div class="min-h-screen text-gray-800 font-sans flex flex-col">
+        <main class="flex-1 max-w-6xl mx-auto w-full p-6">
+            <UBreadcrumb :links="paginas">
+                <template #separator>
+                    <span class="mx-2 text-muted">/</span>
+                </template>
+            </UBreadcrumb>
+
+            <UCard>
+                <template #header>
+                    <h2 class="uppercase text-xl font-semibold"><strong>{{ trabalho?.titulo }}</strong></h2>
+                </template>
+                <div v-if="pending" class="text-center py-10">
+                    Carregando trabalho...
+                </div>
+
+                <div v-else-if="error" class="text-center py-10 text-red-500">
+                    <h1>Erro ao carregar trabalho</h1>
+                    <p>{{ error.statusMessage || error.message }}</p>
+                </div>
+
+                <div v-else-if="trabalho" class="overflow-x-auto">
+                    <table class="table-auto w-full text-sm">
+                        <tbody>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Título</th>
+                                <td class="p-2 text-gray-800">{{ trabalho?.titulo }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Autor(es)</th>
+                                <td class="p-2 text-gray-800">
+                                    <span v-if="autoresArray.length">
+                                        <span v-for="(autor, idx) in autoresArray" :key="idx"
+                                            class="inline-block border border-[#2F9E40] bg-[rgba(47,158,64,0.25)] text-[#2F9E40] px-2 py-1 rounded mr-1 mb-1">
+                                            {{ autor }}
+                                        </span>
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Orientador(es)</th>
+                                <td class="p-2 text-gray-800">
+                                    <span v-if="orientadoresArray.length">
+                                        <span v-for="(orientador, idx) in orientadoresArray" :key="idx"
+                                            class="inline-block border border-[#2F9E40] bg-[rgba(47,158,64,0.25)] text-[#2F9E40] px-2 py-1 rounded mr-1 mb-1">
+                                            {{ orientador }}
+                                        </span>
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Tipo documental</th>
+                                <td class="p-2 text-gray-800">{{ trabalho?.tipoTrabalho?.descricao }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Curso</th>
+                                <td class="p-2 text-gray-800">{{ trabalho?.curso?.curso }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Palavras-chave</th>
+                                <td class="p-2 text-gray-800">
+                                    <span v-if="trabalho.palavrasChave.length">
+                                        <span v-for="(p, idx) in trabalho.palavrasChave" :key="idx"
+                                            class="inline-block bg-gray-200 px-2 py-1 rounded mr-1 mb-1">
+                                            {{ p }}
+                                        </span>
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Data do documento</th>
+                                <td class="p-2 text-gray-800">
+                                    <ClientOnly>{{ dataFormatada }}</ClientOnly>
+                                </td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600 leading-relaxed">Referência
+                                    bibliográfica</th>
+                                <td class="p-2 text-gray-800 leading-relaxed">{{ trabalho?.refbibliografica }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600 leading-relaxed">Resumo</th>
+                                <td class="p-2 text-gray-800 leading-relaxed">{{ trabalho?.resumo }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <th class="text-left w-48 p-2 font-medium text-gray-600">Arquivo</th>
+                                <td class="p-2 text-gray-800">
+                                    <span v-if="trabalho.arquivo">
+                                        <a :href="trabalho.arquivo" target="_blank"
+                                            class="text-blue-600 hover:underline">
+                                            Visualizar PDF
+                                        </a>
+                                    </span>
+                                    <span v-else>–</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </UCard>
+        </main>
+    </div>
 </template>
-<script>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import type { BreadcrumbItem } from '@nuxt/ui'
+
+const route = useRoute()
+const id = computed(() => route.params.id as string)
+console.log(`${id.value}`)
+
+const paginas = computed<BreadcrumbItem[]>(() => [
+  {
+    label: 'Página Inicial',
+    icon: 'i-lucide-home',
+    to: '/explorar'
+  },
+  {
+    label: trabalho.value?.titulo || 'Carregando...',
+    icon: 'i-lucide-box',
+    to: `/trabalho/${id.value}`
+  }
+])
+
+
+interface Trabalho {
+    id: number
+    titulo: string
+    autor1?: string
+    autor2?: string
+    autor3?: string
+    autor4?: string
+    orientador?: string
+    coorientador?: string
+    resumo?: string
+    refbibliografica?: string
+    data: string
+    tipoTrabalho?: {
+        descricao: string
+    }
+    curso?: {
+        curso: String
+    }
+    palavrasChave: string[]
+    arquivo?: string | null
+}
+
+const { data: trabalho, pending, error } = useAsyncData(
+    `trabalho-${id.value}`, // Adicionar uma chave é uma boa prática com lazy
+    () => $fetch<Trabalho>(`/api/trabalhos/${id.value}`),
+    { lazy: true }
+)
+
+const dataFormatada = computed(() => {
+    if (!trabalho.value?.data) return ''
+    return new Date(trabalho.value.data).toLocaleDateString("pt-BR")
+})
+
+const autores = computed(() => {
+    return [
+        trabalho.value?.autor1,
+        trabalho.value?.autor2,
+        trabalho.value?.autor3,
+        trabalho.value?.autor4
+    ].filter(Boolean).join("; ")
+})
+
+const orientadores = computed(() => {
+    return [
+        trabalho.value?.orientador,
+        trabalho.value?.coorientador
+    ].filter(Boolean).join("; ")
+})
+
+const autoresArray = computed(() => {
+    return [
+        trabalho.value?.autor1,
+        trabalho.value?.autor2,
+        trabalho.value?.autor3,
+        trabalho.value?.autor4
+    ].filter(Boolean)
+})
+
+const orientadoresArray = computed(() => {
+    return [
+        trabalho.value?.orientador,
+        trabalho.value?.coorientador
+    ].filter(Boolean)
+})
 </script>

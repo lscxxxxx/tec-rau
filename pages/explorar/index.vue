@@ -4,10 +4,7 @@
             <img src="/logo.png" alt="Logo do site" class="h-20" />
             <div>
                 <h2 class="text-2xl font-semibold">Repositório Institucional do Campus Jaraguá do Sul - Rau</h2>
-                <p>Coleta, preserva e divulga a produção acadêmica digital em todas as áreas do conhecimento.<br />
-                    São os ativos do repositório, além de teses e dissertações da UFRJ, artigos científicos, livros
-                    eletrônicos, capítulos de livros e trabalhos apresentados em eventos por professores, pesquisadores,
-                    funcionários administrativos e alunos de mestrado e doutorado.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam nisl quam, euismod ac ante vel, venenatis auctor odio. Vivamus rutrum, orci ut accumsan mollis, dui sem vulputate orci, ut feugiat libero odio tempor massa. Fusce egestas diam ac suscipit luctus. Ut quis mattis tortor. Nulla malesuada ligula sit amet auctor consectetur.</p>
             </div>
         </div>
 
@@ -57,9 +54,24 @@
 
         <h2 class="text-2xl font-semibold mt-10 mb-4">Facetas</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 py-5">
-            <div><h3 class="text-xl font-semibold">Tipo documental</h3></div>
-            <div><h3 class="text-xl font-semibold">Data de publicação</h3></div>
-            <div><h3 class="text-xl font-semibold">Assunto</h3></div>
+            <div>
+                <h3 class="text-xl font-semibold pb-5">Tipo documental</h3>
+                <a href="#" class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer"><h3>Projeto Integrador</h3></a>
+                <a href="#" class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer"><h3>Seminário</h3></a>
+                <a href="#" class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer"><h3>Artigo</h3></a>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold pb-5">Data de publicação</h3>
+                <a href="#" class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer"><h3>2015-2019</h3></a>
+                <a href="#" class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer"><h3>2020-2024</h3></a>
+                <a href="#" class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer"><h3>2025-2029</h3></a>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold pb-5">Palavra-chave</h3>
+                <a href="#" class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer"><h3>Automação</h3></a>
+                <a href="#" class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer"><h3>Educação</h3></a>
+                <a href="#" class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer"><h3>Usinagem</h3></a>
+            </div>
         </div>
 
         <h2 class="text-2xl font-semibold mt-10 mb-4">Submissões recentes</h2>
@@ -67,12 +79,19 @@
             <ul>
                 <li v-for="(trabalho, index) in trabalhos" :key="index"
                     class="bg-gray-50 p-3 border-b border-gray-200 first:border-t hover:bg-gray-100">
-                    <a href="#" class="text-blue-700 text-xl font-medium hover:underline">{{ trabalho.titulo }}</a>
+                    <NuxtLink :to="`/trabalho/${trabalho.id}`"
+                        class="text-blue-700 text-xl font-medium hover:underline">
+                        {{ trabalho.titulo }}
+                    </NuxtLink>
                     <p class="text-sm text-gray-600">{{ trabalho.autor1 }} ({{ trabalho.curso?.curso }}, {{ new
                         Date(trabalho.data).getFullYear() }})</p>
                     <p class="text-sm text-gray-600"></p>
                 </li>
             </ul>
+        </div>
+
+        <div>
+
         </div>
 
         <!--- Indicadores rápidos (trabalhos disponíveis, autores cadastrados, última atualização) -->

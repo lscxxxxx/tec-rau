@@ -1,17 +1,21 @@
 <template>
     <div>
-        <wordcloud></wordcloud>
+        <wordcloud :words="nuvem" :color="corPalavra" :fontSizeMapper="tamanhoPalavra"></wordcloud>
     </div>
 </template>
 
 <script setup lang="ts">
-import wordcloud from 'vue-wordcloud'
 import { ref, onMounted } from 'vue'
 
-const nuvem = ref<{ name: string; value: number }[]>([])
+interface Palavra {
+    palavra: string
+    trabalhosCount?: number
+}
+
+const nuvem = ref < { name: string; value: number }[] > ([])
 
 const buscaPalavras = async () => {
-    const res = await $fetch('/api/palavras')
+    const res = await $fetch<Palavra[]>('/api/palavras')
     nuvem.value = res.map((p: any) => ({
         name: p.palavra,
         value: p.trabalhosCount ?? 1
@@ -28,7 +32,9 @@ const corPalavra = (word: any, weight: number) => {
 const tamanhoPalavra = (word: any, weight: number) => 15 + weight * 5
 
 //TO-DO: Estático do trabalho para os usuários comuns
+/*
 const onPalavraClick = (word: any) => {
     navigateTo()
 }
+*/
 </script>

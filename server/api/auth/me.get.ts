@@ -5,10 +5,7 @@ export default defineEventHandler(async (event) => {
     const admin = await findAdminById(id)
 
     if (!admin) {
-        throw createError({
-            statusCode: 404,
-            statusMessage: 'Admin não encontrado.',
-        })
+        throw createError({ statusCode: 404, statusMessage: 'Admin não encontrado.', })
     }
 
     const { senha, ...adminSemSenha } = admin
