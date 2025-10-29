@@ -2,24 +2,24 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
+import { PapelPessoa } from '@prisma/client'
 import prisma from '~/server/lib/prisma'
+
+const pessoaSchema = z.object({
+  nome: z.string().min(1),
+  sobrenome: z.string().min(1),
+})
 
 const schema = z.object({
   titulo: z.string().min(1),
-  data: z.string().min(1),
+  dataDefesa: z.string().min(1),
   resumo: z.string().min(1),
-  status: z.enum(['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']),
-  autor1: z.string().min(1),
-  orientador: z.string().min(1),
-  refbibliografica: z.string().min(1),
-  tipoTrabalhoId: z.string().transform(val => Number(val)),
+  tipoDocumentalId: z.string().transform(val => Number(val)),
   cursoId: z.string().transform(val => Number(val)),
   palavrasChave: z.string()
-    .transform(val => val.split(',').map(p => p.trim()).filter(Boolean)),
-  autor2: z.string().optional(),
-  autor3: z.string().optional(),
-  autor4: z.string().optional(),
-  coorientador: z.string().optional(),
+    .transform(val => val.split(',').map(p => p.trim()).filter(Boolean)).refine(arr => arr.length >= 3),
+  autores: z.array(pessoaSchema).min(1),
+  orientadores: z.array(pessoaSchema).min(1),
 })
 
 export default defineEventHandler(async (event) => {
@@ -47,16 +47,35 @@ export default defineEventHandler(async (event) => {
     mkdirSync(uploadDir, { recursive: true })
     writeFileSync(filePath, arquivoData.data)
 
+    const { cursoId, tipoDocumentalId, autores, orientadores, palavrasChave, ...restoDosDados } = validatedData;
+
     const dadosParaPrisma = {
-      ...validatedData,
-      data: new Date(validatedData.data),
+      ...restoDosDados,
+      dataDefesa: new Date(validatedData.dataDefesa),
       arquivo: `/uploads/${uniqueFileName}`,
       palavrasChave: {
-        connectOrCreate: validatedData.palavrasChave.map((palavra: string) => ({
-          where: { palavra },
-          create: { palavra }
+        create: palavrasChave.map((palavraNome: string) => ({
+          palavraChave: {
+            connectOrCreate: { where: { nome: palavraNome }, create: { nome: palavraNome } }
+          }
         }))
-       }
+      },
+      curso: { connect: { id: cursoId, },
+      },
+      tipoDocumental: { connect: { id: tipoDocumentalId, },
+      },
+      pessoas: {
+        create: [
+          ...autores.map(autor => ({
+            papel: PapelPessoa.AUTOR,
+            pessoa: { create: { nome: autor.nome, sobrenome: autor.sobrenome, }, },
+          })),
+          ...orientadores.map(orientador => ({
+            papel: PapelPessoa.ORIENTADOR,
+            pessoa: { create: { nome: orientador.nome, sobrenome: orientador.sobrenome, }, },
+          })),
+        ],
+      },
     }
 
     const novoTrabalho = await prisma.trabalho.create({

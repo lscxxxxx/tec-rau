@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
             })
         }
         throw createError({
-            statusCode: 505,
+            statusCode: 500,
             statusMessage: 'Não foi possível excluir o trabalho',
         })
     }

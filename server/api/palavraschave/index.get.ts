@@ -7,6 +7,6 @@ export default defineEventHandler(async () => {
                 select: { trabalhos: true },
             },
         },
-        orderBy: { palavra: 'asc' }
+        orderBy: { nome: 'asc' }
     })
 })

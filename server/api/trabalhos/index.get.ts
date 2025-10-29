@@ -4,7 +4,8 @@ export default defineEventHandler(async () => {
   return await prisma.trabalho.findMany({
     include: {
         curso: true,
-        tipoTrabalho: true
+        tipoDocumental: true,
+        palavrasChave: true
     }
   })
 })
