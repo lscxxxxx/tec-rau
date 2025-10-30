@@ -8,23 +8,21 @@ const isModalOpen = ref(false)
 const trabalhoParaExcluirId = ref<number | null>(null)
 const trabalhoSelecionado = ref<Trabalho | null>(null)
 
+type Pessoa = {
+    id: number
+    nome: string
+    sobrenome: string
+}
+type TrabalhoPessoa = {
+    papel: 'AUTOR' | 'ORIENTADOR'
+    pessoa: Pessoa
+}
 type Trabalho = {
     id: number
     titulo: string
-    data: string
-    status: 'APROVADO' | 'REPROVADO' | 'PENDENTE' | 'PUBLICADO'
-    autor1?: string
-    autor2?: string
-    autor3?: string
-    autor4?: string
-    orientador?: string
-    coorientador?: string
-    curso: {
-        curso: string
-    }
-    tipoTrabalho: {
-        descricao: string
-    }
+    dataDefesa: string
+    curso: { nome: string }
+    pessoas: TrabalhoPessoa[]
 }
 
 const { data: trabalhos, pending, refresh } = useFetch<Trabalho[]>('/api/trabalhos', {
@@ -33,22 +31,23 @@ const { data: trabalhos, pending, refresh } = useFetch<Trabalho[]>('/api/trabalh
     default: () => []
 })
 
-const statusColorMap = {
-    APROVADO: "primary" as const,
-    PUBLICADO: "success" as const,
-    REPROVADO: "error" as const,
-    PENDENTE: "warning" as const
-}
-
 const columns: TableColumn<Trabalho>[] = [
-    { accessorKey: 'titulo', header: 'Título' },
+    { id: 'titulo', header: 'Título' },
+    { id: 'dataDefesa', header: 'Data de Defesa' },
     { id: 'autores', header: 'Autor(es)' },
     { id: 'orientadores', header: 'Orientador(es)' },
-    { accessorKey: 'curso.curso', header: 'Curso' },
-    { accessorKey: 'data', header: 'Data de Publicação' },
-    { accessorKey: 'status', header: 'Status' },
-    { id: 'actions', header: 'Ações' }
+    { id: 'actions', header: 'Ações' },
 ]
+
+function formatarPessoas(pessoas: TrabalhoPessoa[], papel: 'AUTOR' | 'ORIENTADOR'): string {
+    if (!pessoas || pessoas.length === 0) { return 'Não informado' }
+
+    const nomesFormatados = pessoas
+        .filter(p => p.papel === papel)
+        .map(p => `${p.pessoa.sobrenome.toUpperCase()}, ${p.pessoa.nome}`)
+
+    return nomesFormatados.length > 0 ? nomesFormatados.join('; ') : 'Não informado'
+}
 
 function abrirModalDeExclusao(trabalho: Trabalho) {
     trabalhoParaExcluirId.value = trabalho.id
@@ -102,28 +101,16 @@ async function confirmarExclusao() {
                         <span class="break-words whitespace-normal">{{ row.original.titulo }}</span>
                     </template>
 
-                    <template #data-cell="{ row }">
-                        <span>{{ new Date(row.original.data).toLocaleDateString('pt-BR') }}</span>
+                    <template #dataDefesa-data="{ row }">
+                        <span>{{ new Date(row.original.dataDefesa).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) }}</span>
                     </template>
 
-                    <template #autores-cell="{ row }">
-                        <span class="break-words whitespace-normal">
-                            {{ [row.original.autor1, row.original.autor2, row.original.autor3,
-                            row.original.autor4].filter(Boolean).join('; ') }}
-                        </span>
+                    <template #autores-data="{ row }">
+                        <span class="text-sm">{{ formatarPessoas(row.original.pessoas, 'AUTOR') }}</span>
                     </template>
 
-                    <template #orientadores-cell="{ row }">
-                        <span class="break-words whitespace-normal">
-                            {{ [row.original.orientador, row.original.coorientador].filter(Boolean).join('; ') }}
-                        </span>
-                    </template>
-
-
-                    <template #status-cell="{ row }">
-                        <UBadge :color="statusColorMap[row.original.status]" variant="subtle" class="capitalize">
-                            {{ row.original.status.toLowerCase() }}
-                        </UBadge>
+                    <template #orientadores-data="{ row }">
+                        <span class="text-sm">{{ formatarPessoas(row.original.pessoas, 'ORIENTADOR') }}</span>
                     </template>
 
                     <template #actions-cell="{ row }">

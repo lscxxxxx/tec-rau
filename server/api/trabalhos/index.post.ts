@@ -10,6 +10,23 @@ const pessoaSchema = z.object({
   sobrenome: z.string().min(1),
 })
 
+function jsonString<T extends z.ZodTypeAny>(schema: T) {
+  return z.string().transform((val, ctx): z.infer<T> => {
+    try {
+      const parsed = JSON.parse(val)
+      const result = schema.safeParse(parsed)
+      if (!result.success) {
+        ctx.addIssue({ code: 'custom', message: 'JSON inválido' })
+        return z.NEVER as any
+      }
+      return result.data
+    } catch {
+      ctx.addIssue({ code: 'custom', message: 'JSON inválido' })
+      return z.NEVER as any
+    }
+  })
+}
+
 const schema = z.object({
   titulo: z.string().min(1),
   dataDefesa: z.string().min(1),
@@ -18,9 +35,11 @@ const schema = z.object({
   cursoId: z.string().transform(val => Number(val)),
   palavrasChave: z.string()
     .transform(val => val.split(',').map(p => p.trim()).filter(Boolean)).refine(arr => arr.length >= 3),
-  autores: z.array(pessoaSchema).min(1),
-  orientadores: z.array(pessoaSchema).min(1),
+  autores: jsonString(z.array(pessoaSchema).min(1)),
+  orientadores: jsonString(z.array(pessoaSchema).min(1)),
 })
+
+type ValidatedSchema = z.infer<typeof schema>;
 
 export default defineEventHandler(async (event) => {
   try {
@@ -37,7 +56,7 @@ export default defineEventHandler(async (event) => {
         formValues[field.name] = field.data.toString()
     }
 
-    const validatedData = schema.parse(formValues)
+    const validatedData: ValidatedSchema = schema.parse(formValues)
 
     const fileExtension = arquivoData.filename?.split('.').pop() || 'pdf'
     const uniqueFileName = `${nanoid()}.${fileExtension}`
@@ -47,7 +66,16 @@ export default defineEventHandler(async (event) => {
     mkdirSync(uploadDir, { recursive: true })
     writeFileSync(filePath, arquivoData.data)
 
-    const { cursoId, tipoDocumentalId, autores, orientadores, palavrasChave, ...restoDosDados } = validatedData;
+    const {
+      cursoId,
+      tipoDocumentalId,
+      palavrasChave,
+      autores,
+      orientadores,
+      ...restoDosDados
+    } = validatedData;
+
+    type PessoaInput = z.infer<typeof pessoaSchema>;
 
     const dadosParaPrisma = {
       ...restoDosDados,
@@ -60,19 +88,21 @@ export default defineEventHandler(async (event) => {
           }
         }))
       },
-      curso: { connect: { id: cursoId, },
+      curso: {
+        connect: { id: cursoId, },
       },
-      tipoDocumental: { connect: { id: tipoDocumentalId, },
+      tipoDocumental: {
+        connect: { id: tipoDocumentalId, },
       },
       pessoas: {
         create: [
-          ...autores.map(autor => ({
+          ...autores.map((autor: PessoaInput) => ({
             papel: PapelPessoa.AUTOR,
-            pessoa: { create: { nome: autor.nome, sobrenome: autor.sobrenome, }, },
+            pessoa: { create: { nome: autor.nome, sobrenome: autor.sobrenome } },
           })),
-          ...orientadores.map(orientador => ({
+          ...orientadores.map((orientador: PessoaInput) => ({
             papel: PapelPessoa.ORIENTADOR,
-            pessoa: { create: { nome: orientador.nome, sobrenome: orientador.sobrenome, }, },
+            pessoa: { create: { nome: orientador.nome, sobrenome: orientador.sobrenome } },
           })),
         ],
       },
