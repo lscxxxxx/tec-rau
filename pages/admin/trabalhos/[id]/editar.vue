@@ -9,22 +9,17 @@
 
                 <UForm :schema="schema" :state="form" @submit="onSubmit">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-x-7 gap-y-3">
-                        <UFormField label="Título" name="titulo" class="col-span-3 font-medium text-gray-900" required>
+                        <UFormField label="Título" name="titulo" class="col-span-3" required>
                             <UInput v-model="form.titulo" class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Data" name="data" required>
-                            <UInput v-model="form.data" type="date" class="w-full" />
+                        <UFormField label="Data de defesa" name="dataDefesa" required>
+                            <UInput v-model="form.dataDefesa" type="date" class="w-full" />
                         </UFormField>
 
-                        <UFormField label="Status" name="status" required>
-                            <USelect v-model="form.status" :items="['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']"
-                                class="w-full" />
-                        </UFormField>
-
-                        <UFormField label="Tipo documental" name="tipoTrabalhoId" required>
-                            <USelect v-model="form.tipoTrabalhoId" :items="tiposTrabalho" placeholder="Selecione o tipo"
-                                class="w-full" />
+                        <UFormField label="Tipo documental" name="tipoDocumentalId" required>
+                            <USelect v-model="form.tipoDocumentalId" :items="tiposDocumentais"
+                                placeholder="Selecione o tipo" class="w-full" />
                         </UFormField>
 
                         <UFormField label="Curso" name="cursoId" required>
@@ -41,37 +36,49 @@
                             </p>
                         </UFormField>
 
-                        <UFormField label="Autor 1" name="autor1" class="col-span-3" required>
-                            <UInput v-model="form.autor1" class="w-full" />
-                        </UFormField>
+                        <div class="col-span-3 space-y-3">
+                            <h3 class="font-semibold text-lg border-b pb-2">Autores</h3>
+                            <div v-for="(autor, index) in form.autores" :key="`autor-${index}`"
+                                class="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-gray-50 rounded-md">
+                                <UFormField :label="`Nome do Autor ${index + 1}`" :name="`autores.${index}.nome`"
+                                    class="col-span-5">
+                                    <UInput v-model="autor.nome" placeholder="Nome" />
+                                </UFormField>
+                                <UFormField :label="`Sobrenome do Autor ${index + 1}`"
+                                    :name="`autores.${index}.sobrenome`" class="col-span-5">
+                                    <UInput v-model="autor.sobrenome" placeholder="Sobrenome" />
+                                </UFormField>
+                                <div class="col-span-2 flex justify-end">
+                                    <UButton color="error" variant="soft" icon="i-heroicons-trash-20-solid"
+                                        @click="removerAutor(index)" />
+                                </div>
+                            </div>
+                            <UButton label="Adicionar Autor" icon="i-heroicons-plus-circle" @click="adicionarAutor" />
+                        </div>
 
-                        <UFormField label="Autor 2" name="autor2" class="col-span-3">
-                            <UInput v-model="form.autor2" class="w-full" />
-                        </UFormField>
-
-                        <UFormField label="Autor 3" name="autor3" class="col-span-3">
-                            <UInput v-model="form.autor3" class="w-full" />
-                        </UFormField>
-
-                        <UFormField label="Autor 4" name="autor4" class="col-span-3">
-                            <UInput v-model="form.autor4" class="w-full" />
-                        </UFormField>
-
-                        <UFormField label="Orientador" name="orientador" class="col-span-3" required>
-                            <UInput v-model="form.orientador" class="w-full" />
-                        </UFormField>
-
-                        <UFormField label="Coorientador" name="coorientador" class="col-span-3">
-                            <UInput v-model="form.coorientador" class="w-full" />
-                        </UFormField>
+                        <div class=" col-span-3 space-y-3">
+                            <h3 class="font-semibold text-lg border-b pb-2">Orientadores</h3>
+                            <div v-for="(orientador, index) in form.orientadores" :key="`orientador-${index}`"
+                                class="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-gray-50 rounded-md">
+                                <UFormField :label="`Nome do Orientador ${index + 1}`"
+                                    :name="`orientadores.${index}.nome`" class="col-span-5">
+                                    <UInput v-model="orientador.nome" placeholder="Nome" />
+                                </UFormField>
+                                <UFormField :label="`Sobrenome do Orientador ${index + 1}`"
+                                    :name="`orientadores.${index}.sobrenome`" class="col-span-5">
+                                    <UInput v-model="orientador.sobrenome" placeholder="Sobrenome" />
+                                </UFormField>
+                                <div class="col-span-2 flex justify-end">
+                                    <UButton color="error" variant="soft" icon="i-heroicons-trash-20-solid"
+                                        @click="removerOrientador(index)" />
+                                </div>
+                            </div>
+                            <UButton label="Adicionar Orientador" icon="i-heroicons-plus-circle"
+                                @click="adicionarOrientador" />
+                        </div>
 
                         <UFormField label="Resumo" name="resumo" class="col-span-3" required>
                             <UTextarea v-model="form.resumo" class="w-full" autoresize />
-                        </UFormField>
-
-                        <UFormField label="Referências Bibliográficas" name="refbibliografica" class="col-span-3"
-                            required>
-                            <UTextarea v-model="form.refbibliografica" class="w-full" autoresize />
                         </UFormField>
 
                         <UFormField label="Palavras-chave" name="palavrasChave" class="col-span-3">
@@ -119,90 +126,107 @@ const novaPalavraInput = ref('')
 
 const trabalhoId = computed(() => route.params.id as string)
 
-const { data: cursos } = useFetch('/api/cursos', {
-    transform: data => data.map((c: any) => ({ label: c.curso, value: c.id })),
-    default: () => []
-})
-const { data: tiposTrabalho } = useFetch('/api/tipos-trabalho', {
-    transform: data => data.map((t: any) => ({ label: t.descricao, value: t.id })),
-    default: () => []
-})
+type ApiSelectOption = { id: number; nome: string }
 
-const statusOptions = ['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']
+const { data: cursosData } = useFetch<ApiSelectOption[]>('/api/cursos', { default: () => [] })
+const { data: tiposData } = useFetch<ApiSelectOption[]>('/api/tiposdocumentais', { default: () => [] })
+
+const cursos = computed(() =>
+    (cursosData.value ?? []).map((c: any) => ({ label: c.nome, value: c.id, }))
+)
+
+const tiposDocumentais = computed(() =>
+    (tiposData.value ?? []).map((t: any) => ({ label: t.nome, value: t.id, }))
+)
 
 const form = reactive({
     titulo: '',
-    data: '',
+    dataDefesa: '',
     resumo: '',
-    status: 'PENDENTE' as const,
-    arquivo: null as File | null,
-    autor1: '',
-    autor2: '',
-    autor3: '',
-    autor4: '',
-    orientador: '',
-    coorientador: '',
-    refbibliografica: '',
-    tipoTrabalhoId: undefined as number | undefined,
+    arquivo: undefined as File | undefined,
+    tipoDocumentalId: undefined as number | undefined,
     cursoId: undefined as number | undefined,
+    autores: [{ nome: '', sobrenome: '' }],
+    orientadores: [{ nome: '', sobrenome: '' }],
     palavrasChave: [] as string[],
 })
 
+interface Pessoa {
+    nome: string
+    sobrenome: string
+}
+
 interface Trabalho {
     titulo: string
-    data: string
+    dataDefesa: string
     resumo: string
-    status: 'APROVADO' | 'REPROVADO' | 'PENDENTE' | 'PUBLICADO'
     arquivo: string | null
-    autor1: string
-    autor2: string | null
-    autor3: string | null
-    autor4: string | null
-    orientador: string
-    coorientador: string | null
-    refbibliografica: string
-    tipoTrabalhoId: number
-    cursoId: number
+    tipoDocumental: { id: number; nome: string }
+    curso: { id: number; nome: string }
     palavrasChave: string[]
+    autores: Pessoa[]
+    orientadores: Pessoa[]
 }
 
 const arquivoExistente = ref<string | null>(null)
 
 const { data: trabalhoData } = await useFetch<Trabalho>(`/api/trabalhos/${trabalhoId.value}`)
 if (trabalhoData.value) {
-    Object.assign(form, {
-        ...trabalhoData.value,
-        data: new Date(trabalhoData.value.data).toISOString().split('T')[0],
-        arquivo: null,
-        palavrasChave: trabalhoData.value.palavrasChave
-            ? trabalhoData.value.palavrasChave.map((p: string) => p.trim())
-            : [],
-    })
-    arquivoExistente.value = trabalhoData.value.arquivo
+    const t = trabalhoData.value
+    form.titulo = t.titulo
+    form.dataDefesa = new Date(t.dataDefesa).toISOString().split('T')[0]
+    form.resumo = t.resumo
+    form.tipoDocumentalId = t.tipoDocumental.id
+    form.cursoId = t.curso.id
+    form.autores = t.autores.length ? t.autores : [{ nome: '', sobrenome: '' }]
+    form.orientadores = t.orientadores.length ? t.orientadores : [{ nome: '', sobrenome: '' }]
+    form.palavrasChave = t.palavrasChave || []
+    arquivoExistente.value = t.arquivo
 }
+
+const pessoaSchema = z.object({
+    nome: z.string().min(1, 'Nome é obrigatório'),
+    sobrenome: z.string().min(1, 'Sobrenome é obrigatório'),
+})
 
 const schema = z.object({
     titulo: z.string().min(1, 'Título é obrigatório'),
-    data: z.string().min(1, 'Data é obrigatória'),
+    dataDefesa: z.string().min(1, 'Data de defesa é obrigatória'),
     resumo: z.string().min(1, 'Resumo é obrigatório'),
-    status: z.enum(['APROVADO', 'REPROVADO', 'PENDENTE', 'PUBLICADO']),
-    arquivo: z.instanceof(File).optional().nullable(),
-    autor1: z.string().min(1, 'Pelo menos um autor é obrigatório'),
-    orientador: z.string().min(1, 'Orientador é obrigatório'),
-    refbibliografica: z.string().min(1, 'Referências são obrigatórias'),
-    tipoTrabalhoId: z.number().refine(val => val !== undefined, {
-        message: 'Tipo documental é obrigatório',
-    }),
-    cursoId: z.number().refine(val => val !== undefined, {
-        message: 'Curso é obrigatório',
-    }),
-    autor2: z.string().optional(),
-    autor3: z.string().optional(),
-    autor4: z.string().optional(),
-    coorientador: z.string().optional(),
+    tipoDocumentalId: z.number({ message: 'Tipo documental é obrigatório' }),
+    cursoId: z.number({ message: 'Curso é obrigatório' }),
+    arquivo: z
+        .custom<File | undefined>()
+        .optional()
+        .refine((file) => !file || file instanceof File, 'Arquivo inválido'),
+    autores: z.array(pessoaSchema).min(1, 'Adicione pelo menos um autor'),
+    orientadores: z.array(pessoaSchema).min(1, 'Adicione pelo menos um orientador'),
+    palavrasChave: z
+        .array(z.string())
+        .refine((arr) => arr.length >= 3, { message: 'São necessárias pelo menos três palavras-chave' }),
 })
 
 type Schema = z.output<typeof schema>
+
+function adicionarAutor() {
+    form.autores.push({ nome: '', sobrenome: '' })
+}
+
+function removerAutor(index: number) {
+    if (form.autores.length > 1) {
+        form.autores.splice(index, 1)
+    }
+}
+
+function adicionarOrientador() {
+    form.orientadores.push({ nome: '', sobrenome: '' })
+}
+
+function removerOrientador(index: number) {
+    if (form.orientadores.length > 1) {
+        form.orientadores.splice(index, 1)
+    }
+}
 
 function adicionarPalavra() {
     const palavra = novaPalavraInput.value.trim()
@@ -225,29 +249,28 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     const formData = new FormData()
 
     Object.entries(event.data).forEach(([key, value]) => {
+        if (key === 'arquivo') return
         if (value !== null && value !== undefined) {
-            if (key === 'arquivo' && value instanceof File) {
-                formData.append(key, value)
-            } else if (key === 'palavrasChave' && Array.isArray(value)) {
-                formData.append(key, value.join(','))
-            } else if (key === 'tipoTrabalhoId' || key === 'cursoId') {
-                formData.append(key, String(Number(value)))
-            } else {
-                formData.append(key, String(value))
-            }
+            if (Array.isArray(value)) return
+            formData.append(key, String(value))
         }
     })
 
+    if (event.data.arquivo instanceof File) {
+        formData.append('arquivo', event.data.arquivo)
+    }
+    formData.append('autores', JSON.stringify(form.autores))
+    formData.append('orientadores', JSON.stringify(form.orientadores))
+    formData.append('palavrasChave', form.palavrasChave.join(','))
+
     try {
-        await $fetch(`/api/trabalhos/${trabalhoId.value}`, {
-            method: 'PUT',
-            body: formData,
-        })
+        await $fetch(`/api/trabalhos/${trabalhoId.value}`, { method: 'PUT', body: formData, })
         toast.add({ title: 'Trabalho atualizado com sucesso!', color: 'success' })
         await router.push('/admin/trabalhos')
-    }
-    catch (err: any) {
+    } catch (err: any) {
         toast.add({ title: 'Erro ao atualizar', description: err.data?.message || 'Tente novamente.', color: 'warning' })
-    }
+    } finally {
+    loading.value = false
+  }
 }
 </script>

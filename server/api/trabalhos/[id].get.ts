@@ -5,10 +5,7 @@ export default defineEventHandler(async (event) => {
     const id = Number(event.context.params?.id);
 
     if (isNaN(id)) {
-        throw createError({
-            statusCode: 400,
-            statusMessage: "ID inválido"
-        })
+        throw createError({ statusCode: 400, statusMessage: "ID inválido" })
     }
 
     const trabalho = await prisma.trabalho.findUnique({
@@ -17,7 +14,7 @@ export default defineEventHandler(async (event) => {
             tipoDocumental: true,
             curso: true,
             palavrasChave: { select: { palavraChave: { select: { nome: true } } } },
-            pessoas: { select: { papel: true, pessoa: true } }
+            pessoas: { select: { papel: true, pessoa: { select: { id: true, nome: true, sobrenome: true }, }, } }
         }
     })
 
@@ -37,8 +34,13 @@ export default defineEventHandler(async (event) => {
         .map(p => p.pessoa);
 
     return {
-        ...trabalho,
-        palavrasChave: trabalho.palavrasChave.map(p => p.palavraChave.nome),
+        id: trabalho.id,
+        titulo: trabalho.titulo,
+        resumo: trabalho.resumo,
+        dataDefesa: trabalho.dataDefesa,
+        tipoDocumental: trabalho.tipoDocumental,
+        curso: trabalho.curso,
+        palavrasChave: trabalho.palavrasChave.map((p) => p.palavraChave.nome),
         autores,
         orientadores,
         arquivo: trabalho.arquivo ?? null,

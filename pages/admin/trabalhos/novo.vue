@@ -132,7 +132,6 @@ const tiposDocumentais = computed(() =>
     (tiposData.value ?? []).map((t: any) => ({ label: t.nome, value: t.id, }))
 )
 
-
 const form = reactive({
     titulo: '',
     dataDefesa: '',
@@ -167,14 +166,17 @@ type Schema = z.output<typeof schema>
 function adicionarAutor() {
     form.autores.push({ nome: '', sobrenome: '' })
 }
+
 function removerAutor(index: number) {
     if (form.autores.length > 1) {
         form.autores.splice(index, 1)
     }
 }
+
 function adicionarOrientador() {
     form.orientadores.push({ nome: '', sobrenome: '' })
 }
+
 function removerOrientador(index: number) {
     if (form.orientadores.length > 1) {
         form.orientadores.splice(index, 1)
