@@ -5,7 +5,17 @@ export default defineEventHandler(async () => {
     include: {
         curso: true,
         tipoDocumental: true,
-        palavrasChave: true
+        palavrasChave: {
+        select: {
+          palavraChave: { select: { nome: true } },
+        },
+      },
+      pessoas: {
+        select: {
+          papel: true,
+          pessoa: true,
+        },
+      },
     }
   })
 })

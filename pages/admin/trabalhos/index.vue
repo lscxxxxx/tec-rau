@@ -39,6 +39,10 @@ const columns: TableColumn<Trabalho>[] = [
     { id: 'actions', header: 'Ações' },
 ]
 
+onMounted(() => {
+    console.log('Trabalhos retornados:', trabalhos.value)
+})
+
 function formatarPessoas(pessoas: TrabalhoPessoa[], papel: 'AUTOR' | 'ORIENTADOR'): string {
     if (!pessoas || pessoas.length === 0) { return 'Não informado' }
 
@@ -101,15 +105,16 @@ async function confirmarExclusao() {
                         <span class="break-words whitespace-normal">{{ row.original.titulo }}</span>
                     </template>
 
-                    <template #dataDefesa-data="{ row }">
-                        <span>{{ new Date(row.original.dataDefesa).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) }}</span>
+                    <template #dataDefesa-cell="{ row }">
+                        <span>{{ new Date(row.original.dataDefesa).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
+                            }}</span>
                     </template>
 
-                    <template #autores-data="{ row }">
+                    <template #autores-cell="{ row }">
                         <span class="text-sm">{{ formatarPessoas(row.original.pessoas, 'AUTOR') }}</span>
                     </template>
 
-                    <template #orientadores-data="{ row }">
+                    <template #orientadores-cell="{ row }">
                         <span class="text-sm">{{ formatarPessoas(row.original.pessoas, 'ORIENTADOR') }}</span>
                     </template>
 
