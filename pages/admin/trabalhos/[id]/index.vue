@@ -12,7 +12,7 @@
 
                 <div v-else-if="error" class="text-center py-10 text-red-500">
                     <h1>Erro ao carregar trabalho</h1>
-                    <p>{{ error.statusMessage || error.message }}</p>
+                    <p>{{ error.message || error.message }}</p>
                 </div>
 
                 <div v-else-if="trabalho" class="overflow-x-auto">

@@ -88,7 +88,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     } catch (err: any) {
         toast.add({
             title: 'Erro ao cadastrar',
-            description: err.data?.statusMessage || 'Tente novamente.',
+            description: err.data?.message || 'Tente novamente.',
             color: 'error'
         })
     } finally {

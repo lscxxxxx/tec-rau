@@ -9,37 +9,52 @@
 
                 <UForm :schema="schema" :state="form" @submit="onSubmit">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-x-7 gap-y-3">
-                        <UFormField label="Título" name="titulo" class="col-span-3" required>
+                        <div class="col-span-3">
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Título *</h3>
                             <UInput v-model="form.titulo" class="w-full" />
-                        </UFormField>
+                        </div>
 
-                        <UFormField label="Data de defesa" name="dataDefesa" required>
+                        <div>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Data de defesa *</h3>
                             <UInput v-model="form.dataDefesa" type="date" class="w-full" />
-                        </UFormField>
+                        </div>
 
-                        <UFormField label="Tipo documental" name="tipoDocumentalId" required>
+                        <div>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Tipo documental *</h3>
                             <USelect v-model="form.tipoDocumentalId" :items="tiposDocumentais"
                                 placeholder="Selecione o tipo" class="w-full" />
-                        </UFormField>
+                        </div>
 
-                        <UFormField label="Curso" name="cursoId" required>
+                        <div>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Curso *</h3>
                             <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso"
                                 class="w-full" />
-                        </UFormField>
+                        </div>
 
-                        <UFormField label="Arquivo" name="arquivo" required>
-                            <UFileUpload label="Selecione ou arraste o arquivo" description="PDF (max. 5MB)"
+                        <div>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Arquivo</h3>
+                            <UFileUpload label="Selecione ou arraste para substituir" description="PDF (max. 5MB)"
                                 v-model="form.arquivo" accept=".pdf" class="w-full" />
                             <p v-if="arquivoExistente" class="text-sm text-gray-500 mt-1">
                                 Arquivo atual:
                                 <a :href="arquivoExistente" target="_blank" class="underline text-blue-600">Ver PDF</a>
                             </p>
-                        </UFormField>
+                        </div>
 
                         <div class="col-span-3 space-y-3">
-                            <h3 class="font-semibold text-lg border-b pb-2">Autores</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2">Autores *</h3>
 
-                            <div v-if="form.autores.length > 0" class="flex flex-wrap gap-2">
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 items-center">
+                                <UInput v-model="novoAutor.nome" placeholder="Nome" class="col-span-5"
+                                    @keydown.enter.prevent="adicionarAutor" />
+                                <UInput v-model="novoAutor.sobrenome" placeholder="Sobrenome" class="col-span-5"
+                                    @keydown.enter.prevent="adicionarAutor" />
+                                <div class="col-span-2 flex justify-end">
+                                    <UButton label="Adicionar" icon="i-heroicons-plus" @click="adicionarAutor" />
+                                </div>
+                            </div>
+
+                            <div v-if="form.autores.length > 0" class="flex flex-wrap gap-2 pt-2">
                                 <UBadge v-for="(autor, index) in form.autores" :key="`autor-${index}`" variant="subtle"
                                     size="lg">
                                     {{ autor.nome }} {{ autor.sobrenome }}
@@ -50,22 +65,22 @@
                             <div v-else>
                                 <p class="text-sm text-gray-500">Nenhum autor adicionado.</p>
                             </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 items-center pt-2">
-                                <UInput v-model="novoAutor.nome" placeholder="Nome" class="col-span-5"
-                                    @keydown.enter.prevent="adicionarAutor" />
-                                <UInput v-model="novoAutor.sobrenome" placeholder="Sobrenome" class="col-span-5"
-                                    @keydown.enter.prevent="adicionarAutor" />
-                                <div class="col-span-2 flex justify-end">
-                                    <UButton label="Adicionar" icon="i-heroicons-plus" @click="adicionarAutor" />
-                                </div>
-                            </div>
                         </div>
 
                         <div class="col-span-3 space-y-3">
-                            <h3 class="font-semibold text-lg border-b pb-2">Orientadores</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2">Orientadores *</h3>
 
-                            <div v-if="form.orientadores.length > 0" class="flex flex-wrap gap-2">
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 items-center">
+                                <UInput v-model="novoOrientador.nome" placeholder="Nome" class="col-span-5"
+                                    @keydown.enter.prevent="adicionarOrientador" />
+                                <UInput v-model="novoOrientador.sobrenome" placeholder="Sobrenome" class="col-span-5"
+                                    @keydown.enter.prevent="adicionarOrientador" />
+                                <div class="col-span-2 flex justify-end">
+                                    <UButton label="Adicionar" icon="i-heroicons-plus" @click="adicionarOrientador" />
+                                </div>
+                            </div>
+
+                            <div v-if="form.orientadores.length > 0" class="flex flex-wrap gap-2 pt-2">
                                 <UBadge v-for="(orientador, index) in form.orientadores" :key="`orientador-${index}`"
                                     variant="subtle" size="lg">
                                     {{ orientador.nome }} {{ orientador.sobrenome }}
@@ -76,23 +91,15 @@
                             <div v-else>
                                 <p class="text-sm text-gray-500">Nenhum orientador adicionado.</p>
                             </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 items-center pt-2">
-                                <UInput v-model="novoOrientador.nome" placeholder="Nome" class="col-span-5"
-                                    @keydown.enter.prevent="adicionarOrientador" />
-                                <UInput v-model="novoOrientador.sobrenome" placeholder="Sobrenome" class="col-span-5"
-                                    @keydown.enter.prevent="adicionarOrientador" />
-                                <div class="col-span-2 flex justify-end">
-                                    <UButton label="Adicionar" icon="i-heroicons-plus" @click="adicionarOrientador" />
-                                </div>
-                            </div>
                         </div>
 
-                        <UFormField label="Resumo" name="resumo" class="col-span-3" required>
+                        <div class="col-span-3">
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Resumo *</h3>
                             <UTextarea v-model="form.resumo" class="w-full" autoresize />
-                        </UFormField>
+                        </div>
 
-                        <UFormField label="Palavras-chave" name="palavrasChave" class="col-span-3">
+                        <div class="col-span-3">
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Palavras-chave *</h3>
                             <div class="flex flex-col gap-2">
                                 <div class="flex items-center gap-2">
                                     <UInput v-model="novaPalavraInput" placeholder="Digite uma palavra e aperte Enter"
@@ -109,10 +116,12 @@
                                     </UBadge>
                                 </div>
                                 <div v-else>
-                                    <p class="text-sm text-gray-500">Nenhuma palavra-chave adicionada.</p>
+                                    <p class="text-sm text-gray-500">Nenhuma palavra-chave adicionada (mínimo de três
+                                        palavras-chave)
+                                    </p>
                                 </div>
                             </div>
-                        </UFormField>
+                        </div>
                     </div>
 
                     <div class="flex justify-end">
@@ -310,11 +319,6 @@ function removerPalavra(index: number) {
 async function onSubmit(event: FormSubmitEvent<Schema>) {
     loading.value = true
     const formData = new FormData()
-
-    console.log("--- DEBUG SUBMIT ---");
-    console.log("Autores enviados:", JSON.stringify(form.autores, null, 2));
-    console.log("Orientadores enviados:", JSON.stringify(form.orientadores, null, 2));
-    console.log("IDs de Pessoas que serão REMOVIDAS:", form.idsPessoasParaRemover);
 
     Object.entries(event.data).forEach(([key, value]) => {
         if (key === 'arquivo') return
