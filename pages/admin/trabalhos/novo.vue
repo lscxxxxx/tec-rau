@@ -9,75 +9,89 @@
 
                 <UForm :schema="schema" :state="form" @submit="onSubmit">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-x-7 gap-y-3">
-                        <UFormField label="Título" name="titulo" class="col-span-3" required>
+                        <div class="col-span-3">
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Título *</h3>
                             <UInput v-model="form.titulo" class="w-full" />
-                        </UFormField>
+                        </div>
 
-                        <UFormField label="Data de defesa" name="dataDefesa" required>
+                        <div>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Data de defesa *</h3>
                             <UInput v-model="form.dataDefesa" type="date" class="w-full" />
-                        </UFormField>
+                        </div>
 
-                        <UFormField label="Tipo documental" name="tipoDocumentalId" required>
+                        <div>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Tipo documental *</h3>
                             <USelect v-model="form.tipoDocumentalId" :items="tiposDocumentais"
                                 placeholder="Selecione o tipo" class="w-full" />
-                        </UFormField>
+                        </div>
 
-                        <UFormField label="Curso" name="cursoId" required>
+                        <div>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Curso *</h3>
                             <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso"
                                 class="w-full" />
-                        </UFormField>
+                        </div>
 
-                        <UFormField label="Arquivo" name="arquivo" required>
+                        <div>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Arquivo *</h3>
                             <UFileUpload label="Selecione ou arraste o arquivo" description="PDF (max. 5MB)"
                                 v-model="form.arquivo" accept=".pdf" class="w-full" />
-                        </UFormField>
+                        </div>
 
                         <div class="col-span-3 space-y-3">
-                            <h3 class="font-semibold text-lg border-b pb-2">Autores</h3>
-                            <div v-for="(autor, index) in form.autores" :key="`autor-${index}`"
-                                class="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-gray-50 rounded-md">
-                                <UFormField :label="`Nome do Autor ${index + 1}`" :name="`autores.${index}.nome`"
-                                    class="col-span-5">
-                                    <UInput v-model="autor.nome" placeholder="Nome" />
-                                </UFormField>
-                                <UFormField :label="`Sobrenome do Autor ${index + 1}`"
-                                    :name="`autores.${index}.sobrenome`" class="col-span-5">
-                                    <UInput v-model="autor.sobrenome" placeholder="Sobrenome" />
-                                </UFormField>
+                            <h3 class="font-semibold text-lg border-b pb-2">Autores *</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 items-center">
+                                <UInput v-model="novoAutor.nome" placeholder="Nome" class="col-span-5"
+                                    @keydown.enter.prevent="adicionarAutor" />
+                                <UInput v-model="novoAutor.sobrenome" placeholder="Sobrenome" class="col-span-5"
+                                    @keydown.enter.prevent="adicionarAutor" />
                                 <div class="col-span-2 flex justify-end">
-                                    <UButton color="error" variant="soft" icon="i-heroicons-trash-20-solid"
-                                        @click="removerAutor(index)" />
+                                    <UButton label="Adicionar" icon="i-heroicons-plus" @click="adicionarAutor" />
                                 </div>
                             </div>
-                            <UButton label="Adicionar Autor" icon="i-heroicons-plus-circle" @click="adicionarAutor" />
+                            <div v-if="form.autores.length > 0" class="flex flex-wrap gap-2 pt-2">
+                                <UBadge v-for="(autor, index) in form.autores" :key="`autor-${index}`" variant="subtle"
+                                    size="lg">
+                                    {{ autor.nome }} {{ autor.sobrenome }}
+                                    <UButton icon="i-heroicons-x-mark-20-solid" color="primary" variant="link" size="xs"
+                                        class="-mr-1.5" @click="removerAutor(index)" />
+                                </UBadge>
+                            </div>
+                            <div v-else>
+                                <p class="text-sm text-gray-500">Nenhum autor adicionado.</p>
+                            </div>
                         </div>
 
-                        <div class=" col-span-3 space-y-3">
-                            <h3 class="font-semibold text-lg border-b pb-2">Orientadores</h3>
-                            <div v-for="(orientador, index) in form.orientadores" :key="`orientador-${index}`"
-                                class="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-gray-50 rounded-md">
-                                <UFormField :label="`Nome do Orientador ${index + 1}`"
-                                    :name="`orientadores.${index}.nome`" class="col-span-5">
-                                    <UInput v-model="orientador.nome" placeholder="Nome" />
-                                </UFormField>
-                                <UFormField :label="`Sobrenome do Orientador ${index + 1}`"
-                                    :name="`orientadores.${index}.sobrenome`" class="col-span-5">
-                                    <UInput v-model="orientador.sobrenome" placeholder="Sobrenome" />
-                                </UFormField>
+                        <div class="col-span-3 space-y-3">
+                            <h3 class="font-semibold text-lg border-b pb-2">Orientadores *</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 items-center">
+                                <UInput v-model="novoOrientador.nome" placeholder="Nome" class="col-span-5"
+                                    @keydown.enter.prevent="adicionarOrientador" />
+                                <UInput v-model="novoOrientador.sobrenome" placeholder="Sobrenome" class="col-span-5"
+                                    @keydown.enter.prevent="adicionarOrientador" />
                                 <div class="col-span-2 flex justify-end">
-                                    <UButton color="error" variant="soft" icon="i-heroicons-trash-20-solid"
-                                        @click="removerOrientador(index)" />
+                                    <UButton label="Adicionar" icon="i-heroicons-plus" @click="adicionarOrientador" />
                                 </div>
                             </div>
-                            <UButton label="Adicionar Orientador" icon="i-heroicons-plus-circle"
-                                @click="adicionarOrientador" />
+                            <div v-if="form.orientadores.length > 0" class="flex flex-wrap gap-2 pt-2">
+                                <UBadge v-for="(orientador, index) in form.orientadores" :key="`orientador-${index}`"
+                                    variant="subtle" size="lg">
+                                    {{ orientador.nome }} {{ orientador.sobrenome }}
+                                    <UButton icon="i-heroicons-x-mark-20-solid" color="primary" variant="link" size="xs"
+                                        class="-mr-1.5" @click="removerOrientador(index)" />
+                                </UBadge>
+                            </div>
+                            <div v-else>
+                                <p class="text-sm text-gray-500">Nenhum orientador adicionado.</p>
+                            </div>
                         </div>
 
-                        <UFormField label="Resumo" name="resumo" class="col-span-3" required>
+                        <div class="col-span-3">
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Resumo *</h3>
                             <UTextarea v-model="form.resumo" class="w-full" autoresize />
-                        </UFormField>
+                        </div>
 
-                        <UFormField label="Palavras-chave" name="palavrasChave" class="col-span-3">
+                        <div class="col-span-3">
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Palavras-chave *</h3>
                             <div class="flex flex-col gap-2">
                                 <div class="flex items-center gap-2">
                                     <UInput v-model="novaPalavraInput" placeholder="Digite uma palavra e aperte Enter"
@@ -94,10 +108,10 @@
                                     </UBadge>
                                 </div>
                                 <div v-else>
-                                    <p class="text-sm text-gray-500">Nenhuma palavra-chave adicionada.</p>
+                                    <p class="text-sm text-gray-500">Nenhuma palavra-chave adicionada (mínimo 3).</p>
                                 </div>
                             </div>
-                        </UFormField>
+                        </div>
                     </div>
                     <div class="flex justify-end">
                         <UButton type="submit" :loading="loading">Cadastrar</UButton>
@@ -117,6 +131,8 @@ const toast = useToast()
 const router = useRouter()
 const loading = ref(false)
 const novaPalavraInput = ref('')
+const novoAutor = ref({ nome: '', sobrenome: '' })
+const novoOrientador = ref({ nome: '', sobrenome: '' })
 
 type ApiSelectOption = { id: number; nome: string }
 
@@ -138,8 +154,8 @@ const form = reactive({
     arquivo: undefined as File | undefined,
     tipoDocumentalId: undefined as number | undefined,
     cursoId: undefined as number | undefined,
-    autores: [{ nome: '', sobrenome: '' }],
-    orientadores: [{ nome: '', sobrenome: '' }],
+    autores: [] as { nome: string; sobrenome: string }[],
+    orientadores: [] as { nome: string; sobrenome: string }[],
     palavrasChave: [] as string[],
 })
 
