@@ -96,6 +96,8 @@ model Pessoa {
   sobrenome String
 
   trabalhos TrabalhoPessoa[]
+
+  @@unique([nome, sobrenome], name: "nome_sobrenome")
 }
 
 model PalavraChave {

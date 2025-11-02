@@ -38,43 +38,54 @@
 
                         <div class="col-span-3 space-y-3">
                             <h3 class="font-semibold text-lg border-b pb-2">Autores</h3>
-                            <div v-for="(autor, index) in form.autores" :key="`autor-${index}`"
-                                class="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-gray-50 rounded-md">
-                                <UFormField :label="`Nome do Autor ${index + 1}`" :name="`autores.${index}.nome`"
-                                    class="col-span-5">
-                                    <UInput v-model="autor.nome" placeholder="Nome" />
-                                </UFormField>
-                                <UFormField :label="`Sobrenome do Autor ${index + 1}`"
-                                    :name="`autores.${index}.sobrenome`" class="col-span-5">
-                                    <UInput v-model="autor.sobrenome" placeholder="Sobrenome" />
-                                </UFormField>
+
+                            <div v-if="form.autores.length > 0" class="flex flex-wrap gap-2">
+                                <UBadge v-for="(autor, index) in form.autores" :key="`autor-${index}`" variant="subtle"
+                                    size="lg">
+                                    {{ autor.nome }} {{ autor.sobrenome }}
+                                    <UButton icon="i-heroicons-x-mark-20-solid" color="primary" variant="link" size="xs"
+                                        class="-mr-1.5" @click="removerAutor(index)" />
+                                </UBadge>
+                            </div>
+                            <div v-else>
+                                <p class="text-sm text-gray-500">Nenhum autor adicionado.</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 items-center pt-2">
+                                <UInput v-model="novoAutor.nome" placeholder="Nome" class="col-span-5"
+                                    @keydown.enter.prevent="adicionarAutor" />
+                                <UInput v-model="novoAutor.sobrenome" placeholder="Sobrenome" class="col-span-5"
+                                    @keydown.enter.prevent="adicionarAutor" />
                                 <div class="col-span-2 flex justify-end">
-                                    <UButton color="error" variant="soft" icon="i-heroicons-trash-20-solid"
-                                        @click="removerAutor(index)" />
+                                    <UButton label="Adicionar" icon="i-heroicons-plus" @click="adicionarAutor" />
                                 </div>
                             </div>
-                            <UButton label="Adicionar Autor" icon="i-heroicons-plus-circle" @click="adicionarAutor" />
                         </div>
 
-                        <div class=" col-span-3 space-y-3">
+                        <div class="col-span-3 space-y-3">
                             <h3 class="font-semibold text-lg border-b pb-2">Orientadores</h3>
-                            <div v-for="(orientador, index) in form.orientadores" :key="`orientador-${index}`"
-                                class="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-gray-50 rounded-md">
-                                <UFormField :label="`Nome do Orientador ${index + 1}`"
-                                    :name="`orientadores.${index}.nome`" class="col-span-5">
-                                    <UInput v-model="orientador.nome" placeholder="Nome" />
-                                </UFormField>
-                                <UFormField :label="`Sobrenome do Orientador ${index + 1}`"
-                                    :name="`orientadores.${index}.sobrenome`" class="col-span-5">
-                                    <UInput v-model="orientador.sobrenome" placeholder="Sobrenome" />
-                                </UFormField>
+
+                            <div v-if="form.orientadores.length > 0" class="flex flex-wrap gap-2">
+                                <UBadge v-for="(orientador, index) in form.orientadores" :key="`orientador-${index}`"
+                                    variant="subtle" size="lg">
+                                    {{ orientador.nome }} {{ orientador.sobrenome }}
+                                    <UButton icon="i-heroicons-x-mark-20-solid" color="primary" variant="link" size="xs"
+                                        class="-mr-1.5" @click="removerOrientador(index)" />
+                                </UBadge>
+                            </div>
+                            <div v-else>
+                                <p class="text-sm text-gray-500">Nenhum orientador adicionado.</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 items-center pt-2">
+                                <UInput v-model="novoOrientador.nome" placeholder="Nome" class="col-span-5"
+                                    @keydown.enter.prevent="adicionarOrientador" />
+                                <UInput v-model="novoOrientador.sobrenome" placeholder="Sobrenome" class="col-span-5"
+                                    @keydown.enter.prevent="adicionarOrientador" />
                                 <div class="col-span-2 flex justify-end">
-                                    <UButton color="error" variant="soft" icon="i-heroicons-trash-20-solid"
-                                        @click="removerOrientador(index)" />
+                                    <UButton label="Adicionar" icon="i-heroicons-plus" @click="adicionarOrientador" />
                                 </div>
                             </div>
-                            <UButton label="Adicionar Orientador" icon="i-heroicons-plus-circle"
-                                @click="adicionarOrientador" />
                         </div>
 
                         <UFormField label="Resumo" name="resumo" class="col-span-3" required>
@@ -123,6 +134,8 @@ const router = useRouter()
 const route = useRoute()
 const loading = ref(false)
 const novaPalavraInput = ref('')
+const novoAutor = ref({ nome: '', sobrenome: '' })
+const novoOrientador = ref({ nome: '', sobrenome: '' })
 
 const trabalhoId = computed(() => route.params.id as string)
 
@@ -131,29 +144,59 @@ type ApiSelectOption = { id: number; nome: string }
 const { data: cursosData } = useFetch<ApiSelectOption[]>('/api/cursos', { default: () => [] })
 const { data: tiposData } = useFetch<ApiSelectOption[]>('/api/tiposdocumentais', { default: () => [] })
 
-const cursos = computed(() =>
-    (cursosData.value ?? []).map((c: any) => ({ label: c.nome, value: c.id, }))
-)
+const cursos = computed(() => (cursosData.value ?? []).map((c: any) => ({ label: c.nome, value: c.id, })))
+const tiposDocumentais = computed(() => (tiposData.value ?? []).map((t: any) => ({ label: t.nome, value: t.id, })))
 
-const tiposDocumentais = computed(() =>
-    (tiposData.value ?? []).map((t: any) => ({ label: t.nome, value: t.id, }))
-)
-
-const form = reactive({
+const form = reactive<FormState>({
     titulo: '',
     dataDefesa: '',
     resumo: '',
-    arquivo: undefined as File | undefined,
-    tipoDocumentalId: undefined as number | undefined,
-    cursoId: undefined as number | undefined,
-    autores: [{ nome: '', sobrenome: '' }],
-    orientadores: [{ nome: '', sobrenome: '' }],
-    palavrasChave: [] as string[],
+    tipoDocumentalId: undefined,
+    cursoId: undefined,
+    autores: [],
+    orientadores: [],
+    palavrasChave: [],
+    arquivo: undefined,
+    idsPessoasParaRemover: [],
+    idsPalavrasChaveParaRemover: []
 })
 
 interface Pessoa {
+    id?: number
     nome: string
     sobrenome: string
+}
+
+interface TrabalhoPessoa {
+    papel: 'AUTOR' | 'ORIENTADOR'
+    pessoa: Pessoa
+}
+
+interface TrabalhoApiResponse {
+    titulo: string
+    dataDefesa: string
+    resumo: string
+    arquivo: string | null
+    tipoDocumental: { id: number; nome: string }
+    curso: { id: number; nome: string }
+    palavrasChave: any[]
+    autores: Pessoa[]
+    orientadores: Pessoa[]
+    pessoas: TrabalhoPessoa[]
+}
+
+interface FormState {
+    titulo: string
+    dataDefesa: string
+    resumo: string
+    tipoDocumentalId: number | undefined
+    cursoId: number | undefined
+    autores: Pessoa[]
+    orientadores: Pessoa[]
+    palavrasChave: string[]
+    arquivo?: File
+    idsPessoasParaRemover: number[]
+    idsPalavrasChaveParaRemover: number[]
 }
 
 interface Trabalho {
@@ -170,19 +213,21 @@ interface Trabalho {
 
 const arquivoExistente = ref<string | null>(null)
 
-const { data: trabalhoData } = await useFetch<Trabalho>(`/api/trabalhos/${trabalhoId.value}`)
-if (trabalhoData.value) {
-    const t = trabalhoData.value
-    form.titulo = t.titulo
-    form.dataDefesa = new Date(t.dataDefesa).toISOString().split('T')[0]
-    form.resumo = t.resumo
-    form.tipoDocumentalId = t.tipoDocumental.id
-    form.cursoId = t.curso.id
-    form.autores = t.autores.length ? t.autores : [{ nome: '', sobrenome: '' }]
-    form.orientadores = t.orientadores.length ? t.orientadores : [{ nome: '', sobrenome: '' }]
-    form.palavrasChave = t.palavrasChave || []
-    arquivoExistente.value = t.arquivo
-}
+const { data: trabalhoData } = await useFetch<TrabalhoApiResponse>(`/api/trabalhos/${trabalhoId.value}`)
+onMounted(() => {
+    if (trabalhoData.value) {
+        const t = trabalhoData.value
+        form.titulo = t.titulo
+        form.dataDefesa = new Date(t.dataDefesa).toISOString().split('T')[0]
+        form.resumo = t.resumo
+        form.tipoDocumentalId = t.tipoDocumental.id
+        form.cursoId = t.curso.id
+        form.autores = t.autores || [];
+        form.orientadores = t.orientadores || [];
+        form.palavrasChave = t.palavrasChave || []
+        arquivoExistente.value = t.arquivo
+    }
+})
 
 const pessoaSchema = z.object({
     nome: z.string().min(1, 'Nome é obrigatório'),
@@ -209,23 +254,41 @@ const schema = z.object({
 type Schema = z.output<typeof schema>
 
 function adicionarAutor() {
-    form.autores.push({ nome: '', sobrenome: '' })
+    const nome = novoAutor.value.nome.trim();
+    const sobrenome = novoAutor.value.sobrenome.trim();
+    if (!nome || !sobrenome) {
+        toast.add({ title: 'Preencha o nome e o sobrenome do autor.', color: 'warning' });
+        return;
+    }
+    form.autores.push({ nome, sobrenome });
+    novoAutor.value = { nome: '', sobrenome: '' };
 }
 
 function removerAutor(index: number) {
-    if (form.autores.length > 1) {
-        form.autores.splice(index, 1)
+    const autorRemovido = form.autores[index]
+    if (autorRemovido && autorRemovido.id) {
+        form.idsPessoasParaRemover.push(autorRemovido.id)
     }
+    form.autores.splice(index, 1)
 }
 
 function adicionarOrientador() {
-    form.orientadores.push({ nome: '', sobrenome: '' })
+    const nome = novoOrientador.value.nome.trim();
+    const sobrenome = novoOrientador.value.sobrenome.trim();
+    if (!nome || !sobrenome) {
+        toast.add({ title: 'Preencha o nome e o sobrenome do orientador.', color: 'warning' });
+        return;
+    }
+    form.orientadores.push({ nome, sobrenome });
+    novoOrientador.value = { nome: '', sobrenome: '' };
 }
 
 function removerOrientador(index: number) {
-    if (form.orientadores.length > 1) {
-        form.orientadores.splice(index, 1)
+    const orientadorRemovido = form.orientadores[index]
+    if (orientadorRemovido && orientadorRemovido.id) {
+        form.idsPessoasParaRemover.push(orientadorRemovido.id)
     }
+    form.orientadores.splice(index, 1)
 }
 
 function adicionarPalavra() {
@@ -248,6 +311,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     loading.value = true
     const formData = new FormData()
 
+    console.log("--- DEBUG SUBMIT ---");
+    console.log("Autores enviados:", JSON.stringify(form.autores, null, 2));
+    console.log("Orientadores enviados:", JSON.stringify(form.orientadores, null, 2));
+    console.log("IDs de Pessoas que serão REMOVIDAS:", form.idsPessoasParaRemover);
+
     Object.entries(event.data).forEach(([key, value]) => {
         if (key === 'arquivo') return
         if (value !== null && value !== undefined) {
@@ -259,9 +327,20 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     if (event.data.arquivo instanceof File) {
         formData.append('arquivo', event.data.arquivo)
     }
-    formData.append('autores', JSON.stringify(form.autores))
-    formData.append('orientadores', JSON.stringify(form.orientadores))
-    formData.append('palavrasChave', form.palavrasChave.join(','))
+    if (form.autores.length > 0) {
+        formData.append('autoresParaAdicionar', JSON.stringify(form.autores))
+    }
+    if (form.orientadores.length > 0) {
+        formData.append('orientadoresParaAdicionar', JSON.stringify(form.orientadores))
+    }
+    if (form.idsPessoasParaRemover.length > 0) {
+        formData.append('idsPessoasParaRemover', form.idsPessoasParaRemover.join(','))
+    }
+    if (form.palavrasChave.length > 0) {
+        formData.append('palavrasChaveParaAdicionar', form.palavrasChave.join(','))
+    }
+
+    formData.append('palavrasChaveParaAdicionar', form.palavrasChave.join(','));
 
     try {
         await $fetch(`/api/trabalhos/${trabalhoId.value}`, { method: 'PUT', body: formData, })
@@ -270,7 +349,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     } catch (err: any) {
         toast.add({ title: 'Erro ao atualizar', description: err.data?.message || 'Tente novamente.', color: 'warning' })
     } finally {
-    loading.value = false
-  }
+        loading.value = false
+    }
 }
 </script>

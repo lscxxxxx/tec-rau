@@ -6,17 +6,18 @@ import { PapelPessoa } from '@prisma/client'
 import prisma from '~/server/lib/prisma'
 
 const pessoaSchema = z.object({
+    id: z.number().optional(),
     nome: z.string().min(1),
     sobrenome: z.string().min(1),
 })
 
 type PessoaInput = z.infer<typeof pessoaSchema>;
 
-const jsonString = <T extends z.ZodTypeAny>(schema: T) => 
+const jsonString = <T extends z.ZodTypeAny>(schema: T) =>
     z.string().transform((val) => {
-            try { return JSON.parse(val) }
-            catch (e) { return val }
-        }).pipe(schema);
+        try { return JSON.parse(val) }
+        catch (e) { return val }
+    }).pipe(schema);
 const numberArrayString = z.string().transform(val => val.split(',').map(Number).filter(n => !isNaN(n)));
 const stringArrayString = z.string().transform(val => val.split(',').map(p => p.trim()).filter(Boolean));
 
@@ -54,6 +55,9 @@ export default defineEventHandler(async (event) => {
         }, {} as Record<string, string>) ?? {}
 
         const validatedData = schema.parse(formValues)
+        console.log('=== FORM VALUES PARSED ===')
+        console.dir(validatedData, { depth: null })
+
 
         const {
             cursoId,
@@ -73,46 +77,101 @@ export default defineEventHandler(async (event) => {
         if (cursoId) dadosParaPrisma.curso = { connect: { id: cursoId } }
         if (tipoDocumentalId) dadosParaPrisma.tipoDocumental = { connect: { id: tipoDocumentalId } }
 
-        const palavrasChaveUpdate: any = {};
-        if (palavrasChaveParaAdicionar?.length) {
-            palavrasChaveUpdate.create = palavrasChaveParaAdicionar.map((nome: string) => ({
-                palavraChave: { connectOrCreate: { where: { nome }, create: { nome } } }
-            }));
-        }
-        if (idsPalavrasChaveParaRemover?.length) {
-            palavrasChaveUpdate.delete = idsPalavrasChaveParaRemover.map((palavrachave_id: number) => ({
-                trabalho_id_palavrachave_id: { trabalho_id: idAsNumber, palavrachave_id }
-            }));
-        }
-        if (Object.keys(palavrasChaveUpdate).length) {
-            dadosParaPrisma.palavrasChave = palavrasChaveUpdate;
+        if (palavrasChaveParaAdicionar || idsPalavrasChaveParaRemover) {
+            if (idsPalavrasChaveParaRemover && idsPalavrasChaveParaRemover.length > 0) {
+                await prisma.trabalhoPalavraChave.deleteMany({
+                    where: {
+                        trabalho_id: idAsNumber,
+                        palavrachave_id: { in: idsPalavrasChaveParaRemover },
+                    },
+                });
+            }
+            if (palavrasChaveParaAdicionar && palavrasChaveParaAdicionar.length > 0) {
+                const palavrasChaveSalvas = await Promise.all(
+                    palavrasChaveParaAdicionar.map((nome: string) =>
+                        prisma.palavraChave.upsert({
+                            where: { nome },
+                            update: {},
+                            create: { nome },
+                        })
+                    )
+                );
+                await prisma.trabalhoPalavraChave.createMany({
+                    data: palavrasChaveSalvas.map(pc => ({
+                        trabalho_id: idAsNumber,
+                        palavrachave_id: pc.id,
+                    })),
+                    skipDuplicates: true,
+                });
+            }
         }
 
-        const pessoasUpdate: any = {};
-        const novasPessoas = [];
-        if (autoresParaAdicionar) {
-            novasPessoas.push(...autoresParaAdicionar.map(p => ({
-                papel: PapelPessoa.AUTOR,
-                pessoa: { create: p }
-            })));
-        }
-        if (orientadoresParaAdicionar) {
-            novasPessoas.push(...orientadoresParaAdicionar.map(p => ({
-                papel: PapelPessoa.ORIENTADOR,
-                pessoa: { create: p }
-            })));
-        }
-        if (novasPessoas.length) {
-            pessoasUpdate.create = novasPessoas;
-        }
+        const trabalhoExistente = await prisma.trabalho.findUnique({
+            where: { id: idAsNumber },
+            include: { pessoas: true }
+        })
+
         if (idsPessoasParaRemover?.length) {
-            pessoasUpdate.delete = idsPessoasParaRemover.map((pessoa_id: number) => ({
-                trabalho_id_pessoa_id: { trabalho_id: idAsNumber, pessoa_id }
-            }));
+            await prisma.trabalhoPessoa.deleteMany({
+                where: {
+                    trabalho_id: idAsNumber,
+                    pessoa_id: { in: idsPessoasParaRemover },
+                },
+            });
         }
-        if (Object.keys(pessoasUpdate).length) {
-            dadosParaPrisma.pessoas = pessoasUpdate;
+        if (autoresParaAdicionar?.length) {
+            for (const a of autoresParaAdicionar) {
+                const pessoa = a.id ? await prisma.pessoa.findUnique({ where: { id: a.id } })
+                : await prisma.pessoa.upsert({
+                    where: { nome_sobrenome: { nome: a.nome.trim(), sobrenome: a.sobrenome.trim() } },
+                    update: {},
+                    create: { nome: a.nome.trim(), sobrenome: a.sobrenome.trim() }
+                })
+                const jaExiste = await prisma.trabalhoPessoa.findFirst({
+                    where: {
+                        trabalho_id: idAsNumber,
+                        pessoa_id: pessoa!.id,
+                        papel: PapelPessoa.AUTOR,
+                    },
+                })
+                if (!jaExiste) {
+                    await prisma.trabalhoPessoa.create({
+                        data: {
+                            trabalho_id: idAsNumber,
+                            pessoa_id: pessoa!.id,
+                            papel: PapelPessoa.AUTOR,
+                        },
+                    })
+                }
+            }
         }
+        if (orientadoresParaAdicionar?.length) {
+            for (const o of orientadoresParaAdicionar) {
+                const pessoa = o.id ? await prisma.pessoa.findUnique({ where: { id: o.id } })
+                : await prisma.pessoa.upsert({
+                    where: { nome_sobrenome: { nome: o.nome.trim(), sobrenome: o.sobrenome.trim() } },
+                    update: {},
+                    create: { nome: o.nome.trim(), sobrenome: o.sobrenome.trim() }
+                })
+                const jaExiste = await prisma.trabalhoPessoa.findFirst({
+                    where: {
+                        trabalho_id: idAsNumber,
+                        pessoa_id: pessoa!.id,
+                        papel: PapelPessoa.ORIENTADOR,
+                    },
+                })
+                if (!jaExiste) {
+                    await prisma.trabalhoPessoa.create({
+                        data: {
+                            trabalho_id: idAsNumber,
+                            pessoa_id: pessoa!.id,
+                            papel: PapelPessoa.ORIENTADOR,
+                        },
+                    })
+                }
+            }
+        }
+
 
         const arquivoData = formData?.find(d => d.name === 'arquivo')
         if (arquivoData) {
@@ -142,8 +201,11 @@ export default defineEventHandler(async (event) => {
         const trabalhoAtualizado = await prisma.trabalho.update({
             where: { id: idAsNumber },
             data: dadosParaPrisma,
-        })
-
+            include: {
+                pessoas: { include: { pessoa: true }, },
+                palavrasChave: { include: { palavraChave: true }, },
+            },
+        });
         return trabalhoAtualizado
     } catch (error: any) {
         console.error('--- ERRO NA API DE EDIÇÃO DE TRABALHO ---', error)

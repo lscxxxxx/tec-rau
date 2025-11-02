@@ -111,11 +111,11 @@ async function confirmarExclusao() {
                     </template>
 
                     <template #autores-cell="{ row }">
-                        <span class="text-sm">{{ formatarPessoas(row.original.pessoas, 'AUTOR') }}</span>
+                        <span class="break-words whitespace-normal">{{ formatarPessoas(row.original.pessoas, 'AUTOR') }}</span>
                     </template>
 
                     <template #orientadores-cell="{ row }">
-                        <span class="text-sm">{{ formatarPessoas(row.original.pessoas, 'ORIENTADOR') }}</span>
+                        <span class="break-words whitespace-normal">{{ formatarPessoas(row.original.pessoas, 'ORIENTADOR') }}</span>
                     </template>
 
                     <template #actions-cell="{ row }">

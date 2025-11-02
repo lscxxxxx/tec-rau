@@ -43,6 +43,7 @@ export default defineEventHandler(async (event) => {
         palavrasChave: trabalho.palavrasChave.map((p) => p.palavraChave.nome),
         autores,
         orientadores,
+        pessoas: trabalho.pessoas,
         arquivo: trabalho.arquivo ?? null,
     }
 });
