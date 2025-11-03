@@ -4,7 +4,8 @@
             <main>
                 <div class="flex justify-between items-center mb-6">
                     <h1>Listagem de Administradores</h1>
-                    <UButton to="/admin/admins/novo" icon="i-lucide-plus" class="uppercase text-[12.5px] font-semibold">Adicionar Admin</UButton>
+                    <UButton to="/admin/admins/novo" icon="i-lucide-plus" class="uppercase text-[12.5px] font-semibold">
+                        Adicionar Admin</UButton>
                 </div>
 
                 <UTable>
@@ -18,6 +19,10 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { TooltipProvider } from 'reka-ui'
+
+definePageMeta({
+    layout: 'admin' // <-- Diz ao Nuxt para usar o layouts/admin.vue
+});
 
 const router = useRouter()
 const toast = useToast()
@@ -39,8 +44,8 @@ const { data: admins, pending, refresh } = useFetch<Admin[]>('/api/Admins', {
 })
 
 const columns: TableColumn<Admin>[] = [
-    { accessorKey: 'usuario', header:'Usuário' },
-    { accessorKey: 'email', header:'E-mail' },
-    { accessorKey: 'role', header:'Papel' },
+    { accessorKey: 'usuario', header: 'Usuário' },
+    { accessorKey: 'email', header: 'E-mail' },
+    { accessorKey: 'role', header: 'Papel' },
 ]
 </script>

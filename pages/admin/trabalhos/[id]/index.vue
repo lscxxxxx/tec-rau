@@ -52,7 +52,7 @@
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Curso</th>
                                 <td class="p-2 text-gray-800">{{ trabalho?.curso?.nome }}</td>
                             </tr>
-                            
+
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Palavras-chave</th>
                                 <td class="p-2 text-gray-800">
@@ -64,19 +64,19 @@
                                     </span>
                                 </td>
                             </tr>
-                            
+
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Data de defesa</th>
                                 <td class="p-2 text-gray-800">
                                     <ClientOnly>{{ dataFormatada }}</ClientOnly>
                                 </td>
                             </tr>
-                            
+
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600 leading-relaxed">Resumo</th>
                                 <td class="p-2 text-gray-800 leading-relaxed">{{ trabalho?.resumo }}</td>
                             </tr>
-                            
+
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Arquivo</th>
                                 <td class="p-2 text-gray-800">
@@ -99,6 +99,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+
+definePageMeta({
+    layout: 'admin' // <-- Diz ao Nuxt para usar o layouts/admin.vue
+});
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)

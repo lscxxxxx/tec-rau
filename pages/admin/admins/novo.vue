@@ -39,6 +39,10 @@ import { UInput } from '#components';
 import { object, string, ref as yupRef, type InferType } from 'yup'
 import type { FormSubmitEvent } from '#ui/types'
 
+definePageMeta({
+    layout: 'admin' // <-- Diz ao Nuxt para usar o layouts/admin.vue
+});
+
 const toast = useToast()
 const router = useRouter()
 const loading = ref(false)

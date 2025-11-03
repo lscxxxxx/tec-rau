@@ -138,6 +138,10 @@ import { ref, onMounted } from 'vue'
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 
+definePageMeta({
+    layout: 'admin' // <-- Diz ao Nuxt para usar o layouts/admin.vue
+});
+
 const toast = useToast()
 const router = useRouter()
 const route = useRoute()

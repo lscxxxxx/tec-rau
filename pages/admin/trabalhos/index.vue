@@ -2,6 +2,10 @@
 import type { TableColumn } from '@nuxt/ui'
 import { TooltipProvider } from 'reka-ui'
 
+definePageMeta({
+    layout: 'admin' // <-- Diz ao Nuxt para usar o layouts/admin.vue
+});
+
 const router = useRouter()
 const toast = useToast()
 const isModalOpen = ref(false)
@@ -107,15 +111,17 @@ async function confirmarExclusao() {
 
                     <template #dataDefesa-cell="{ row }">
                         <span>{{ new Date(row.original.dataDefesa).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
-                            }}</span>
+                        }}</span>
                     </template>
 
                     <template #autores-cell="{ row }">
-                        <span class="break-words whitespace-normal">{{ formatarPessoas(row.original.pessoas, 'AUTOR') }}</span>
+                        <span class="break-words whitespace-normal">{{ formatarPessoas(row.original.pessoas, 'AUTOR')
+                            }}</span>
                     </template>
 
                     <template #orientadores-cell="{ row }">
-                        <span class="break-words whitespace-normal">{{ formatarPessoas(row.original.pessoas, 'ORIENTADOR') }}</span>
+                        <span class="break-words whitespace-normal">{{ formatarPessoas(row.original.pessoas,
+                            'ORIENTADOR') }}</span>
                     </template>
 
                     <template #actions-cell="{ row }">

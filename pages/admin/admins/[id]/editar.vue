@@ -49,6 +49,10 @@
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 
+definePageMeta({
+    layout: 'admin' // <-- Diz ao Nuxt para usar o layouts/admin.vue
+});
+
 const route = useRoute()
 const toast = useToast()
 const router = useRouter()
