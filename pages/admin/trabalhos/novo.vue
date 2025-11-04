@@ -39,6 +39,7 @@
 
                         <div class="col-span-3 space-y-3">
                             <h3 class="font-semibold text-lg border-b pb-2">Autores *</h3>
+
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 items-center">
                                 <UInput v-model="novoAutor.nome" placeholder="Nome" class="col-span-5"
                                     @keydown.enter.prevent="adicionarAutor" />
@@ -48,6 +49,7 @@
                                     <UButton label="Adicionar" icon="i-heroicons-plus" @click="adicionarAutor" />
                                 </div>
                             </div>
+
                             <div v-if="form.autores.length > 0" class="flex flex-wrap gap-2 pt-2">
                                 <UBadge v-for="(autor, index) in form.autores" :key="`autor-${index}`" variant="subtle"
                                     size="lg">
@@ -143,13 +145,9 @@ type ApiSelectOption = { id: number; nome: string }
 const { data: cursosData } = useFetch<ApiSelectOption[]>('/api/cursos', { default: () => [] })
 const { data: tiposData } = useFetch<ApiSelectOption[]>('/api/tiposdocumentais', { default: () => [] })
 
-const cursos = computed(() =>
-    (cursosData.value ?? []).map((c: any) => ({ label: c.nome, value: c.id, }))
-)
+const cursos = computed(() => (cursosData.value ?? []).map((c: any) => ({ label: c.nome, value: c.id, })) )
 
-const tiposDocumentais = computed(() =>
-    (tiposData.value ?? []).map((t: any) => ({ label: t.nome, value: t.id, }))
-)
+const tiposDocumentais = computed(() => (tiposData.value ?? []).map((t: any) => ({ label: t.nome, value: t.id, })) )
 
 const form = reactive({
     titulo: '',
@@ -183,23 +181,33 @@ const schema = z.object({
 type Schema = z.output<typeof schema>
 
 function adicionarAutor() {
-    form.autores.push({ nome: '', sobrenome: '' })
+    const nome = novoAutor.value.nome.trim();
+    const sobrenome = novoAutor.value.sobrenome.trim();
+    if (!nome || !sobrenome) {
+        toast.add({ title: 'Preencha o nome e o sobrenome do autor.', color: 'warning' })
+        return
+    }
+    form.autores.push({ nome, sobrenome })
+    novoAutor.value = { nome: '', sobrenome: '' }
 }
 
 function removerAutor(index: number) {
-    if (form.autores.length > 1) {
-        form.autores.splice(index, 1)
-    }
+    form.autores.splice(index, 1)
 }
 
 function adicionarOrientador() {
-    form.orientadores.push({ nome: '', sobrenome: '' })
+    const nome = novoOrientador.value.nome.trim();
+    const sobrenome = novoOrientador.value.sobrenome.trim();
+    if (!nome || !sobrenome) {
+        toast.add({ title: 'Preencha o nome e o sobrenome do orientador.', color: 'warning' })
+        return
+    }
+    form.orientadores.push({ nome, sobrenome })
+    novoOrientador.value = { nome: '', sobrenome: '' }
 }
 
 function removerOrientador(index: number) {
-    if (form.orientadores.length > 1) {
-        form.orientadores.splice(index, 1)
-    }
+    form.orientadores.splice(index, 1)
 }
 
 function adicionarPalavra() {
