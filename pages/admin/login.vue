@@ -40,6 +40,12 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
+// 1. Importe o hook de autenticação e a interface User
+import { useAuth, type User } from '~/composables/useAuth'
+
+// 2. Puxe o estado global do usuário
+const { user } = useAuth()
+const router = useRouter()
 
 const form = reactive({
   data: {
@@ -57,20 +63,29 @@ async function onLoginClick() {
   form.error = ''
 
   try {
-    const { data, error } = await useFetch('/api/auth/login', {
+    // 3. Informe ao useFetch qual o tipo de retorno esperado (<User>)
+    const { data, error } = await useFetch<User>('/api/auth/login', {
       method: 'POST',
       body: {
-        email: form.data.usuario,
+        email: form.data.usuario, // Seu 'login.post.ts' espera 'email'
         senha: form.data.senha
       }
     })
 
     if (error.value) {
-      form.error = error.value?.data?.message || 'Erro inesperado.'
+      form.error = error.value?.data?.message || 'Email ou senha inválidos.'
       return
     }
 
-    navigateTo('/admin')
+    // 4. ESTA É A MUDANÇA CRUCIAL:
+    // Atualize o estado global com os dados do usuário que a API retornou
+    if (data.value) {
+      user.value = data.value
+    }
+
+    // 5. Redirecione para a área de admin
+    await router.push('/admin')
+
   } catch (err) {
     form.error = 'Erro de conexão.'
   } finally {

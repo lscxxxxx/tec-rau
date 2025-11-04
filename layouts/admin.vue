@@ -29,11 +29,19 @@
 </template>
 
 <script setup>
-const router = useRouter();
+import { useAuth } from '~/composables/useAuth';
 
-function logout() {
-    const token = useCookie('token'); // Usa o nome correto do cookie
-    token.value = null; // Remove o cookie
-    router.push('/admin/login');
+const router = useRouter();
+const { user } = useAuth();
+
+async function logout() {
+    try {
+        await $fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+        console.error("Erro ao fazer logout na API:", error);
+    }
+    user.value = null;
+
+    await router.push('/admin/login');
 }
 </script>

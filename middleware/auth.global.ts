@@ -1,33 +1,32 @@
-// /middleware/auth.ts  <-- O que está na raiz do projeto
+// /middleware/auth.global.ts
 
-export default defineNuxtRouteMiddleware((to, from) => {
-    // ADICIONE ESTAS DUAS LINHAS:
-    console.log(`--- INICIANDO MIDDLEWARE DE ROTA PARA: ${to.path} ---`);
-    console.log(`Executando no lado do: ${process.server ? 'SERVIDOR' : 'CLIENTE'}`);
+export default defineNuxtRouteMiddleware(async (to, from) => {
+    // 1. Pega o estado global do usuário, não o cookie!
+    const { user } = useAuth();
 
-    // O resto do seu código de verificação aqui...
-    // (Pode deixar o código que sugeri na última mensagem, ele está correto)
-
-    // Se o código estiver rodando no lado do servidor, não faz nada. <<-- REMOVA ESTA LÓGICA POR ENQUANTO PARA TESTAR
-    // if (process.server) {
-    //     return;
-    // }
-
-    const token = useCookie('token');
-    console.log(`Valor do cookie 'token' encontrado: ${token.value ? 'Existe' : 'NULO'}`);
-
-
-    const isAdminRoute = to.path.startsWith('/admin');
+    // 2. Define as rotas públicas de admin
     const adminPublicas = [
         '/admin/login',
         '/admin/esqueci-senha',
         '/admin/redefinir-senha',
     ];
 
-    if (isAdminRoute && !adminPublicas.includes(to.path) && !token.value) {
-        console.log('❌ ACESSO NEGADO! Redirecionando para /admin/login...');
+    // 3. Se a rota NÃO é de admin, permite o acesso (para /explorar, /sobre, etc.)
+    if (!to.path.startsWith('/admin')) {
+        return;
+    }
+
+    // 4. Se é uma rota PÚBLICA de admin (como /login), permite o acesso
+    if (adminPublicas.includes(to.path)) {
+        return;
+    }
+
+    // 5. Se chegou aqui, é uma rota de admin PROTEGIDA.
+    //    Verifica se o usuário está no estado global.
+    if (!user.value) {
+        // Se o usuário é nulo, redireciona para o login.
         return navigateTo('/admin/login', { replace: true });
     }
 
-    console.log('✅ Acesso permitido pela rota.');
+    // 6. Se o usuário existe no estado, permite o acesso.
 });
