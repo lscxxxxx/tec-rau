@@ -101,7 +101,7 @@
 import { computed } from 'vue'
 
 definePageMeta({
-    layout: 'admin' // <-- Diz ao Nuxt para usar o layouts/admin.vue
+    layout: 'admin'
 });
 
 const route = useRoute()
