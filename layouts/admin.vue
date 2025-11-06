@@ -5,16 +5,16 @@
                 <a href="#"><img src="/logo.png" alt="Logo do site" class="h-10" /></a>
             </div>
             <nav class="flex-1 px-2 py-4 space-y-2">
-                <NuxtLink to="/admin/trabalhos" class="flex items-center px-4 py-2 rounded-md hover:bg-gray-700 hover:text-white">
+                <NuxtLink to="/admin/trabalhos" class="flex items-center px-4 py-2 rounded-md hover:bg-gray-700 hover:text-white"><Book />
                     Trabalhos
                 </NuxtLink>
-                <NuxtLink to="/admin/admins" class="flex items-center px-4 py-2 rounded-md hover:bg-gray-700">
+                <NuxtLink to="/admin/admins" class="flex items-center px-4 py-2 rounded-md hover:bg-gray-700 hover:text-white"><UserCog />
                     Administradores
                 </NuxtLink>
             </nav>
             <div class="p-4">
                 <button @click="logout"
-                    class="w-full text-left flex items-center px-4 py-2 rounded-md hover:bg-red-700">
+                    class="w-full text-left flex items-center px-4 py-2 rounded-md hover:bg-red-700 hover:text-white"><LogOut />
                     Sair
                 </button>
             </div>
@@ -29,19 +29,20 @@
 </template>
 
 <script setup>
-import { useAuth } from '~/composables/useAuth';
+import { useAuth } from '~/composables/useAuth'
+import { Book, UserCog, LogOut } from 'lucide-vue-next'
 
-const router = useRouter();
-const { user } = useAuth();
+const router = useRouter()
+const { user } = useAuth()
 
 async function logout() {
     try {
-        await $fetch('/api/auth/logout', { method: 'POST' });
+        await $fetch('/api/auth/logout', { method: 'POST' })
     } catch (error) {
-        console.error("Erro ao fazer logout na API:", error);
+        console.error("Erro ao fazer logout na API:", error)
     }
-    user.value = null;
+    user.value = null
 
-    await router.push('/admin/login');
+    await router.push('/admin/login')
 }
 </script>
