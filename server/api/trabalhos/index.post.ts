@@ -10,6 +10,8 @@ const pessoaSchema = z.object({
   sobrenome: z.string().min(1),
 })
 
+type PessoaInput = z.infer<typeof pessoaSchema>
+
 function jsonString<T extends z.ZodTypeAny>(schema: T) {
   return z.string().transform((val, ctx): z.infer<T> => {
     try {
@@ -39,7 +41,29 @@ const schema = z.object({
   orientadores: jsonString(z.array(pessoaSchema).min(1)),
 })
 
-type ValidatedSchema = z.infer<typeof schema>;
+type ValidatedSchema = z.infer<typeof schema>
+
+async function processarPessoas(
+  prismaClient: any,
+  trabalhoId: number,
+  pessoas: PessoaInput[],
+  papel: PapelPessoa
+) {
+  for (const p of pessoas) {
+    const pessoa = await prismaClient.pessoa.upsert({
+      where: { nome_sobrenome: { nome: p.nome.trim(), sobrenome: p.sobrenome.trim() } },
+      update: {},
+      create: { nome: p.nome.trim(), sobrenome: p.sobrenome.trim() },
+    })
+    await prismaClient.trabalhoPessoa.create({
+      data: {
+        trabalho_id: trabalhoId,
+        pessoa_id: pessoa.id,
+        papel: papel,
+      },
+    })
+  }
+}
 
 export default defineEventHandler(async (event) => {
   try {
@@ -62,7 +86,6 @@ export default defineEventHandler(async (event) => {
     const uniqueFileName = `${nanoid()}.${fileExtension}`
     const uploadDir = resolve(process.cwd(), 'public/uploads')
     const filePath = `${uploadDir}/${uniqueFileName}`
-
     mkdirSync(uploadDir, { recursive: true })
     writeFileSync(filePath, arquivoData.data)
 
@@ -75,41 +98,27 @@ export default defineEventHandler(async (event) => {
       ...restoDosDados
     } = validatedData;
 
-    type PessoaInput = z.infer<typeof pessoaSchema>;
+    const novoTrabalho = await prisma.$transaction(async (tx) => {
+      
+      const trabalho = await tx.trabalho.create({
+        data: {
+          ...restoDosDados,
+          dataDefesa: new Date(validatedData.dataDefesa),
+          arquivo: `/uploads/${uniqueFileName}`,
+          curso: { connect: { id: cursoId }, },
+          tipoDocumental: { connect: { id: tipoDocumentalId }, },
+          palavrasChave: {
+            create: palavrasChave.map((palavraNome: string) => ({
+              palavraChave: { connectOrCreate: { where: { nome: palavraNome }, create: { nome: palavraNome } } }
+            }))
+          },
+        }
+      })
 
-    const dadosParaPrisma = {
-      ...restoDosDados,
-      dataDefesa: new Date(validatedData.dataDefesa),
-      arquivo: `/uploads/${uniqueFileName}`,
-      palavrasChave: {
-        create: palavrasChave.map((palavraNome: string) => ({
-          palavraChave: {
-            connectOrCreate: { where: { nome: palavraNome }, create: { nome: palavraNome } }
-          }
-        }))
-      },
-      curso: {
-        connect: { id: cursoId, },
-      },
-      tipoDocumental: {
-        connect: { id: tipoDocumentalId, },
-      },
-      pessoas: {
-        create: [
-          ...autores.map((autor: PessoaInput) => ({
-            papel: PapelPessoa.AUTOR,
-            pessoa: { create: { nome: autor.nome, sobrenome: autor.sobrenome } },
-          })),
-          ...orientadores.map((orientador: PessoaInput) => ({
-            papel: PapelPessoa.ORIENTADOR,
-            pessoa: { create: { nome: orientador.nome, sobrenome: orientador.sobrenome } },
-          })),
-        ],
-      },
-    }
+      await processarPessoas(tx, trabalho.id, autores, PapelPessoa.AUTOR)
+      await processarPessoas(tx, trabalho.id, orientadores, PapelPessoa.ORIENTADOR)
 
-    const novoTrabalho = await prisma.trabalho.create({
-      data: dadosParaPrisma,
+      return trabalho;
     })
 
     setResponseStatus(event, 201)
@@ -117,6 +126,7 @@ export default defineEventHandler(async (event) => {
 
   } catch (error: any) {
     console.error('--- ERRO NA API DE CADASTRO DE TRABALHO ---');
+    console.error(error);
 
     if (error instanceof z.ZodError) {
       throw createError({
@@ -124,6 +134,13 @@ export default defineEventHandler(async (event) => {
         statusMessage: `Erro de validação`,
         data: error.issues,
       })
+    }
+    
+    if (error.code === 'P2002') {
+         throw createError({
+           statusCode: 409,
+           statusMessage: 'Erro de conflito. Verifique se o título ou outros dados únicos já existem.',
+         })
     }
 
     throw createError({
