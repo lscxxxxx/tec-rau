@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import { TooltipProvider } from 'reka-ui'
 
 definePageMeta({
-    layout: 'admin' // <-- Diz ao Nuxt para usar o layouts/admin.vue
+    layout: 'admin'
 });
 
 const router = useRouter()
@@ -29,11 +30,26 @@ type Trabalho = {
     pessoas: TrabalhoPessoa[]
 }
 
-const { data: trabalhos, pending, refresh } = useFetch<Trabalho[]>('/api/trabalhos', {
-    key: 'trabalhos-list',
-    lazy: true,
-    default: () => []
-})
+const page = ref(1)
+const limit = ref(10)
+
+type ApiResponse = {
+    items: Trabalho[]
+    totalItems: number
+    page: number
+    limit: number
+}
+
+const key = computed(() => `trabalhos-admin-p${page.value}`)
+
+const { data, pending, refresh } = useAsyncData (
+    key.value,
+    () => $fetch<ApiResponse>(`/api/trabalhos?page=${page.value}&limit=${limit.value}`),
+    { default: () => ({ items: [], totalItems: 0, page: 1, limit: limit.value }) }
+)
+
+const trabalhos = computed(() => data.value?.items ?? [])
+const totalItems = computed(() => data.value?.totalItems ?? 0)
 
 const columns: TableColumn<Trabalho>[] = [
     { id: 'titulo', header: 'Título' },
@@ -42,10 +58,6 @@ const columns: TableColumn<Trabalho>[] = [
     { id: 'orientadores', header: 'Orientador(es)' },
     { id: 'actions', header: 'Ações' },
 ]
-
-onMounted(() => {
-    console.log('Trabalhos retornados:', trabalhos.value)
-})
 
 function formatarPessoas(pessoas: TrabalhoPessoa[], papel: 'AUTOR' | 'ORIENTADOR'): string {
     if (!pessoas || pessoas.length === 0) { return 'Não informado' }
@@ -73,13 +85,17 @@ watch(isModalOpen, (val) => {
 })
 
 async function confirmarExclusao() {
-    if (trabalhoParaExcluirId.value === null)
-        return
+    if (trabalhoParaExcluirId.value === null) return
 
     try {
         await $fetch(`/api/trabalhos/${trabalhoParaExcluirId.value}`, { method: 'DELETE' })
         toast.add({ title: 'Trabalho excluído com sucesso!', color: 'success' })
-        refresh()
+        
+        if (trabalhos.value.length === 1 && page.value > 1) {
+            page.value--
+        } else {
+            refresh()
+        }
     }
     catch (error) {
         toast.add({ title: 'Erro ao excluir o trabalho', color: 'error' })
@@ -111,12 +127,12 @@ async function confirmarExclusao() {
 
                     <template #dataDefesa-cell="{ row }">
                         <span>{{ new Date(row.original.dataDefesa).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
-                        }}</span>
+                            }}</span>
                     </template>
 
                     <template #autores-cell="{ row }">
                         <span class="break-words whitespace-normal">{{ formatarPessoas(row.original.pessoas, 'AUTOR')
-                            }}</span>
+                        }}</span>
                     </template>
 
                     <template #orientadores-cell="{ row }">
@@ -158,6 +174,10 @@ async function confirmarExclusao() {
                         </div>
                     </template>
                 </UTable>
+
+                <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
+                    <UPagination v-model="page" :page-count="limit" :total="totalItems" />
+                </div>
             </main>
             <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/50">
                 <UCard class="w-full max-w-md mx-auto">

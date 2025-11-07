@@ -16,6 +16,6 @@
 
 <script setup lang="ts">
 definePageMeta({
-    layout: 'admin' // <-- Diz ao Nuxt para usar o layouts/admin.vue
+    layout: 'admin'
 });
 </script>
