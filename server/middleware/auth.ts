@@ -6,20 +6,23 @@ interface JwtPayload {
 }
 
 export default defineEventHandler(async (event) => {
-    const rotasApiPublicas = [
-        '/api/auth/login',
+    const rotasApiPublicas = [ '/api/auth/login', ]
+    const rotasGetPublicas = [
+        /^\/api\/trabalhos$/,
+        /^\/api\/trabalhos\/\d+$/
     ]
 
-    if (!event.path.startsWith('/api/')) {
-        return;
-    }
+    if (!event.path.startsWith('/api/')) return
+    if (rotasApiPublicas.includes(event.path)) return
 
-    if (rotasApiPublicas.includes(event.path)) {
-        return
+    const urlSemQuery = event.path.replace(/\/$/, '')
+    const caminhoLimpo = urlSemQuery.split('?')[0]
+    if (event.method === 'GET') {
+        const ehRotaPublica = rotasGetPublicas.some((regex) => regex.test(caminhoLimpo))
+        if (ehRotaPublica) return
     }
 
     const token = getCookie(event, 'token');
-
     if (!token) {
         throw createError({
             statusCode: 401,
@@ -28,7 +31,6 @@ export default defineEventHandler(async (event) => {
     }
 
     const admin = verificarToken<JwtPayload>(token);
-
     if (!admin) {
         throw createError({
             statusCode: 401,
