@@ -138,7 +138,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { SelectItem } from '@nuxt/ui'
-import { Zap, Settings, FolderCode } from 'lucide-vue-next';
+import { Zap, Settings, FolderCode } from 'lucide-vue-next'
 
 const queryPesquisa = ref<string>('')
 

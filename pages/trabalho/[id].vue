@@ -1,11 +1,21 @@
 <template>
     <div class="min-h-screen text-gray-800 font-sans flex flex-col">
         <main class="flex-1 max-w-6xl mx-auto w-full p-6">
-            <UBreadcrumb :links="paginas" class="mb-4">
-                <template #separator>
-                    <span class="mx-2 text-muted">/</span>
+
+            <nav class="flex items-center text-sm text-gray-600 mb-4">
+                <template v-for="(p, idx) in paginas" :key="idx">
+                    <div class="flex items-center">
+                        <NuxtLink v-if="p.to" :to="p.to" class="flex items-center gap-1 hover:underline hover:text-green-700 transition-colors">
+                            <component v-if="p.icon" :is="p.icon" class="w-4 h-4 mr-1 text-green-700" />{{ p.label }}
+                        </NuxtLink>
+                        <span v-else class="flex items-center gap-1">
+                            <component v-if="p.icon" :is="p.icon" class="w-4 h-4 mr-1 text-gray-600" />{{ p.label }}
+                        </span>
+                        <ChevronRight v-if="idx < paginas.length - 1" class="mx-2 text-gray-400" />
+                    </div>
                 </template>
-            </UBreadcrumb>
+            </nav>
+
 
             <UCard>
                 <template #header>
@@ -81,7 +91,7 @@
                                 <th class="text-left w-48 p-2 font-medium text-gray-600 leading-relaxed">Resumo</th>
                                 <td class="p-2 text-gray-800 leading-relaxed">{{ trabalho?.resumo }}</td>
                             </tr>
-                            
+
                             <tr class="border-b">
                                 <th class="text-left w-48 p-2 font-medium text-gray-600">Arquivo</th>
                                 <td class="p-2 text-gray-800">
@@ -104,20 +114,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { BreadcrumbItem } from '@nuxt/ui'
-
-const paginas = computed<BreadcrumbItem[]>(() => [
-    {
-        label: 'Página Inicial',
-        icon: 'i-lucide-home',
-        to: '/explorar' // ou para onde for sua home
-    },
-    {
-        label: trabalho.value?.titulo || 'Carregando...',
-        icon: 'i-lucide-box', // ou 'i-lucide-file-text'
-        to: `/trabalho/${id.value}`
-    }
-])
+import { Zap, Settings, FolderCode, Home, ChevronRight } from 'lucide-vue-next'
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)
@@ -127,18 +124,15 @@ interface Curso {
     id: number;
     nome: string;
 }
-
 interface TipoDocumental {
     id: number;
     nome: string;
 }
-
 interface Pessoa {
     id: number
     nome: string
     sobrenome: string
 }
-
 interface Trabalho {
     id: number
     titulo: string
@@ -152,12 +146,42 @@ interface Trabalho {
     palavrasChave: string[]
     arquivo?: string | null
 }
+interface Pagina {
+    label: string
+    to?: string
+    icon?: any
+}
+
+const iconesCursos: Record<string, any> = {
+    'Desenvolvimento de Sistemas': FolderCode,
+    'Eletrotécnica': Zap,
+    'Mecânica': Settings
+}
 
 const { data: trabalho, pending, error } = useAsyncData(
     `trabalho-${id.value}`,
     () => $fetch<Trabalho>(`/api/trabalhos/${id.value}`),
     { lazy: true }
 )
+
+const paginas = computed<Pagina[]>(() => {
+    const t = trabalho.value
+    if (!t) { return [{ label: 'Página Inicial', to: '/explorar' }, { label: 'Carregando...' }] }
+
+    const curso = t.curso
+    const IconeCurso = iconesCursos[curso?.nome ?? ''] || FolderCode
+
+    const lista: Pagina[] = [
+        { label: 'Página Inicial', to: '/explorar', icon: Home }
+    ]
+
+    if (curso) {
+        lista.push({ label: curso.nome, to: `/cursos/${curso.id}`, icon: IconeCurso })
+    }
+
+    lista.push({ label: t.titulo })
+    return lista
+})
 
 const dataFormatada = computed(() => {
     if (!trabalho.value?.dataDefesa) return ''
