@@ -35,7 +35,7 @@
                     <dl class="text-sm divide-y divide-gray-200 rounded-lg overflow-hidden">
                         <!-- Título -->
                         <div
-                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-600 col-span-1 pl-3">Título</dt>
                             <dd class="col-span-3 font-medium text-gray-600">
                                 {{ trabalho?.titulo }}
@@ -44,13 +44,13 @@
 
                         <!-- Autor(es) -->
                         <div
-                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-600 col-span-1 pl-3">Autor(es)</dt>
                             <dd class="col-span-3 text-gray-800 flex flex-wrap">
                                 <span v-for="autor in trabalho.autores" :key="autor.id"
                                     class="inline-flex items-center rounded-full px-2 py-1 text-sm font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1">
                                     <NuxtLink to="#" class="hover:underline">
-                                        {{ autor.nome }} {{ autor.sobrenome }}
+                                        {{ autor.sobrenome.toUpperCase() }}, {{ autor.nome }}
                                     </NuxtLink>
                                 </span>
                             </dd>
@@ -58,13 +58,13 @@
 
                         <!-- Orientador(es) -->
                         <div
-                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-600 col-span-1 pl-3">Orientador(es)</dt>
                             <dd class="col-span-3 text-gray-800 flex flex-wrap">
                                 <span v-for="orientador in trabalho.orientadores" :key="orientador.id"
                                     class="inline-flex items-center rounded-full px-2 py-1 text-sm font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1">
                                     <NuxtLink to="#" class="hover:underline">
-                                        {{ orientador.nome }} {{ orientador.sobrenome }}
+                                        {{ orientador.sobrenome.toUpperCase() }}, {{ orientador.nome }}
                                     </NuxtLink>
                                 </span>
                             </dd>
@@ -72,7 +72,7 @@
 
                         <!-- Tipo documental -->
                         <div
-                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-600 col-span-1 pl-3">Tipo documental</dt>
                             <dd class="col-span-3 font-medium text-gray-600">
                                 {{ trabalho?.tipoDocumental?.nome }}
@@ -81,7 +81,7 @@
 
                         <!-- Curso -->
                         <div
-                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-600 col-span-1 pl-3">Curso</dt>
                             <dd class="col-span-3 font-medium text-gray-600">
                                 {{ trabalho?.curso?.nome }}
@@ -90,7 +90,7 @@
 
                         <!-- Palavras-chave -->
                         <div
-                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-600 col-span-1 pl-3">Palavras-chave</dt>
                             <dd class="col-span-3 text-gray-800 flex flex-wrap">
                                 <span v-for="(p, idx) in trabalho.palavrasChave" :key="idx"
@@ -102,7 +102,7 @@
 
                         <!-- Data de defesa -->
                         <div
-                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-600 col-span-1 pl-3">Data de defesa</dt>
                             <dd class="col-span-3 font-medium text-gray-600">
                                 <ClientOnly>{{ dataFormatada }}</ClientOnly>
@@ -111,16 +111,16 @@
 
                         <!-- Resumo -->
                         <div
-                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-900 col-span-1 pl-3">Resumo</dt>
-                            <dd class="col-span-3 font-medium text-gray-600 leading-relaxed">
+                            <dd class="col-span-3 font-medium text-gray-600 text-justify leading-relaxed pr-3">
                                 {{ trabalho?.resumo }}
                             </dd>
                         </div>
 
                         <!-- Arquivo -->
                         <div
-                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-600 col-span-1 pl-3">Arquivo</dt>
                             <dd class="col-span-3 text-gray-800 flex items-center gap-4">
                                 <template v-if="trabalho.arquivo">
