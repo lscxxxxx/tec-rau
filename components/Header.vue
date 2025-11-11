@@ -7,15 +7,15 @@
                     <li><a href="#" class="uppercase px-3 py-2 rounded-md text-gray-700 text-[13px] font-medium transition
                      hover:text-[#006633] hover:font-bold hover:bg-white
                      active:bg-[#006633] active:font-bold active:text-white">Sobre</a></li>
-                    <li><a href="#" class="uppercase px-3 py-2 rounded-md text-gray-700 text-[13px] font-medium transition
+                    <li><a href="/cursos" class="uppercase px-3 py-2 rounded-md text-gray-700 text-[13px] font-medium transition
                      hover:text-[#006633] hover:font-bold hover:bg-white
                      active:bg-[#006633] active:font-bold active:text-white">Comunidades e coleções</a></li>
                      <li><a href="#" class="uppercase px-3 py-2 rounded-md text-gray-700 text-[13px] font-medium transition
                      hover:text-[#006633] hover:font-bold hover:bg-white
                      active:bg-[#006633] active:font-bold active:text-white">Navegar</a></li>
-                     <li><a href="#" class="uppercase px-3 py-2 rounded-md text-gray-700 text-[13px] font-medium transition
+                     <li><a href="/admin/login" class="uppercase px-3 py-2 rounded-md text-gray-700 text-[13px] font-medium transition
                      hover:text-[#006633] hover:font-bold hover:bg-white
-                     active:bg-[#006633] active:font-bold active:text-white">Estatísticas</a></li>
+                     active:bg-[#006633] active:font-bold active:text-white">Acesso restrito</a></li>
                 </ul>
             </nav>
         </div>
