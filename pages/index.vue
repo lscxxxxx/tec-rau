@@ -112,9 +112,9 @@
             Ocorreu um erro ao carregar os trabalhos.
         </div>
         <div v-else-if="trabalhosRecentes.length > 0" class="gap-5 py-5">
-            <ul>
+            <ul class="border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-200">
                 <li v-for="trabalho in trabalhosRecentes" :key="trabalho.id"
-                    class="bg-gray-50 p-3 border-b border-gray-200 first:border-t hover:bg-gray-100">
+                    class="bg-gray-50 p-4 hover:bg-gray-100 transition-colors">
                     <NuxtLink :to="`/trabalho/${trabalho.id}`"
                         class="text-blue-700 text-xl font-medium hover:underline">{{ trabalho.titulo }}</NuxtLink>
                     <p class="text-sm text-gray-600">{{ formatarAutores(trabalho.pessoas) }}
@@ -194,7 +194,7 @@ function formatarAutores(pessoas: TrabalhoPessoa[]): string {
     if (!pessoas || pessoas.length === 0) return 'Autor não informado'
     const nomesFormatados = pessoas
         .filter(p => p.papel === 'AUTOR')
-        .map(p => `${p.pessoa.nome} ${p.pessoa.sobrenome}`)
+        .map(p => `${p.pessoa.sobrenome.toUpperCase()}, ${p.pessoa.nome}`)
     if (nomesFormatados.length === 0) return 'Autor não informado'
     return nomesFormatados.join('; ')
 }

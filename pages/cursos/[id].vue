@@ -136,7 +136,7 @@ function formatarAutores(pessoas: TrabalhoPessoa[]): string {
     if (!pessoas || pessoas.length === 0) return 'Autor não informado'
     const nomesFormatados = pessoas
         .filter(p => p.papel === 'AUTOR')
-        .map(p => `${p.pessoa.nome} ${p.pessoa.sobrenome}`)
+        .map(p => `${p.pessoa.sobrenome.toUpperCase()}, ${p.pessoa.nome}`)
     if (nomesFormatados.length === 0) return 'Autor não informado'
     return nomesFormatados.join('; ')
 }

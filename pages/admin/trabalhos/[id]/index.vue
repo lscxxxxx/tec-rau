@@ -28,7 +28,7 @@
                                 <td class="p-2 text-gray-800">
                                     <span v-for="autor in trabalho.autores" :key="autor.id"
                                         class="inline-block border border-[#2F9E40] bg-[rgba(47,158,64,0.25)] text-[#2F9E40] px-2 py-1 rounded mr-1 mb-1">
-                                        {{ autor.nome }} {{ autor.sobrenome }}
+                                        {{ autor.sobrenome.toUpperCase }}, {{ autor.nome }}
                                     </span>
                                 </td>
                             </tr>
@@ -38,7 +38,7 @@
                                 <td class="p-2 text-gray-800">
                                     <span v-for="orientador in trabalho.orientadores" :key="orientador.id"
                                         class="inline-block border border-[#2F9E40] bg-[rgba(47,158,64,0.25)] text-[#2F9E40] px-2 py-1 rounded mr-1 mb-1">
-                                        {{ orientador.nome }} {{ orientador.sobrenome }}
+                                        {{ orientador.sobrenome.toUpperCase() }}, {{ orientador.nome }}
                                     </span>
                                 </td>
                             </tr>

@@ -57,7 +57,7 @@
                             <div v-if="form.autores.length > 0" class="flex flex-wrap gap-2 pt-2">
                                 <UBadge v-for="(autor, index) in form.autores" :key="`autor-${index}`" variant="subtle"
                                     size="lg">
-                                    {{ autor.nome }} {{ autor.sobrenome }}
+                                    {{ autor.sobrenome.toUpperCase() }}, {{ autor.nome }}
                                     <UButton icon="i-heroicons-x-mark-20-solid" color="primary" variant="link" size="xs"
                                         class="-mr-1.5" @click="removerAutor(index)" />
                                 </UBadge>
@@ -83,7 +83,7 @@
                             <div v-if="form.orientadores.length > 0" class="flex flex-wrap gap-2 pt-2">
                                 <UBadge v-for="(orientador, index) in form.orientadores" :key="`orientador-${index}`"
                                     variant="subtle" size="lg">
-                                    {{ orientador.nome }} {{ orientador.sobrenome }}
+                                    {{ orientador.sobrenome.toUpperCase() }}, {{ orientador.nome }}
                                     <UButton icon="i-heroicons-x-mark-20-solid" color="primary" variant="link" size="xs"
                                         class="-mr-1.5" @click="removerOrientador(index)" />
                                 </UBadge>
