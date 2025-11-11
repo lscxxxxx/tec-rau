@@ -9,7 +9,15 @@ export default defineEventHandler(async (event) => {
     const rotasApiPublicas = [ '/api/auth/login', ]
     const rotasGetPublicas = [
         /^\/api\/trabalhos$/,
-        /^\/api\/trabalhos\/\d+$/
+        /^\/api\/trabalhos\/\d+$/,
+        /^\/api\/cursos$/,
+        /^\/api\/cursos\/\d+$/,
+        /^\/api\/pessoas$/,
+        /^\/api\/pessoas\/\d+$/,
+        /^\/api\/tiposdocumentais$/,
+        /^\/api\/tiposdocumentais\/\d+$/,
+        /^\/api\/palavraschave$/,
+        /^\/api\/palavraschave\/\d+$/
     ]
 
     if (!event.path.startsWith('/api/')) return
