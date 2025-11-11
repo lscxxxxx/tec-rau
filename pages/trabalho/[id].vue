@@ -5,7 +5,8 @@
             <nav class="flex items-center text-sm text-gray-600 mb-4">
                 <template v-for="(p, idx) in paginas" :key="idx">
                     <div class="flex items-center">
-                        <NuxtLink v-if="p.to" :to="p.to" class="flex items-center gap-1 hover:underline hover:text-green-700 transition-colors">
+                        <NuxtLink v-if="p.to" :to="p.to"
+                            class="flex items-center gap-1 hover:underline hover:text-green-700 transition-colors">
                             <component v-if="p.icon" :is="p.icon" class="w-4 h-4 mr-1 text-green-700" />{{ p.label }}
                         </NuxtLink>
                         <span v-else class="flex items-center gap-1">
@@ -31,81 +32,112 @@
                 </div>
 
                 <div v-else-if="trabalho" class="overflow-x-auto">
-                    <table class="table-auto w-full text-sm">
-                        <tbody>
-                            <tr class="border-b">
-                                <th class="text-left w-48 p-2 font-medium text-gray-600">Título</th>
-                                <td class="p-2 text-gray-800">{{ trabalho?.titulo }}</td>
-                            </tr>
+                    <dl class="text-sm divide-y divide-gray-200 rounded-lg overflow-hidden">
+                        <!-- Título -->
+                        <div
+                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            <dt class="font-semibold text-gray-600 col-span-1 pl-3">Título</dt>
+                            <dd class="col-span-3 font-medium text-gray-600">
+                                {{ trabalho?.titulo }}
+                            </dd>
+                        </div>
 
-                            <tr class="border-b">
-                                <th class="text-left w-48 p-2 font-medium text-gray-600">Autor(es)</th>
-                                <td class="p-2 text-gray-800">
-                                    <span v-for="autor in trabalho.autores" :key="autor.id"
-                                        class="inline-block border border-[#2F9E40] bg-[rgba(47,158,64,0.25)] text-[#2F9E40] px-2 py-1 rounded mr-1 mb-1">
+                        <!-- Autor(es) -->
+                        <div
+                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            <dt class="font-semibold text-gray-600 col-span-1 pl-3">Autor(es)</dt>
+                            <dd class="col-span-3 text-gray-800 flex flex-wrap">
+                                <span v-for="autor in trabalho.autores" :key="autor.id"
+                                    class="inline-flex items-center rounded-full px-2 py-1 text-sm font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1">
+                                    <NuxtLink to="#" class="hover:underline">
                                         {{ autor.nome }} {{ autor.sobrenome }}
-                                    </span>
-                                </td>
-                            </tr>
+                                    </NuxtLink>
+                                </span>
+                            </dd>
+                        </div>
 
-                            <tr class="border-b">
-                                <th class="text-left w-48 p-2 font-medium text-gray-600">Orientador(es)</th>
-                                <td class="p-2 text-gray-800">
-                                    <span v-for="orientador in trabalho.orientadores" :key="orientador.id"
-                                        class="inline-block border border-[#2F9E40] bg-[rgba(47,158,64,0.25)] text-[#2F9E40] px-2 py-1 rounded mr-1 mb-1">
+                        <!-- Orientador(es) -->
+                        <div
+                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            <dt class="font-semibold text-gray-600 col-span-1 pl-3">Orientador(es)</dt>
+                            <dd class="col-span-3 text-gray-800 flex flex-wrap">
+                                <span v-for="orientador in trabalho.orientadores" :key="orientador.id"
+                                    class="inline-flex items-center rounded-full px-2 py-1 text-sm font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1">
+                                    <NuxtLink to="#" class="hover:underline">
                                         {{ orientador.nome }} {{ orientador.sobrenome }}
-                                    </span>
-                                </td>
-                            </tr>
+                                    </NuxtLink>
+                                </span>
+                            </dd>
+                        </div>
 
-                            <tr class="border-b">
-                                <th class="text-left w-48 p-2 font-medium text-gray-600">Tipo documental</th>
-                                <td class="p-2 text-gray-800">{{ trabalho?.tipoDocumental?.nome }}</td>
-                            </tr>
+                        <!-- Tipo documental -->
+                        <div
+                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            <dt class="font-semibold text-gray-600 col-span-1 pl-3">Tipo documental</dt>
+                            <dd class="col-span-3 font-medium text-gray-600">
+                                {{ trabalho?.tipoDocumental?.nome }}
+                            </dd>
+                        </div>
 
-                            <tr class="border-b">
-                                <th class="text-left w-48 p-2 font-medium text-gray-600">Curso</th>
-                                <td class="p-2 text-gray-800">{{ trabalho?.curso?.nome }}</td>
-                            </tr>
+                        <!-- Curso -->
+                        <div
+                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            <dt class="font-semibold text-gray-600 col-span-1 pl-3">Curso</dt>
+                            <dd class="col-span-3 font-medium text-gray-600">
+                                {{ trabalho?.curso?.nome }}
+                            </dd>
+                        </div>
 
-                            <tr class="border-b">
-                                <th class="text-left w-48 p-2 font-medium text-gray-600">Palavras-chave</th>
-                                <td class="p-2 text-gray-800">
-                                    <span v-if="trabalho.palavrasChave.length">
-                                        <span v-for="(p, idx) in trabalho.palavrasChave" :key="idx"
-                                            class="inline-block bg-gray-200 px-2 py-1 rounded mr-1 mb-1">
-                                            {{ p }}
-                                        </span>
-                                    </span>
-                                </td>
-                            </tr>
+                        <!-- Palavras-chave -->
+                        <div
+                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            <dt class="font-semibold text-gray-600 col-span-1 pl-3">Palavras-chave</dt>
+                            <dd class="col-span-3 text-gray-800 flex flex-wrap">
+                                <span v-for="(p, idx) in trabalho.palavrasChave" :key="idx"
+                                    class="inline-flex items-center rounded-full px-2 py-1 text-sm font-medium bg-gray-300 text-gray-700 mr-1">
+                                    <NuxtLink to="#" class="hover:underline">{{ p }}</NuxtLink>
+                                </span>
+                            </dd>
+                        </div>
 
-                            <tr class="border-b">
-                                <th class="text-left w-48 p-2 font-medium text-gray-600">Data do documento</th>
-                                <td class="p-2 text-gray-800">
-                                    <ClientOnly>{{ dataFormatada }}</ClientOnly>
-                                </td>
-                            </tr>
+                        <!-- Data de defesa -->
+                        <div
+                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            <dt class="font-semibold text-gray-600 col-span-1 pl-3">Data de defesa</dt>
+                            <dd class="col-span-3 font-medium text-gray-600">
+                                <ClientOnly>{{ dataFormatada }}</ClientOnly>
+                            </dd>
+                        </div>
 
-                            <tr class="border-b">
-                                <th class="text-left w-48 p-2 font-medium text-gray-600 leading-relaxed">Resumo</th>
-                                <td class="p-2 text-gray-800 leading-relaxed">{{ trabalho?.resumo }}</td>
-                            </tr>
+                        <!-- Resumo -->
+                        <div
+                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            <dt class="font-semibold text-gray-900 col-span-1 pl-3">Resumo</dt>
+                            <dd class="col-span-3 font-medium text-gray-600 leading-relaxed">
+                                {{ trabalho?.resumo }}
+                            </dd>
+                        </div>
 
-                            <tr class="border-b">
-                                <th class="text-left w-48 p-2 font-medium text-gray-600">Arquivo</th>
-                                <td class="p-2 text-gray-800">
-                                    <span v-if="trabalho.arquivo">
-                                        <a :href="trabalho.arquivo" target="_blank"
-                                            class="text-blue-600 hover:underline">
-                                            Visualizar PDF
-                                        </a>
-                                    </span>
-                                    <span v-else>–</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <!-- Arquivo -->
+                        <div
+                            class="grid grid-cols-4 gap-4 py-1.5 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            <dt class="font-semibold text-gray-600 col-span-1 pl-3">Arquivo</dt>
+                            <dd class="col-span-3 text-gray-800 flex items-center gap-4">
+                                <template v-if="trabalho.arquivo">
+                                    <a :href="trabalho.arquivo" target="_blank" rel="noopener noreferrer"
+                                        class="inline-flex items-center text-green-700 font-medium hover:underline">
+                                        <Eye class="w-4 h-4 mr-2" />Visualizar PDF
+                                    </a>
+
+                                    <a :href="trabalho.arquivo" download
+                                        class="inline-flex items-center text-green-700 font-medium hover:underline">
+                                        <Download class="w-4 h-4 mr-2" />Baixar PDF
+                                    </a>
+                                </template>
+                                <span v-else>–</span>
+                            </dd>
+                        </div>
+                    </dl>
                 </div>
             </UCard>
         </main>
@@ -114,7 +146,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Zap, Settings, FolderCode, Home, ChevronRight } from 'lucide-vue-next'
+import { Zap, Settings, FolderCode, Home, ChevronRight, Eye, Download } from 'lucide-vue-next'
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)
