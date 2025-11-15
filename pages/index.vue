@@ -15,44 +15,23 @@
             <div class="grid grid-cols-[3fr_1fr_auto] gap-4 p-4 items-center">
                 <UInput size="xl" icon="i-lucide-search" placeholder="Pesquise por..." v-model="queryPesquisa" />
                 <USelect size="xl" multiple v-model="opcoesSelecionadas" value-key="id" :items="opcoesPesquisa" />
-                <UButton size="xl" color="primary" class="uppercase font-semibold px-6" @click="buscar">Buscar
+                <UButton size="xl" color="primary" class="uppercase font-semibold px-6" @click="buscar"
+                    @keydown.enter="buscar">Buscar
                 </UButton>
             </div>
         </div>
 
         <h2 class="text-2xl font-semibold mt-10 mb-4">Comunidades</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 py-5">
-            <a href="#"
-                class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer">
+            <NuxtLink v-for="curso in cursosList" :key="curso.id" :to="`/explorar?cursoId=${curso.id}`"
+                class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer grou">
                 <div class="p-3 bg-green-100 rounded-xl flex items-center justify-center">
-                    <Zap />
+                    <component :is="iconesCursos[curso.nome] || FolderCode" class="w-6 h-6 text-green-700" />
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-800 group-hover:text-green-700">Eletrotécnica</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 group-hover:text-green-700">{{ curso.nome }}</h3>
                 </div>
-            </a>
-
-            <a href="#"
-                class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer">
-                <div class="p-3 bg-green-100 rounded-xl flex items-center justify-center">
-                    <Settings />
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-800 group-hover:text-green-700">Mecânica</h3>
-                </div>
-            </a>
-
-            <a href="#"
-                class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer">
-                <div class="p-3 bg-green-100 rounded-xl flex items-center justify-center">
-                    <FolderCode />
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-800 group-hover:text-green-700">Desenvolvimento de
-                        Sistemas
-                    </h3>
-                </div>
-            </a>
+            </NuxtLink>
         </div>
 
         <h2 class="text-2xl font-semibold mt-10 mb-4">Facetas</h2>
@@ -189,16 +168,33 @@ type ApiResponse = {
     page: number
     limit: number
 }
+interface Curso {
+    id: number
+    nome: string
+}
+interface CursoApiResponse {
+    items: Curso[]
+    totalItems: number
+}
 
 const { data, pending, error } = useAsyncData(
     'trabalhos-recentes',
-    () => $fetch<ApiResponse>(`/api/trabalhos?page=1&limit=5`), // Pedimos os 5 mais recentes
+    () => $fetch<ApiResponse>(`/api/trabalhos?page=1&limit=5`),
     {
         default: () => ({ items: [], totalItems: 0, page: 1, limit: 5 })
     }
 )
-
 const trabalhosRecentes = computed(() => data.value?.items ?? [])
+
+const iconesCursos: Record<string, Component> = {
+    'Desenvolvimento de Sistemas': FolderCode,
+    'Eletrotécnica': Zap,
+    'Mecânica': Settings
+}
+const { data: cursos } = useAsyncData('cursos-home', () =>
+    $fetch<CursoApiResponse>('/api/cursos') // Ajuste o tipo de retorno
+)
+const cursosList = computed(() => cursos.value?.items ?? [])
 
 function formatarAutores(pessoas: TrabalhoPessoa[]): string {
     if (!pessoas || pessoas.length === 0) return 'Autor não informado'

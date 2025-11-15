@@ -6,7 +6,7 @@
             <div class="grid grid-cols-[3fr_1fr_auto] gap-4 p-4 items-center">
                 <UInput size="xl" icon="i-lucide-search" placeholder="Pesquise por..." v-model="queryPesquisa" />
                 <USelect size="xl" multiple v-model="opcoesSelecionadas" value-key="id" :items="opcoesPesquisa" />
-                <UButton size="xl" color="primary" class="uppercase font-semibold px-6" @click="buscar">Buscar
+                <UButton size="xl" color="primary" class="uppercase font-semibold px-6" @click="buscar" @keydown.enter="buscar">Buscar
                 </UButton>
             </div>
         </div>
