@@ -198,13 +198,13 @@ const { data: trabalho, pending, error } = useAsyncData(
 
 const paginas = computed<Pagina[]>(() => {
     const t = trabalho.value
-    if (!t) { return [{ label: 'Página Inicial', to: '/explorar' }, { label: 'Carregando...' }] }
+    if (!t) { return [{ label: 'Página Inicial', to: '/' }, { label: 'Carregando...' }] }
 
     const curso = t.curso
     const IconeCurso = iconesCursos[curso?.nome ?? ''] || FolderCode
 
     const lista: Pagina[] = [
-        { label: 'Página Inicial', to: '/explorar', icon: Home }
+        { label: 'Página Inicial', to: '/', icon: Home }
     ]
 
     if (curso) {

@@ -53,10 +53,10 @@ model Auditoria {
   log             String
 
   admin_id    Int
-  trabalho_id Int
+  trabalho_id Int?
 
-  admin    Admin    @relation(fields: [admin_id], references: [id])
-  trabalho Trabalho @relation(fields: [trabalho_id], references: [id])
+  admin    Admin     @relation(fields: [admin_id], references: [id])
+  trabalho Trabalho? @relation(fields: [trabalho_id], references: [id])
 }
 
 model Curso {

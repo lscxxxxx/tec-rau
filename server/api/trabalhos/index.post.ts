@@ -2,8 +2,10 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
-import { PapelPessoa } from '@prisma/client'
+import { PapelPessoa, AcaoAuditoria } from '@prisma/client'
+import { registrarAuditoria } from '~/server/lib/auditoria'
 import prisma from '~/server/lib/prisma'
+
 
 const pessoaSchema = z.object({
   nome: z.string().min(1),
@@ -66,6 +68,7 @@ async function processarPessoas(
 }
 
 export default defineEventHandler(async (event) => {
+  const { id: admin_id } = event.context.auth
   try {
     const formData = await readMultipartFormData(event)
     const arquivoData = formData?.find(d => d.name === 'arquivo')
@@ -99,7 +102,7 @@ export default defineEventHandler(async (event) => {
     } = validatedData;
 
     const novoTrabalho = await prisma.$transaction(async (tx) => {
-      
+
       const trabalho = await tx.trabalho.create({
         data: {
           ...restoDosDados,
@@ -118,6 +121,14 @@ export default defineEventHandler(async (event) => {
       await processarPessoas(tx, trabalho.id, autores, PapelPessoa.AUTOR)
       await processarPessoas(tx, trabalho.id, orientadores, PapelPessoa.ORIENTADOR)
 
+      await registrarAuditoria(
+        tx,
+        admin_id,
+        AcaoAuditoria.CREATE,
+        trabalho.id,
+        `Trabalho "${trabalho.titulo}" foi criado.`
+      )
+
       return trabalho;
     })
 
@@ -135,12 +146,12 @@ export default defineEventHandler(async (event) => {
         data: error.issues,
       })
     }
-    
+
     if (error.code === 'P2002') {
-         throw createError({
-           statusCode: 409,
-           statusMessage: 'Erro de conflito. Verifique se o título ou outros dados únicos já existem.',
-         })
+      throw createError({
+        statusCode: 409,
+        statusMessage: 'Erro de conflito. Verifique se o título ou outros dados únicos já existem.',
+      })
     }
 
     throw createError({

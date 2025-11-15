@@ -2,7 +2,8 @@ import { writeFileSync, mkdirSync, unlinkSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
-import { PapelPessoa } from '@prisma/client'
+import { PapelPessoa, AcaoAuditoria } from '@prisma/client'
+import { registrarAuditoria } from '~/server/lib/auditoria'
 import prisma from '~/server/lib/prisma'
 
 const pessoaSchema = z.object({
@@ -37,6 +38,7 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+    const { id: admin_id } = event.context.auth
     const idParam = getRouterParam(event, 'id')
     const idAsNumber = Number(idParam)
 
@@ -122,11 +124,11 @@ export default defineEventHandler(async (event) => {
         if (autoresParaAdicionar?.length) {
             for (const a of autoresParaAdicionar) {
                 const pessoa = a.id ? await prisma.pessoa.findUnique({ where: { id: a.id } })
-                : await prisma.pessoa.upsert({
-                    where: { nome_sobrenome: { nome: a.nome.trim(), sobrenome: a.sobrenome.trim() } },
-                    update: {},
-                    create: { nome: a.nome.trim(), sobrenome: a.sobrenome.trim() }
-                })
+                    : await prisma.pessoa.upsert({
+                        where: { nome_sobrenome: { nome: a.nome.trim(), sobrenome: a.sobrenome.trim() } },
+                        update: {},
+                        create: { nome: a.nome.trim(), sobrenome: a.sobrenome.trim() }
+                    })
                 const jaExiste = await prisma.trabalhoPessoa.findFirst({
                     where: {
                         trabalho_id: idAsNumber,
@@ -148,11 +150,11 @@ export default defineEventHandler(async (event) => {
         if (orientadoresParaAdicionar?.length) {
             for (const o of orientadoresParaAdicionar) {
                 const pessoa = o.id ? await prisma.pessoa.findUnique({ where: { id: o.id } })
-                : await prisma.pessoa.upsert({
-                    where: { nome_sobrenome: { nome: o.nome.trim(), sobrenome: o.sobrenome.trim() } },
-                    update: {},
-                    create: { nome: o.nome.trim(), sobrenome: o.sobrenome.trim() }
-                })
+                    : await prisma.pessoa.upsert({
+                        where: { nome_sobrenome: { nome: o.nome.trim(), sobrenome: o.sobrenome.trim() } },
+                        update: {},
+                        create: { nome: o.nome.trim(), sobrenome: o.sobrenome.trim() }
+                    })
                 const jaExiste = await prisma.trabalhoPessoa.findFirst({
                     where: {
                         trabalho_id: idAsNumber,
@@ -206,6 +208,14 @@ export default defineEventHandler(async (event) => {
                 palavrasChave: { include: { palavraChave: true }, },
             },
         });
+
+        await registrarAuditoria(
+            prisma,
+            admin_id,
+            AcaoAuditoria.UPDATE,
+            trabalhoAtualizado.id,
+            `Trabalho "${trabalhoAtualizado.titulo}" foi atualizado.`
+        )
         return trabalhoAtualizado
     } catch (error: any) {
         console.error('--- ERRO NA API DE EDIÇÃO DE TRABALHO ---', error)

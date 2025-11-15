@@ -25,7 +25,7 @@
         <div v-if="pendingCursos" class="text-center py-10">Carregando comunidades...</div>
         <div v-else-if="errorCursos" class="py-10 text-center text-red-500">Erro ao carregar comunidades</div>
         <div v-else-if="cursosList.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-5 py-5">
-            <NuxtLink v-for="curso in cursosList" :key="curso.id" :to="`/explorar?cursoId=${curso.id}`"
+            <NuxtLink v-for="curso in cursosList" :key="curso.id" :to="`/pesquisa?cursoId=${curso.id}`"
                 class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer grou">
                 <div class="p-3 bg-green-100 rounded-xl flex items-center justify-center">
                     <component :is="iconesCursos[curso.nome] || FolderCode" class="w-6 h-6 text-green-700" />
