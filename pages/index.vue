@@ -38,17 +38,26 @@
         <div v-else class="py-10 text-center text-gray-500">Nenhuma comunidade encontrada</div>
 
         <h2 class="text-2xl font-semibold mt-10 mb-4">Facetas</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 py-5">
-            <div>
-                <h3 class="text-xl font-semibold pb-5">Tipo documental</h3>
-            </div>
-            <div>
-                <h3 class="text-xl font-semibold pb-5">Data de publicação</h3>
-            </div>
-            <div>
-                <h3 class="text-xl font-semibold pb-5">Palavra-chave</h3>
-            </div>
-        </div>
+        <UAccordion :items="accordionItems">
+            <template #tipos>
+                <div class="space-y-2 p-2">
+                    <NuxtLink v-for="tipo in tiposDocumentais" :key="tipo.id"
+                        :to="`/pesquisa?tipoDocumentalId=${tipo.id}`" class="">{{ tipo.nome }}</NuxtLink>
+                </div>
+            </template>
+            <template #autores>
+                <div class="space-y-2 p-2">
+                    <NuxtLink v-for="autor in autoresPopulares" :key="autor.id" :to="`/pesquisa?pessoaId=${autor.id}`"
+                        class="">{{ autor.sobrenome.toUpperCase() }}, {{ autor.nome }}</NuxtLink>
+                </div>
+            </template>
+            <template #palavras>
+                <div class="space-y-2 p-2">
+                    <NuxtLink v-for="palavra in palavrasChavePopulares" :key="palavra.id"
+                        :to="`/pesquisa?palavraChaveId=${palavra.id}`" class="">{{ palavra.nome }}</NuxtLink>
+                </div>
+            </template>
+        </UAccordion>
 
         <h2 class="text-2xl font-semibold mt-10 mb-4">Submissões recentes</h2>
         <div v-if="pending" class="text-center py-10">Carregando trabalhos...</div>
@@ -58,7 +67,8 @@
                 <li v-for="trabalho in trabalhosRecentes" :key="trabalho.id"
                     class="bg-gray-50 p-4 hover:bg-gray-100 transition-colors">
                     <NuxtLink :to="`/trabalho/${trabalho.id}`"
-                        class="text-blue-700 text-xl font-medium hover:underline">{{ trabalho.titulo }}</NuxtLink>
+                        class="text-blue-700 text-xl font-medium hover:underline">{{
+                            trabalho.titulo }}</NuxtLink>
                     <p class="text-sm text-gray-600">{{ formatarAutores(trabalho.pessoas) }}
                         ({{ trabalho.curso?.nome }}, {{ new Date(trabalho.dataDefesa).getFullYear() }})</p>
                 </li>
@@ -66,8 +76,20 @@
         </div>
         <div v-else class="py-10 text-center text-gray-500">Nenhuma submissão recente encontrada</div>
 
-        <!--- Indicadores rápidos (trabalhos disponíveis, autores cadastrados, última atualização) -->
-        <!--- Atalhos -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 py-5 text-center my-10 bg-gray-50 p-8 rounded-lg">
+            <div>
+                <h3 class="text-4xl font-bold text-green-700">{{ stats?.totalTrabalhos ?? '...' }}</h3>
+                <p class="text-gray-600 mt-2">Trabalhos Publicados</p>
+            </div>
+            <div>
+                <h3 class="text-4xl font-bold text-green-700">{{ stats?.totalAutores ?? '...' }}</h3>
+                <p class="text-gray-600 mt-2">Autores Cadastrados</p>
+            </div>
+            <div>
+                <h3 class="text-4xl font-bold text-green-700">{{ stats?.totalCursos ?? '...' }}</h3>
+                <p class="text-gray-600 mt-2">Comunidades</p>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -75,10 +97,11 @@
 import { ref, computed } from 'vue'
 import type { SelectItem } from '@nuxt/ui'
 import { Zap, Settings, FolderCode } from 'lucide-vue-next'
+import type { Component } from 'vue'
 
 const router = useRouter()
-
 const queryPesquisa = ref<string>('')
+const opcoesSelecionadas = ref<number[]>([1])
 
 const opcoesPesquisa: SelectItem[] = [
     { label: 'Todos os campos', id: 1 },
@@ -89,16 +112,11 @@ const opcoesPesquisa: SelectItem[] = [
     { label: 'Resumo', id: 6 },
 ]
 
-const opcoesSelecionadas = ref<number[]>([1])
-
 const buscar = () => {
     if (queryPesquisa.value.trim()) {
         router.push({
             path: '/pesquisa', // O caminho para sua página de resultados
-            query: {
-                q: queryPesquisa.value,
-                campos: opcoesSelecionadas.value
-            }
+            query: { q: queryPesquisa.value, campos: opcoesSelecionadas.value }
         })
     }
 }
@@ -111,6 +129,10 @@ type Pessoa = {
 type TrabalhoPessoa = {
     papel: 'AUTOR' | 'ORIENTADOR'
     pessoa: Pessoa
+}
+type Curso = {
+    id: number
+    nome: string
 }
 type Trabalho = {
     id: number
@@ -125,15 +147,32 @@ type ApiResponse = {
     page: number
     limit: number
 }
-type Curso = {
-    id: number
-    nome: string
-}
 interface CursoApiResponse {
     items: Curso[]
     totalItems: number
 }
+interface TipoDocumental {
+    id: number
+    nome: string
+}
+interface FacetaPalavraChave {
+    id: number
+    nome: string
+    _count: { trabalhos: number }
+}
+interface FacetaAutor {
+    id: number
+    nome: string
+    sobrenome: string // Agora é obrigatório, corrigindo o erro 1
+    _count: { trabalhos: number }
+}
+interface Stats {
+    totalTrabalhos: number
+    totalAutores: number
+    totalCursos: number
+}
 
+// Submissões recentes
 const { data, pending, error } = useAsyncData(
     'trabalhos-recentes',
     () => $fetch<ApiResponse>(`/api/trabalhos?page=1&limit=5`),
@@ -141,17 +180,54 @@ const { data, pending, error } = useAsyncData(
 )
 const trabalhosRecentes = computed(() => data.value?.items ?? [])
 
+// Comunidades
 const iconesCursos: Record<string, Component> = {
     'Desenvolvimento de Sistemas': FolderCode,
     'Eletrotécnica': Zap,
     'Mecânica': Settings
 }
-const { data: cursos, pending: pendingCursos, error: errorCursos } = useAsyncData(
-    'cursos-home', 
+const { data: cursosData, pending: pendingCursos, error: errorCursos } = useAsyncData(
+    'cursos-home',
     () => $fetch<CursoApiResponse>('/api/cursos'),
     { default: () => ({ items: [], totalItems: 0 }) }
 )
-const cursosList = computed(() => cursos.value?.items ?? [])
+const cursosList = computed(() => cursosData.value?.items ?? [])
+
+// Facetas: Tipos documentais
+const { data: tiposData } = useAsyncData(
+    'facetas-tipos',
+    () => $fetch<{ items: TipoDocumental[] }>('/api/tiposdocumentais'),
+    { default: () => ({ items: [] }) }
+)
+const tiposDocumentais = computed(() => tiposData.value?.items ?? [])
+// Facetas: Autores populares
+const { data: autoresData } = useAsyncData(
+    'facetas-autores',
+    () => $fetch<FacetaAutor[]>('/api/facetas/autores-populares'),
+    { default: () => [] }
+)
+const autoresPopulares = computed(() => autoresData.value ?? [])
+// Facetas: Palavras-chave populares
+const { data: palavrasData } = useAsyncData(
+    'facetas-palavras',
+    () => $fetch<FacetaPalavraChave[]>('/api/facetas/palavras-populares'),
+    { default: () => [] }
+)
+const palavrasChavePopulares = computed(() => palavrasData.value ?? [])
+
+// Indicadores
+const { data: stats } = useAsyncData(
+    'stats-home',
+    () => $fetch<Stats>('/api/stats'),
+    { default: () => ({ totalTrabalhos: 0, totalAutores: 0, totalCursos: 0 }) }
+)
+
+// Acordeão para as facetas
+const accordionItems = [
+    { label: 'Tipo Documental', slot: 'tipos', defaultOpen: true },
+    { label: 'Autores Populares', slot: 'autores' },
+    { label: 'Palavras-Chave Populares', slot: 'palavras' }
+]
 
 function formatarAutores(pessoas: TrabalhoPessoa[]): string {
     if (!pessoas || pessoas.length === 0) return 'Autor não informado'
