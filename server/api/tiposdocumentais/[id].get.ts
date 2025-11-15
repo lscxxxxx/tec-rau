@@ -6,34 +6,33 @@ export default defineEventHandler(async (event) => {
     if (!id || isNaN(Number(id))) {
         throw createError({
             statusCode: 400,
-            message: 'ID do curso é inválido.',
+            message: 'ID do tipo documental é inválido.',
         })
     }
     try {
-        const curso = await prisma.curso.findUnique({
+        const tipoDocumental = await prisma.tipoDocumental.findUnique({
             where: {
                 id: Number(id),
             },
         })
-        if (!curso) {
+        if (!tipoDocumental) {
             throw createError({
                 statusCode: 404,
-                message: 'Curso não encontrado.',
+                message: 'Tipo documental não encontrado.',
             })
         }
-        return curso
-
+        return tipoDocumental
     } catch (error: any) {
         if (error.statusCode === 404) {
              throw createError({
                 statusCode: 404,
-                message: error.message || 'Curso não encontrado.',
-                statusMessage: `Page not found: /api/cursos/${id}`
+                message: error.message || 'Tipo documental não encontrado.',
+                statusMessage: `Page not found: /api/tiposdocumentais/${id}`
             })
         }
         throw createError({
             statusCode: 500,
-            message: 'Erro ao buscar curso.',
+            message: 'Erro ao buscar tipo documental.',
         })
     }
 })

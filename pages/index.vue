@@ -22,7 +22,9 @@
         </div>
 
         <h2 class="text-2xl font-semibold mt-10 mb-4">Comunidades</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 py-5">
+        <div v-if="pendingCursos" class="text-center py-10">Carregando comunidades...</div>
+        <div v-else-if="errorCursos" class="py-10 text-center text-red-500">Erro ao carregar comunidades</div>
+        <div v-else-if="cursosList.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-5 py-5">
             <NuxtLink v-for="curso in cursosList" :key="curso.id" :to="`/explorar?cursoId=${curso.id}`"
                 class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer grou">
                 <div class="p-3 bg-green-100 rounded-xl flex items-center justify-center">
@@ -33,63 +35,24 @@
                 </div>
             </NuxtLink>
         </div>
+        <div v-else class="py-10 text-center text-gray-500">Nenhuma comunidade encontrada</div>
 
         <h2 class="text-2xl font-semibold mt-10 mb-4">Facetas</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 py-5">
             <div>
                 <h3 class="text-xl font-semibold pb-5">Tipo documental</h3>
-                <a href="#"
-                    class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer">
-                    <h3>Projeto Integrador</h3>
-                </a>
-                <a href="#"
-                    class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer">
-                    <h3>Seminário</h3>
-                </a>
-                <a href="#"
-                    class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer">
-                    <h3>Artigo</h3>
-                </a>
             </div>
             <div>
                 <h3 class="text-xl font-semibold pb-5">Data de publicação</h3>
-                <a href="#"
-                    class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer">
-                    <h3>2015-2019</h3>
-                </a>
-                <a href="#"
-                    class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer">
-                    <h3>2020-2024</h3>
-                </a>
-                <a href="#"
-                    class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer">
-                    <h3>2025-2029</h3>
-                </a>
             </div>
             <div>
                 <h3 class="text-xl font-semibold pb-5">Palavra-chave</h3>
-                <a href="#"
-                    class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer">
-                    <h3>Automação</h3>
-                </a>
-                <a href="#"
-                    class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer">
-                    <h3>Educação</h3>
-                </a>
-                <a href="#"
-                    class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer">
-                    <h3>Usinagem</h3>
-                </a>
             </div>
         </div>
 
         <h2 class="text-2xl font-semibold mt-10 mb-4">Submissões recentes</h2>
-        <div v-if="pending" class="text-center py-10">
-            Carregando trabalhos...
-        </div>
-        <div v-else-if="error" class="py-10 text-center text-red-500">
-            Ocorreu um erro ao carregar os trabalhos.
-        </div>
+        <div v-if="pending" class="text-center py-10">Carregando trabalhos...</div>
+        <div v-else-if="error" class="py-10 text-center text-red-500">Ocorreu um erro ao carregar os trabalhos</div>
         <div v-else-if="trabalhosRecentes.length > 0" class="gap-5 py-5">
             <ul class="border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-200">
                 <li v-for="trabalho in trabalhosRecentes" :key="trabalho.id"
@@ -101,13 +64,7 @@
                 </li>
             </ul>
         </div>
-        <div v-else class="py-10 text-center text-gray-500">
-            Nenhuma submissão recente encontrada.
-        </div>
-
-        <div>
-
-        </div>
+        <div v-else class="py-10 text-center text-gray-500">Nenhuma submissão recente encontrada</div>
 
         <!--- Indicadores rápidos (trabalhos disponíveis, autores cadastrados, última atualização) -->
         <!--- Atalhos -->
@@ -158,9 +115,9 @@ type TrabalhoPessoa = {
 type Trabalho = {
     id: number
     titulo: string
-    dataDefesa: string // O backend agora envia 'dataDefesa'
-    curso: { nome: string } // O backend envia 'nome'
-    pessoas: TrabalhoPessoa[] // O backend envia um array 'pessoas'
+    dataDefesa: string
+    curso: { nome: string }
+    pessoas: TrabalhoPessoa[]
 }
 type ApiResponse = {
     items: Trabalho[]
@@ -168,7 +125,7 @@ type ApiResponse = {
     page: number
     limit: number
 }
-interface Curso {
+type Curso = {
     id: number
     nome: string
 }
@@ -180,9 +137,7 @@ interface CursoApiResponse {
 const { data, pending, error } = useAsyncData(
     'trabalhos-recentes',
     () => $fetch<ApiResponse>(`/api/trabalhos?page=1&limit=5`),
-    {
-        default: () => ({ items: [], totalItems: 0, page: 1, limit: 5 })
-    }
+    { default: () => ({ items: [], totalItems: 0, page: 1, limit: 5 }) }
 )
 const trabalhosRecentes = computed(() => data.value?.items ?? [])
 
@@ -191,8 +146,10 @@ const iconesCursos: Record<string, Component> = {
     'Eletrotécnica': Zap,
     'Mecânica': Settings
 }
-const { data: cursos } = useAsyncData('cursos-home', () =>
-    $fetch<CursoApiResponse>('/api/cursos') // Ajuste o tipo de retorno
+const { data: cursos, pending: pendingCursos, error: errorCursos } = useAsyncData(
+    'cursos-home', 
+    () => $fetch<CursoApiResponse>('/api/cursos'),
+    { default: () => ({ items: [], totalItems: 0 }) }
 )
 const cursosList = computed(() => cursos.value?.items ?? [])
 
