@@ -140,6 +140,8 @@ import { ref, computed } from 'vue'
 import type { SelectItem } from '@nuxt/ui'
 import { Zap, Settings, FolderCode } from 'lucide-vue-next'
 
+const router = useRouter()
+
 const queryPesquisa = ref<string>('')
 
 const opcoesPesquisa: SelectItem[] = [
@@ -154,7 +156,15 @@ const opcoesPesquisa: SelectItem[] = [
 const opcoesSelecionadas = ref<number[]>([1])
 
 const buscar = () => {
-
+    if (queryPesquisa.value.trim()) {
+        router.push({
+            path: '/pesquisa', // O caminho para sua página de resultados
+            query: {
+                q: queryPesquisa.value,
+                campos: opcoesSelecionadas.value
+            }
+        })
+    }
 }
 
 type Pessoa = {

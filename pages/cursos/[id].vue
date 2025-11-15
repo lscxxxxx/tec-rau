@@ -1,13 +1,13 @@
 <template>
     <main class="max-w-6xl mx-auto w-full p-6">
 
-        <div v-if="pendingCurso || pendingTrabalhos" class="text-center py-10">
-            Carregando trabalhos do curso...
+        <div v-if="pendingCurso" class="text-center py-10">
+            Carregando curso...
         </div>
 
-        <div v-else-if="errorCurso || errorTrabalhos" class="text-center py-10 text-red-500">
+        <div v-else-if="errorCurso" class="text-center py-10 text-red-500">
             <h1>Erro ao carregar a página</h1>
-            <p>{{ errorCurso?.statusMessage || errorTrabalhos?.statusMessage }}</p>
+            <p>{{ errorCurso?.statusMessage }}</p>
         </div>
 
         <div v-else-if="curso && trabalhosDoCurso">
@@ -39,7 +39,25 @@
                 Trabalhos de {{ curso.nome }}
             </h2>
 
-            <div v-if="trabalhosDoCurso.length > 0" class="gap-5 py-5">
+            <div class="bg-gray-200 rounded-lg">
+                <div class="grid grid-cols-[3fr_1fr_auto] gap-4 p-4 items-center">
+                    <UInput size="xl" icon="i-lucide-search" placeholder="Pesquise por..." v-model="queryPesquisa" />
+                    <USelect size="xl" multiple v-model="opcoesSelecionadas" value-key="id" :items="opcoesPesquisa" />
+                    <UButton size="xl" color="primary" class="uppercase font-semibold px-6" @click="buscar">Buscar
+                    </UButton>
+                </div>
+            </div>
+
+            <div v-if="pendingTrabalhos" class="text-center py-10">
+                Carregando trabalhos...
+            </div>
+
+            <div v-else-if="errorTrabalhos" class="text-center py-10 text-red-500">
+                <h1>Erro ao carregar os trabalhos</h1>
+                <p>{{ errorTrabalhos?.statusMessage }}</p>
+            </div>
+
+            <div v-else-if="trabalhosDoCurso.length > 0" class="gap-5 py-5">
                 <ul class="border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-200">
                     <li v-for="trabalho in trabalhosDoCurso" :key="trabalho.id"
                         class="bg-gray-50 p-4 hover:bg-gray-100 transition-colors">
@@ -60,7 +78,7 @@
                 Nenhum trabalho encontrado para este curso.
             </div>
 
-            <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
+            <div v-if="totalItems > limit" class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
                 <UPagination v-model="page" :page-count="limit" :total="totalItems" />
             </div>
 
@@ -69,10 +87,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Home, ChevronRight } from 'lucide-vue-next'
+import type { SelectItem } from '@nuxt/ui'
+import type { NuxtError } from '#app'
 
 const route = useRoute()
+const router = useRouter()
 const id = computed(() => route.params.id as string)
 
 export interface Pagina {
@@ -80,7 +101,6 @@ export interface Pagina {
     to?: string
     icon?: any
 }
-
 type Pessoa = {
     id: number
     nome: string
@@ -110,15 +130,38 @@ type Curso = {
 const page = ref(1)
 const limit = ref(10)
 
-const { data: curso, pending: pendingCurso, error: errorCurso } = useAsyncData(
+const { data: curso, pending: pendingCurso, error: errorCurso } = useAsyncData<Curso, NuxtError>(
     `curso-${id.value}`,
     () => $fetch<Curso>(`/api/cursos/${id.value}`),
     { lazy: true }
 )
 
+const queryPesquisa = ref<string>('')
+const opcoesPesquisa: SelectItem[] = [
+    { label: 'Todos os campos', id: 1 },
+    { label: 'Título', id: 2 },
+    { label: 'Autores', id: 3 },
+    { label: 'Orientadores', id: 4 },
+    { label: 'Ano de publicação', id: 5 },
+    { label: 'Resumo', id: 6 },
+]
+const opcoesSelecionadas = ref<number[]>([1])
+
+function buscar() {
+    if (!queryPesquisa.value.trim()) return;
+    router.push({
+        path: '/pesquisa',
+        query: {
+            q: queryPesquisa.value,
+            campos: opcoesSelecionadas.value,
+            cursoId: id.value
+        }
+    })
+}
+
 const key = computed(() => `trabalhos-curso-${id.value}-p${page.value}`)
 
-const { data: trabalhosData, pending: pendingTrabalhos, error: errorTrabalhos } = useAsyncData(
+const { data: trabalhosData, pending: pendingTrabalhos, error: errorTrabalhos } = useAsyncData<TrabalhoApiResponse, NuxtError>(
     key.value,
     () => $fetch<TrabalhoApiResponse>(
         `/api/trabalhos?cursoId=${id.value}&page=${page.value}&limit=${limit.value}`
