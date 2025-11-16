@@ -1,113 +1,3 @@
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { TableColumn } from '@nuxt/ui'
-import { TooltipProvider } from 'reka-ui'
-
-definePageMeta({
-    layout: 'admin'
-});
-
-const router = useRouter()
-const toast = useToast()
-const isModalOpen = ref(false)
-const trabalhoParaExcluirId = ref<number | null>(null)
-const trabalhoSelecionado = ref<Trabalho | null>(null)
-
-type Pessoa = {
-    id: number
-    nome: string
-    sobrenome: string
-}
-type TrabalhoPessoa = {
-    papel: 'AUTOR' | 'ORIENTADOR'
-    pessoa: Pessoa
-}
-type Trabalho = {
-    id: number
-    titulo: string
-    dataDefesa: string
-    curso: { nome: string }
-    pessoas: TrabalhoPessoa[]
-}
-
-const page = ref(1)
-const limit = ref(10)
-
-type ApiResponse = {
-    items: Trabalho[]
-    totalItems: number
-    page: number
-    limit: number
-}
-
-const key = computed(() => `trabalhos-admin-p${page.value}`)
-
-const { data, pending, refresh } = useAsyncData (
-    key.value,
-    () => $fetch<ApiResponse>(`/api/trabalhos?page=${page.value}&limit=${limit.value}`),
-    { default: () => ({ items: [], totalItems: 0, page: 1, limit: limit.value }) }
-)
-
-const trabalhos = computed(() => data.value?.items ?? [])
-const totalItems = computed(() => data.value?.totalItems ?? 0)
-
-const columns: TableColumn<Trabalho>[] = [
-    { id: 'titulo', header: 'Título' },
-    { id: 'dataDefesa', header: 'Data de Defesa' },
-    { id: 'autores', header: 'Autor(es)' },
-    { id: 'orientadores', header: 'Orientador(es)' },
-    { id: 'actions', header: 'Ações' },
-]
-
-function formatarPessoas(pessoas: TrabalhoPessoa[], papel: 'AUTOR' | 'ORIENTADOR'): string {
-    if (!pessoas || pessoas.length === 0) { return 'Não informado' }
-
-    const nomesFormatados = pessoas
-        .filter(p => p.papel === papel)
-        .map(p => `${p.pessoa.sobrenome.toUpperCase()}, ${p.pessoa.nome}`)
-
-    return nomesFormatados.length > 0 ? nomesFormatados.join('; ') : 'Não informado'
-}
-
-function abrirModalDeExclusao(trabalho: Trabalho) {
-    trabalhoParaExcluirId.value = trabalho.id
-    trabalhoSelecionado.value = trabalho
-    isModalOpen.value = true
-}
-
-onMounted(() => {
-    isModalOpen.value = false
-    trabalhoParaExcluirId.value = null
-})
-
-watch(isModalOpen, (val) => {
-    console.log('Modal aberto?', val)
-})
-
-async function confirmarExclusao() {
-    if (trabalhoParaExcluirId.value === null) return
-
-    try {
-        await $fetch(`/api/trabalhos/${trabalhoParaExcluirId.value}`, { method: 'DELETE' })
-        toast.add({ title: 'Trabalho excluído com sucesso!', color: 'success' })
-        
-        if (trabalhos.value.length === 1 && page.value > 1) {
-            page.value--
-        } else {
-            refresh()
-        }
-    }
-    catch (error) {
-        toast.add({ title: 'Erro ao excluir o trabalho', color: 'error' })
-    }
-    finally {
-        isModalOpen.value = false
-        trabalhoParaExcluirId.value = null
-        trabalhoSelecionado.value = null
-    }
-}
-</script>
-
 <template>
     <div class="min-h-screen text-gray-800 font-sans flex flex-col">
         <TooltipProvider>
@@ -199,3 +89,100 @@ async function confirmarExclusao() {
         </TooltipProvider>
     </div>
 </template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import type { TableColumn } from '@nuxt/ui'
+import { TooltipProvider } from 'reka-ui'
+
+definePageMeta({ layout: 'admin' })
+
+const router = useRouter()
+const toast = useToast()
+const isModalOpen = ref(false)
+const trabalhoParaExcluirId = ref<number | null>(null)
+const trabalhoSelecionado = ref<Trabalho | null>(null)
+
+const page = ref(1)
+const limit = ref(10)
+
+type Pessoa = {
+    id: number
+    nome: string
+    sobrenome: string
+}
+type TrabalhoPessoa = {
+    papel: 'AUTOR' | 'ORIENTADOR'
+    pessoa: Pessoa
+}
+type Trabalho = {
+    id: number
+    titulo: string
+    dataDefesa: string
+    curso: { nome: string }
+    pessoas: TrabalhoPessoa[]
+}
+type ApiResponse = {
+    items: Trabalho[]
+    totalItems: number
+    page: number
+    limit: number
+}
+
+const key = computed(() => `trabalhos-admin-p${page.value}`)
+
+const { data, pending, refresh } = useAsyncData (
+    key.value,
+    () => $fetch<ApiResponse>(`/api/trabalhos?page=${page.value}&limit=${limit.value}`),
+    { default: () => ({ items: [], totalItems: 0, page: 1, limit: limit.value }) }
+)
+const trabalhos = computed(() => data.value?.items ?? [])
+const totalItems = computed(() => data.value?.totalItems ?? 0)
+
+const columns: TableColumn<Trabalho>[] = [
+    { id: 'titulo', header: 'Título' },
+    { id: 'dataDefesa', header: 'Data de Defesa' },
+    { id: 'autores', header: 'Autor(es)' },
+    { id: 'orientadores', header: 'Orientador(es)' },
+    { id: 'actions', header: 'Ações' },
+]
+
+function formatarPessoas(pessoas: TrabalhoPessoa[], papel: 'AUTOR' | 'ORIENTADOR'): string {
+    if (!pessoas || pessoas.length === 0) { return 'Não informado' }
+    const nomesFormatados = pessoas
+        .filter(p => p.papel === papel)
+        .map(p => `${p.pessoa.sobrenome.toUpperCase()}, ${p.pessoa.nome}`)
+    return nomesFormatados.length > 0 ? nomesFormatados.join('; ') : 'Não informado'
+}
+
+function abrirModalDeExclusao(trabalho: Trabalho) {
+    trabalhoParaExcluirId.value = trabalho.id
+    trabalhoSelecionado.value = trabalho
+    isModalOpen.value = true
+}
+
+onMounted(() => {
+    isModalOpen.value = false
+    trabalhoParaExcluirId.value = null
+})
+
+watch(isModalOpen, (val) => {
+    console.log('Modal aberto?', val)
+})
+
+async function confirmarExclusao() {
+    if (trabalhoParaExcluirId.value === null) return
+    try {
+        await $fetch(`/api/trabalhos/${trabalhoParaExcluirId.value}`, { method: 'DELETE' })
+        toast.add({ title: 'Trabalho excluído com sucesso!', color: 'success' })
+        if (trabalhos.value.length === 1 && page.value > 1) { page.value--
+        } else { refresh() }
+    } catch (error) {
+        toast.add({ title: 'Erro ao excluir o trabalho', color: 'error' })
+    } finally {
+        isModalOpen.value = false
+        trabalhoParaExcluirId.value = null
+        trabalhoSelecionado.value = null
+    }
+}
+</script>
