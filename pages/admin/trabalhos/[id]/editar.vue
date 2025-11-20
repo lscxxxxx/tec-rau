@@ -138,9 +138,7 @@ import { ref, onMounted } from 'vue'
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 
-definePageMeta({
-    layout: 'admin' // <-- Diz ao Nuxt para usar o layouts/admin.vue
-});
+definePageMeta({ layout: 'admin' })
 
 const toast = useToast()
 const router = useRouter()
@@ -153,12 +151,13 @@ const novoOrientador = ref({ nome: '', sobrenome: '' })
 const trabalhoId = computed(() => route.params.id as string)
 
 type ApiSelectOption = { id: number; nome: string }
+type ApiListResponse = { items: ApiSelectOption[] }
 
-const { data: cursosData } = useFetch<ApiSelectOption[]>('/api/cursos', { default: () => [] })
-const { data: tiposData } = useFetch<ApiSelectOption[]>('/api/tiposdocumentais', { default: () => [] })
+const { data: cursosData } = useFetch<ApiListResponse>('/api/cursos', { default: () => ({ items: [] }) })
+const { data: tiposData } = useFetch<ApiListResponse>('/api/tiposdocumentais', { default: () => ({ items: [] }) })
 
-const cursos = computed(() => (cursosData.value ?? []).map((c: any) => ({ label: c.nome, value: c.id, })))
-const tiposDocumentais = computed(() => (tiposData.value ?? []).map((t: any) => ({ label: t.nome, value: t.id, })))
+const cursos = computed(() => (cursosData.value?.items ?? []).map((c: any) => ({ label: c.nome, value: c.id, })))
+const tiposDocumentais = computed(() => (tiposData.value?.items ?? []).map((t: any) => ({ label: t.nome, value: t.id, })))
 
 const form = reactive<FormState>({
     titulo: '',
@@ -179,12 +178,10 @@ interface Pessoa {
     nome: string
     sobrenome: string
 }
-
 interface TrabalhoPessoa {
     papel: 'AUTOR' | 'ORIENTADOR'
     pessoa: Pessoa
 }
-
 interface TrabalhoApiResponse {
     titulo: string
     dataDefesa: string
@@ -192,12 +189,11 @@ interface TrabalhoApiResponse {
     arquivo: string | null
     tipoDocumental: { id: number; nome: string }
     curso: { id: number; nome: string }
-    palavrasChave: any[]
+    palavrasChave: { palavraChave: { nome: string } }[]
     autores: Pessoa[]
     orientadores: Pessoa[]
     pessoas: TrabalhoPessoa[]
 }
-
 interface FormState {
     titulo: string
     dataDefesa: string
@@ -211,7 +207,6 @@ interface FormState {
     idsPessoasParaRemover: number[]
     idsPalavrasChaveParaRemover: number[]
 }
-
 interface Trabalho {
     titulo: string
     dataDefesa: string
@@ -226,21 +221,8 @@ interface Trabalho {
 
 const arquivoExistente = ref<string | null>(null)
 
+
 const { data: trabalhoData } = await useFetch<TrabalhoApiResponse>(`/api/trabalhos/${trabalhoId.value}`)
-onMounted(() => {
-    if (trabalhoData.value) {
-        const t = trabalhoData.value
-        form.titulo = t.titulo
-        form.dataDefesa = new Date(t.dataDefesa).toISOString().split('T')[0]
-        form.resumo = t.resumo
-        form.tipoDocumentalId = t.tipoDocumental.id
-        form.cursoId = t.curso.id
-        form.autores = t.autores || [];
-        form.orientadores = t.orientadores || [];
-        form.palavrasChave = t.palavrasChave || []
-        arquivoExistente.value = t.arquivo
-    }
-})
 
 const pessoaSchema = z.object({
     nome: z.string().min(1, 'Nome é obrigatório'),
@@ -251,8 +233,8 @@ const schema = z.object({
     titulo: z.string().min(1, 'Título é obrigatório'),
     dataDefesa: z.string().min(1, 'Data de defesa é obrigatória'),
     resumo: z.string().min(1, 'Resumo é obrigatório'),
-    tipoDocumentalId: z.number({ message: 'Tipo documental é obrigatório' }),
-    cursoId: z.number({ message: 'Curso é obrigatório' }),
+    tipoDocumentalId: z.coerce.number({ message: 'Tipo documental é obrigatório' }),
+    cursoId: z.coerce.number({ message: 'Curso é obrigatório' }),
     arquivo: z
         .custom<File | undefined>()
         .optional()
@@ -347,8 +329,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     if (form.palavrasChave.length > 0) {
         formData.append('palavrasChaveParaAdicionar', form.palavrasChave.join(','))
     }
-
-    formData.append('palavrasChaveParaAdicionar', form.palavrasChave.join(','));
 
     try {
         await $fetch(`/api/trabalhos/${trabalhoId.value}`, { method: 'PUT', body: formData, })

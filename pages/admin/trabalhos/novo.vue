@@ -141,13 +141,13 @@ const novoAutor = ref({ nome: '', sobrenome: '' })
 const novoOrientador = ref({ nome: '', sobrenome: '' })
 
 type ApiSelectOption = { id: number; nome: string }
+type ApiListResponse = { items: ApiSelectOption[] }
 
-const { data: cursosData } = useFetch<ApiSelectOption[]>('/api/cursos', { default: () => [] })
-const { data: tiposData } = useFetch<ApiSelectOption[]>('/api/tiposdocumentais', { default: () => [] })
+const { data: cursosData } = useFetch<ApiListResponse>('/api/cursos', { default: () => ({ items: [] }) })
+const { data: tiposData } = useFetch<ApiListResponse>('/api/tiposdocumentais', { default: () => ({ items: [] }) })
 
-const cursos = computed(() => (cursosData.value ?? []).map((c: any) => ({ label: c.nome, value: c.id, })) )
-
-const tiposDocumentais = computed(() => (tiposData.value ?? []).map((t: any) => ({ label: t.nome, value: t.id, })) )
+const cursos = computed(() => (cursosData.value?.items ?? []).map(c => ({ label: c.nome, value: c.id, })) )
+const tiposDocumentais = computed(() => (tiposData.value?.items ?? []).map(t => ({ label: t.nome, value: t.id, })) )
 
 const form = reactive({
     titulo: '',
