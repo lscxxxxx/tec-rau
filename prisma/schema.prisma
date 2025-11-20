@@ -3,20 +3,14 @@
 
 // Bloco de configuração do banco de dados e do gerador do client
 datasource db {
-  provider          = "postgresql"
-  url               = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
   seed = "ts-node prisma/seed.ts"
-}
-
-generator erd {
-  provider = "prisma-erd-generator"
-  output   = "./ERD.png"
-  theme    = "dark"
 }
 
 enum PapelAdmin {
@@ -85,7 +79,7 @@ model Trabalho {
   curso          Curso          @relation(fields: [curso_id], references: [id])
   tipoDocumental TipoDocumental @relation(fields: [tipodocumental_id], references: [id])
 
-  audiorias     Auditoria[]
+  auditorias    Auditoria[]
   pessoas       TrabalhoPessoa[]
   palavrasChave TrabalhoPalavraChave[]
 }
