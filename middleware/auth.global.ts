@@ -1,32 +1,41 @@
-// /middleware/auth.global.ts
+// middleware/auth.global.ts
+export default defineNuxtRouteMiddleware(async (to) => {
+    const { user, loading } = useAuth()
 
-export default defineNuxtRouteMiddleware(async (to, from) => {
-    // 1. Pega o estado global do usuário, não o cookie!
-    const { user } = useAuth();
-
-    // 2. Define as rotas públicas de admin
     const adminPublicas = [
         '/admin/login',
         '/admin/esqueci-senha',
-        '/admin/redefinir-senha',
-    ];
+        '/admin/redefinir-senha'
+    ]
 
-    // 3. Se a rota NÃO é de admin, permite o acesso (para /explorar, /sobre, etc.)
-    if (!to.path.startsWith('/admin')) {
-        return;
+    // DEBUG
+    console.log('--- MIDDLEWARE AUTH ---')
+    console.log('Navegando para:', to.path)
+
+    if (!to.path.startsWith('/admin')) return
+    if (adminPublicas.includes(to.path)) return
+
+    // se ainda estiver carregando, aguarda até terminar (trata o F5)
+    if (loading.value) {
+        console.log('Middleware: A aguardar "loading"...') // DEBUG
+        await new Promise<void>((resolve) => {
+            const stop = watch(loading, (v) => {
+                if (!v) {
+                    console.log('Middleware: "loading" terminado.') // DEBUG
+                    stop()
+                    resolve()
+                }
+            })
+        })
     }
 
-    // 4. Se é uma rota PÚBLICA de admin (como /login), permite o acesso
-    if (adminPublicas.includes(to.path)) {
-        return;
-    }
+    // DEBUG: Verifique os valores após o await
+    console.log('Middleware: Verificando user.value (após await):', user.value)
 
-    // 5. Se chegou aqui, é uma rota de admin PROTEGIDA.
-    //    Verifica se o usuário está no estado global.
     if (!user.value) {
-        // Se o usuário é nulo, redireciona para o login.
-        return navigateTo('/admin/login', { replace: true });
+        console.log('Middleware: REDIRECIONANDO para /admin/login (user.value é null)') // DEBUG
+        return navigateTo('/admin/login')
     }
 
-    // 6. Se o usuário existe no estado, permite o acesso.
-});
+    console.log('Middleware: Acesso autorizado.') // DEBUG
+})
