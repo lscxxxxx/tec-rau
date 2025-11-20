@@ -151,7 +151,6 @@ async function buscar() {
 watch(page, buscar)
 onMounted(() => {
     if (route.query.q) {
-        // Preenche os campos de busca com os dados da URL
         queryPesquisa.value = route.query.q as string
         const campos = route.query.campos
         if (Array.isArray(campos)) {
@@ -160,7 +159,6 @@ onMounted(() => {
             opcoesSelecionadas.value = [Number(campos)]
         }
         page.value = Number(route.query.pagina) || 1
-        // Executa a busca com os dados da URL
         buscar()
     }
 })
