@@ -30,9 +30,6 @@
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             type="submit" :disabled="form.pendente">Entrar</button>
         </div>
-        <p class="text-center text-gray-500 text-xs">
-          &copy;2025 TEC-RAU. Todos os direitos reservados.
-        </p>
       </form>
     </div>
   </div>
@@ -40,18 +37,14 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
-// 1. Importe o hook de autenticação e a interface User
 import { useAuth, type User } from '~/composables/useAuth'
 
 // 2. Puxe o estado global do usuário
-const { user } = useAuth()
+const { user, setUser } = useAuth()
 const router = useRouter()
 
 const form = reactive({
-  data: {
-    usuario: '',
-    senha: ''
-  },
+  data: { usuario: '', senha: '' },
   error: '',
   tentouSubmeter: false,
   pendente: false
@@ -62,34 +55,31 @@ async function onLoginClick() {
   form.pendente = true
   form.error = ''
 
+  console.log('LOGIN: Tentativa de login iniciada...')
+
   try {
-    // 3. Informe ao useFetch qual o tipo de retorno esperado (<User>)
-    const { data, error } = await useFetch<User>('/api/auth/login', {
+    const data = await $fetch<User>('/api/auth/login', {
       method: 'POST',
       body: {
-        email: form.data.usuario, // Seu 'login.post.ts' espera 'email'
+        email: form.data.usuario,
         senha: form.data.senha
       }
     })
 
-    if (error.value) {
-      form.error = error.value?.data?.message || 'Email ou senha inválidos.'
-      return
-    }
+    console.log('LOGIN: Sucesso no fetch. Dados recebidos:', data)
 
-    // 4. ESTA É A MUDANÇA CRUCIAL:
-    // Atualize o estado global com os dados do usuário que a API retornou
-    if (data.value) {
-      user.value = data.value
-    }
+    setUser(data)
 
-    // 5. Redirecione para a área de admin
+    console.log('LOGIN: setUser(data) chamado.')
+    console.log('LOGIN: Estado "user" global agora é:', user.value)
+
     await router.push('/admin')
-
-  } catch (err) {
-    form.error = 'Erro de conexão.'
+  } catch (err: any) {
+    console.error('LOGIN: Erro no fetch:', err)
+    form.error = err?.data?.message || 'Erro de conexão.'
   } finally {
     form.pendente = false
   }
 }
+
 </script>
