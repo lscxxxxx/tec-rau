@@ -3,20 +3,24 @@
         <main class="flex-1 max-w-6xl mx-auto w-full p-6">
             <h1 class="text-3xl font-bold">Logs de Auditoria</h1>
 
-            <UTable :data="auditorias" :columns="columns" :loading="pending"
+            <UTable :rows="auditorias" :columns="columns" :loading="pending"
                 class="bg-white shadow-md rounded-md overflow-hidden">
                 <template #id-cell="{ row }">
-                    <span class="break-words whitespace-normal">{{ row.original.id }}</span>
+                    <span class="break-words whitespace-normal">{{ row.id }}</span>
                 </template>
                 <template #dataModificacao-cell="{ row }">
-                    <span class="break-words whitespace-normal">{{ new
-                        Date(row.original.dataModificacao).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) }}</span>
+                    {{ new Date(row.original.dataModificacao).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) }}
+                </template>
+                <template #admin-cell="{ row }">
+                    {{ row.original.admin?.nome ?? 'Admin não encontrado' }}
                 </template>
                 <template #acao-cell="{ row }">
-                    <span class="break-words whitespace-normal">{{ row.original.acao }}</span>
+                    <UBadge :color="corDaAcao[row.original.acao]">
+                        {{ row.original.acao }}
+                    </UBadge>
                 </template>
                 <template #log-cell="{ row }">
-                    <span class="break-words whitespace-normal">{{ row.original.log }}</span>
+                    {{ row.original.log }}
                 </template>
 
                 <template #loading-state>
@@ -40,13 +44,14 @@
 </template>
 
 <script setup lang="ts">
+import { useAuth } from '~/composables/useAuth'
 import { ref, computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
+import UBadge from '#ui/components/Badge.vue'
+
+type UBadgeColor = NonNullable<InstanceType<typeof UBadge>['$props']['color']>
 
 definePageMeta({ layout: 'admin' })
-
-const router = useRouter()
-const toast = useToast()
 
 const page = ref(1)
 const limit = ref(10)
@@ -67,10 +72,10 @@ type AuditoriaApiResponse = {
     page: number
     limit: number
 }
-const corDaAcao = {
-   'CREATE': 'green',
-   'UPDATE': 'blue',
-   'DELETE': 'red'
+const corDaAcao: Record<Auditoria["acao"], UBadgeColor> = {
+    CREATE: "success",
+    UPDATE: "info",
+    DELETE: "error",
 }
 
 const key = computed(() => `auditoria-p${page.value}`)
@@ -83,9 +88,10 @@ const auditorias = computed(() => data.value?.items ?? [])
 const totalItems = computed(() => data.value?.totalItems ?? 0)
 
 const columns: TableColumn<Auditoria>[] = [
-    { id: 'id', header: 'Log' },
-    { id: 'dataModificacao', header: 'Data da modificação' },
-    { id: 'acao', header: 'Ação' },
-    { id: 'log', header: 'Descrição' },
+    { accessorKey: 'id', header: 'ID' },
+    { accessorKey: 'dataModificacao', header: 'Data da Ação' },
+    { accessorKey: 'admin', header: 'Administrador' },
+    { accessorKey: 'acao', header: 'Ação' },
+    { accessorKey: 'log', header: 'Descrição' },
 ]
 </script>
