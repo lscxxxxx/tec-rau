@@ -11,6 +11,9 @@
                 <NuxtLink to="/admin/admins" class="flex items-center px-4 py-2 rounded-md hover:bg-gray-700 hover:text-white"><UserCog />
                     Administradores
                 </NuxtLink>
+                <NuxtLink to="/admin/auditoria" class="flex items-center px-4 py-2 rounded-md hover:bg-gray-700 hover:text-white"><History />
+                    Auditoria
+                </NuxtLink>
             </nav>
             <div class="p-4">
                 <button @click="logout"
@@ -29,11 +32,14 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
-import { Book, UserCog, LogOut } from 'lucide-vue-next'
+import { Book, UserCog, History, LogOut } from 'lucide-vue-next'
 
 const router = useRouter()
-const { user } = useAuth()
+const { loadUser, setUser } = useAuth()
+
+onMounted(() => { loadUser() })
 
 async function logout() {
     try {
@@ -41,8 +47,7 @@ async function logout() {
     } catch (error) {
         console.error("Erro ao fazer logout na API:", error)
     }
-    user.value = null
-
+    setUser(null)
     await router.push('/admin/login')
 }
 </script>
