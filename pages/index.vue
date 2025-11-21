@@ -14,8 +14,8 @@
         <div class="bg-gray-200 rounded-lg">
             <div class="grid grid-cols-[3fr_1fr_auto] gap-4 p-4 items-center">
                 <UInput size="xl" icon="i-lucide-search" placeholder="Pesquise por..." v-model="queryPesquisa" />
-                <USelect size="xl" multiple v-model="opcoesSelecionadas" value-key="id" :items="opcoesPesquisa" />
-                <UButton size="xl" color="primary" class="uppercase font-semibold px-6" @click="buscar"
+                <USelect size="xl" class="cursor-pointer" multiple v-model="opcoesSelecionadas" value-key="id" :items="opcoesPesquisa" />
+                <UButton size="xl" color="primary" class="uppercase font-semibold px-6 cursor-pointer" @click="buscar"
                     @keydown.enter="buscar">Buscar
                 </UButton>
             </div>
@@ -38,23 +38,22 @@
         <div v-else class="py-10 text-center text-gray-500">Nenhuma comunidade encontrada</div>
 
         <h2 class="text-2xl font-semibold mt-10 mb-4">Facetas</h2>
-        <UAccordion :items="accordionItems">
+        <UAccordion :items="accordionItems" :ui="{ trigger: 'py-4 cursor-pointer', label: 'text-xl text-gray-900 hover:text-green-700 cursor-pointer' }">
             <template #tipos>
-                <div class="space-y-2 p-2">
+                <div class="flex flex-wrap gap-3 p-2">
                     <NuxtLink v-for="tipo in tiposDocumentais" :key="tipo.id"
-                        :to="`/pesquisa?tipoDocumentalId=${tipo.id}`" class="">{{ tipo.nome }}</NuxtLink>
+                        :to="`/pesquisa?tipoDocumentalId=${tipo.id}`" class="rounded-full px-4 py-2 text-base font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1 hover:underline">{{ tipo.nome }}</NuxtLink>
                 </div>
             </template>
             <template #autores>
-                <div class="space-y-2 p-2">
-                    <NuxtLink v-for="autor in autoresPopulares" :key="autor.id" :to="`/pesquisa?pessoaId=${autor.id}`"
-                        class="">{{ autor.sobrenome.toUpperCase() }}, {{ autor.nome }}</NuxtLink>
+                <div class="flex flex-wrap gap-3 p-2">
+                    <NuxtLink v-for="autor in autoresPopulares" :key="autor.id" :to="`/pesquisa?pessoaId=${autor.id}`" class="rounded-full px-4 py-2 text-base font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1 hover:underline">{{ autor.sobrenome.toUpperCase() }}, {{ autor.nome }}</NuxtLink>
                 </div>
             </template>
             <template #palavras>
-                <div class="space-y-2 p-2">
+                <div class="flex flex-wrap gap-3 p-2">
                     <NuxtLink v-for="palavra in palavrasChavePopulares" :key="palavra.id"
-                        :to="`/pesquisa?palavraChaveId=${palavra.id}`" class="">{{ palavra.nome }}</NuxtLink>
+                        :to="`/pesquisa?palavraChaveId=${palavra.id}`" class="rounded-full px-4 py-2 text-base font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1 hover:underline">{{ palavra.nome }}</NuxtLink>
                 </div>
             </template>
         </UAccordion>
@@ -210,7 +209,7 @@ const autoresPopulares = computed(() => autoresData.value ?? [])
 // Facetas: Palavras-chave populares
 const { data: palavrasData } = useAsyncData(
     'facetas-palavras',
-    () => $fetch<FacetaPalavraChave[]>('/api/facetas/palavras-populares'),
+    () => $fetch<FacetaPalavraChave[]>('/api/facetas/palavraschave-populares'),
     { default: () => [] }
 )
 const palavrasChavePopulares = computed(() => palavrasData.value ?? [])
