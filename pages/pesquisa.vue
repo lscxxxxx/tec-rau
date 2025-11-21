@@ -100,12 +100,23 @@ const opcoesPesquisa: SelectItem[] = [
     { label: 'Resumo', id: 6 },
 ]
 const opcoesSelecionadas = ref<number[]>([1])
+const filtroCursoId = ref<number | undefined>(undefined)
+const filtroTipoDocumentalId = ref<number | undefined>(undefined)
+const filtroPessoaId = ref<number | undefined>(undefined)
+const filtroPalavraChaveId = ref<number | undefined>(undefined)
 
 const tituloPagina = computed(() => {
     const query = route.query.q as string
-    return query ? `Resultados de busca por "${query}"` : 'Resultados de busca'
+    if (query) return `Resultados de busca por "${query}"`
+    if (filtroCursoId.value) return 'Resultados por Comunidade'
+    if (filtroTipoDocumentalId.value) return 'Resultados por Tipo Documental'
+    if (filtroPessoaId.value) return 'Resultados por Autor'
+    if (filtroPalavraChaveId.value) return 'Resultados por Palavra-Chave'
+    
+    return 'Todos os trabalhos'
 })
 const textoResultados = computed(() => {
+    if (totalItems.value === 0) return 'Nenhum resultado encontrado'
     const de = (page.value - 1) * limit.value + 1
     const ate = Math.min(page.value * limit.value, totalItems.value)
     return `Exibindo ${de} - ${ate} de ${totalItems.value} resultados`
@@ -121,19 +132,33 @@ function formatarPessoas(pessoas: TrabalhoPessoa[], papel: 'AUTOR' | 'ORIENTADOR
 
 async function buscar() {
     pending.value = true
-    router.push({
-        query: {
-            q: queryPesquisa.value,
-            campos: opcoesSelecionadas.value,
-            pagina: page.value,
-        },
-    })
+
+    const queryObj: any = {
+        q: queryPesquisa.value || undefined, // Se vazio, não coloca na URL
+        pagina: page.value,
+        campos: opcoesSelecionadas.value
+    }
+
+    if (filtroCursoId.value) queryObj.cursoId = filtroCursoId.value
+    if (filtroTipoDocumentalId.value) queryObj.tipoDocumentalId = filtroTipoDocumentalId.value
+    if (filtroPessoaId.value) queryObj.pessoaId = filtroPessoaId.value
+    if (filtroPalavraChaveId.value) queryObj.palavraChaveId = filtroPalavraChaveId.value
+
+    router.push({ query: queryObj })
+
     const params = new URLSearchParams({
-        q: queryPesquisa.value,
         page: page.value.toString(),
         limit: limit.value.toString(),
     })
+
+    if (queryPesquisa.value) params.append('q', queryPesquisa.value)
+
     opcoesSelecionadas.value.forEach(id => params.append('campos', id.toString()))
+
+    if (filtroCursoId.value) params.append('cursoId', filtroCursoId.value.toString())
+    if (filtroTipoDocumentalId.value) params.append('tipoDocumentalId', filtroTipoDocumentalId.value.toString())
+    if (filtroPessoaId.value) params.append('pessoaId', filtroPessoaId.value.toString())
+    if (filtroPalavraChaveId.value) params.append('palavraChaveId', filtroPalavraChaveId.value.toString())
 
     try {
         const data = await $fetch<{ items: Trabalho[], totalItems: number }>(`/api/trabalhos?${params.toString()}`)
@@ -150,16 +175,32 @@ async function buscar() {
 
 watch(page, buscar)
 onMounted(() => {
-    if (route.query.q) {
-        queryPesquisa.value = route.query.q as string
-        const campos = route.query.campos
-        if (Array.isArray(campos)) {
-            opcoesSelecionadas.value = campos.map(c => Number(c))
-        } else if (campos) {
-            opcoesSelecionadas.value = [Number(campos)]
-        }
-        page.value = Number(route.query.pagina) || 1
-        buscar()
+    // 3. Ao carregar, lê TODOS os parâmetros da URL para preencher o estado local
+    const q = route.query.q
+    const campos = route.query.campos
+    
+    // Lê Filtros
+    const cId = route.query.cursoId
+    const tId = route.query.tipoDocumentalId
+    const pId = route.query.pessoaId
+    const pcId = route.query.palavraChaveId
+
+    if (q) queryPesquisa.value = q as string
+    
+    if (Array.isArray(campos)) {
+        opcoesSelecionadas.value = campos.map(c => Number(c))
+    } else if (campos) {
+        opcoesSelecionadas.value = [Number(campos)]
     }
+
+    if (cId) filtroCursoId.value = Number(cId)
+    if (tId) filtroTipoDocumentalId.value = Number(tId)
+    if (pId) filtroPessoaId.value = Number(pId)
+    if (pcId) filtroPalavraChaveId.value = Number(pcId)
+
+    page.value = Number(route.query.pagina) || 1
+    
+    // Chama a busca inicial (que agora vai considerar os filtros acima)
+    buscar()
 })
 </script>
