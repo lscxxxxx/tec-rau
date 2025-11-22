@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
         include: {
             tipoDocumental: true,
             curso: true,
-            palavrasChave: { select: { palavraChave: { select: { nome: true } } } },
+            palavrasChave: { select: { palavraChave: { select: { id: true, nome: true } } } },
             pessoas: { select: { papel: true, pessoa: { select: { id: true, nome: true, sobrenome: true }, }, } }
         }
     })
@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
         dataDefesa: trabalho.dataDefesa,
         tipoDocumental: trabalho.tipoDocumental,
         curso: trabalho.curso,
-        palavrasChave: trabalho.palavrasChave.map((p) => p.palavraChave.nome),
+        palavrasChave: trabalho.palavrasChave.map((p) => ({ id: p.palavraChave.id, nome: p.palavraChave.nome })),
         autores,
         orientadores,
         pessoas: trabalho.pessoas,
