@@ -49,7 +49,7 @@
                             <dd class="col-span-3 text-gray-800 flex flex-wrap">
                                 <span v-for="autor in trabalho.autores" :key="autor.id"
                                     class="inline-flex items-center rounded-full px-2 py-1 text-sm font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1">
-                                    <NuxtLink to="#" class="hover:underline">
+                                    <NuxtLink :to="`/pesquisa?pessoaId=${autor.id}`" class="hover:underline">
                                         {{ autor.sobrenome.toUpperCase() }}, {{ autor.nome }}
                                     </NuxtLink>
                                 </span>
@@ -63,7 +63,7 @@
                             <dd class="col-span-3 text-gray-800 flex flex-wrap">
                                 <span v-for="orientador in trabalho.orientadores" :key="orientador.id"
                                     class="inline-flex items-center rounded-full px-2 py-1 text-sm font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1">
-                                    <NuxtLink to="#" class="hover:underline">
+                                    <NuxtLink :to="`/pesquisa?pessoaId=${orientador.id}`" class="hover:underline">
                                         {{ orientador.sobrenome.toUpperCase() }}, {{ orientador.nome }}
                                     </NuxtLink>
                                 </span>
@@ -93,9 +93,9 @@
                             class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-600 col-span-1 pl-3">Palavras-chave</dt>
                             <dd class="col-span-3 text-gray-800 flex flex-wrap">
-                                <span v-for="(p, idx) in trabalho.palavrasChave" :key="idx"
-                                    class="inline-flex items-center rounded-full px-2 py-1 text-sm font-medium bg-gray-300 text-gray-700 mr-1">
-                                    <NuxtLink to="#" class="hover:underline">{{ p }}</NuxtLink>
+                                <span v-for="(p, idx) in trabalho.palavrasChave" :key="idx" 
+                                    class="inline-flex items-center rounded-full px-2 py-1 text-sm font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1">
+                                    <NuxtLink :to="`/pesquisa?palavraChaveId=${p.id}`" class="hover:underline">{{ p.nome }}</NuxtLink>
                                 </span>
                             </dd>
                         </div>
@@ -165,6 +165,10 @@ interface Pessoa {
     nome: string
     sobrenome: string
 }
+interface PalavraChave {
+    id: number
+    nome: string
+}
 interface Trabalho {
     id: number
     titulo: string
@@ -175,7 +179,7 @@ interface Trabalho {
     curso?: Curso
     autores: Pessoa[]
     orientadores: Pessoa[]
-    palavrasChave: string[]
+    palavrasChave: PalavraChave[]
     arquivo?: string | null
 }
 interface Pagina {
