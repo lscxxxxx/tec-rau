@@ -1,7 +1,9 @@
 <template>
     <div class="min-h-screen text-gray-800 font-sans flex flex-col">
         <main class="flex-1 max-w-6xl mx-auto w-full p-6">
-            <h1 class="text-3xl font-bold">Logs de Auditoria</h1>
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold">Logs de Auditoria</h1>
+            </div>
 
             <UTable :rows="auditorias" :columns="columns" :loading="pending"
                 class="bg-white shadow-md rounded-md overflow-hidden">
