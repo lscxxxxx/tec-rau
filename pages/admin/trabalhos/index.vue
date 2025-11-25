@@ -32,7 +32,7 @@
                 <template #actions-cell="{ row }">
                     <div class="flex items-center justify-end gap-2">
                         <UButton icon="i-lucide-eye" variant="ghost" color="info" aria-label="Ver detalhes"
-                            class="cursor-pointer" :to="`/admin/trabalhos/${row.original.id}/editar`" />
+                            class="cursor-pointer" :to="`/admin/trabalhos/${row.original.id}`" />
                         <UButton icon="i-lucide-pencil" variant="ghost" color="info" aria-label="Editar"
                             class="cursor-pointer" :to="`/admin/trabalhos/${row.original.id}/editar`" />
                         <UButton icon="i-lucide-trash-2" variant="ghost" color="warning" aria-label="Excluir"
