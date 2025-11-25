@@ -221,8 +221,26 @@ interface Trabalho {
 
 const arquivoExistente = ref<string | null>(null)
 
-
 const { data: trabalhoData } = await useFetch<TrabalhoApiResponse>(`/api/trabalhos/${trabalhoId.value}`)
+
+if (trabalhoData.value) {
+    const dados = trabalhoData.value
+    form.titulo = dados.titulo
+    form.resumo = dados.resumo
+    // 1. Tratamento de DATA para o input type="date" (precisa ser YYYY-MM-DD)
+    if (dados.dataDefesa) { form.dataDefesa = new Date(dados.dataDefesa).toISOString().split('T')[0] }
+    // 2. IDs de relacionamentos únicos
+    form.tipoDocumentalId = dados.tipoDocumental?.id
+    form.cursoId = dados.curso?.id
+    // 3. Arrays de Objetos (O spread operator [...] cria uma cópia para evitar reatividade indesejada direta na resposta da API)
+    form.autores = [...dados.autores]
+    form.orientadores = [...dados.orientadores]
+    // 4. Palavras-chave: A API manda objetos [{id, nome}], mas o form usa strings ["nome", "nome"]
+    // Nota: Precisei ajustar o map pois sua interface no Vue estava levemente diferente da resposta da API
+    form.palavrasChave = dados.palavrasChave.map((p: any) => p.nome)
+    // 5. Arquivo existente (apenas visualização)
+    arquivoExistente.value = dados.arquivo
+}
 
 const pessoaSchema = z.object({
     nome: z.string().min(1, 'Nome é obrigatório'),
