@@ -10,7 +10,7 @@
                 </div>
 
                 <button @click="toggleSidebar"
-                    class="p-1.5 rounded-lg hover:bg-gray-300 text-gray-600 transition-colors"
+                    class="cursor-pointer p-1.5 rounded-lg hover:bg-gray-300 text-gray-600 transition-colors"
                     :class="{ 'mx-auto': !isSidebarOpen }">
                     <PanelLeftClose v-if="isSidebarOpen" class="w-5 h-5" />
                     <PanelLeftOpen v-else class="w-5 h-5" />
@@ -18,6 +18,14 @@
             </div>
 
             <nav class="flex-1 px-2 py-4 space-y-2 overflow-y-auto overflow-x-hidden">
+                <NuxtLink to="/"
+                    class="flex items-center py-2 rounded-md hover:bg-blue-700 hover:text-white transition-colors group text-gray-700 font-semibold"
+                    :class="isSidebarOpen ? 'px-4 gap-3' : 'justify-center px-2'"
+                    title="Ir para o Site (Visão Pública)">
+                    <Globe class="w-6 h-6 flex-shrink-0" />
+                    <span v-show="isSidebarOpen" class="whitespace-nowrap overflow-hidden transition-all duration-300 origin-left uppercase text-sm">Ver Site</span>
+                </NuxtLink>
+                <div class="border-b border-gray-300/50 my-2 mx-2"></div>
 
                 <NuxtLink to="/admin/trabalhos"
                     class="flex items-center py-2 rounded-md hover:bg-gray-700 hover:text-white transition-colors group"
@@ -57,7 +65,7 @@
 
             <div class="p-4 border-t border-gray-300/50">
                 <button @click="logout"
-                    class="w-full flex items-center rounded-md hover:bg-red-700 hover:text-white transition-colors py-2 text-left"
+                    class="cursor-pointer w-full flex items-center rounded-md hover:bg-red-700 hover:text-white transition-colors py-2 text-left"
                     :class="isSidebarOpen ? 'px-4 gap-3' : 'justify-center px-0'" title="Sair">
 
                     <LogOut class="w-6 h-6 flex-shrink-0" />
@@ -81,7 +89,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
-import { Book, UserCog, History, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next'
+import { Book, UserCog, History, LogOut, PanelLeftClose, PanelLeftOpen, Globe } from 'lucide-vue-next'
 
 const router = useRouter()
 const { loadUser, setUser } = useAuth()
