@@ -3,121 +3,122 @@
 
 // Bloco de configuração do banco de dados e do gerador do client
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+    shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 generator client {
-  provider = "prisma-client-js"
-  seed = "ts-node prisma/seed.ts"
+    provider = "prisma-client-js"
+    seed = "ts-node prisma/seed.ts"
 }
 
 enum PapelAdmin {
-  SUPER
-  PADRAO
+    SUPER
+    PADRAO
 }
 
 enum PapelPessoa {
-  AUTOR
-  ORIENTADOR
-  COORIENTADOR
+    AUTOR
+    ORIENTADOR
+    COORIENTADOR
 }
 
 enum AcaoAuditoria {
-  CREATE
-  UPDATE
-  DELETE
+    CREATE
+    UPDATE
+    DELETE
 }
 
 model Admin {
-  id    Int        @id @default(autoincrement())
-  nome  String     @unique
-  email String     @unique
-  senha String  
-  papel PapelAdmin
+    id    Int        @id @default(autoincrement())
+    nome  String     @unique
+    email String     @unique
+    senha String  
+    papel PapelAdmin
 
-  auditorias Auditoria[]
+    auditorias Auditoria[]
 }
 
 model Auditoria {
-  id              Int           @id @default(autoincrement())
-  dataModificacao DateTime      @default(now())
-  acao            AcaoAuditoria
-  log             String
+    id              Int           @id @default(autoincrement())
+    dataModificacao DateTime      @default(now())
+    acao            AcaoAuditoria
+    log             String
+    trabalho        Int?
 
-  admin_id    Int
-  trabalho_id Int?
+    admin_id    Int
 
-  admin    Admin     @relation(fields: [admin_id], references: [id])
-  trabalho Trabalho? @relation(fields: [trabalho_id], references: [id])
+    admin    Admin     @relation(fields: [admin_id], references: [id])
+
+    @@index([dataModificacao])
 }
 
 model Curso {
-  id        Int        @id @default(autoincrement())
-  nome      String     @unique
-  trabalhos Trabalho[]
+    id        Int        @id @default(autoincrement())
+    nome      String     @unique
+    trabalhos Trabalho[]
 }
 
 model TipoDocumental {
-  id        Int        @id @default(autoincrement())
-  nome      String     @unique
-  trabalhos Trabalho[]
+    id        Int        @id @default(autoincrement())
+    nome      String     @unique
+    trabalhos Trabalho[]
 }
 
 model Trabalho {
-  id             Int      @id @default(autoincrement())
-  titulo         String   @unique
-  dataPublicacao DateTime @default(now())
-  dataDefesa     DateTime
-  resumo         String
-  arquivo        String
+    id             Int      @id @default(autoincrement())
+    titulo         String   @unique
+    dataPublicacao DateTime @default(now())
+    dataDefesa     DateTime
+    resumo         String?
+    referencia     String?
+    arquivo        String
 
-  curso_id          Int
-  tipodocumental_id Int
+    curso_id          Int
+    tipodocumental_id Int
 
-  curso          Curso          @relation(fields: [curso_id], references: [id])
-  tipoDocumental TipoDocumental @relation(fields: [tipodocumental_id], references: [id])
+    curso          Curso          @relation(fields: [curso_id], references: [id])
+    tipoDocumental TipoDocumental @relation(fields: [tipodocumental_id], references: [id])
 
-  auditorias    Auditoria[]
-  pessoas       TrabalhoPessoa[]
-  palavrasChave TrabalhoPalavraChave[]
+    pessoas       TrabalhoPessoa[]
+    palavrasChave TrabalhoPalavraChave[]
 }
 
 model Pessoa {
-  id        Int    @id @default(autoincrement())
-  nome      String
-  sobrenome String
+    id        Int    @id @default(autoincrement())
+    nome      String
+    sobrenome String
 
-  trabalhos TrabalhoPessoa[]
+    trabalhos TrabalhoPessoa[]
 
-  @@unique([nome, sobrenome], name: "nome_sobrenome")
+    @@unique([nome, sobrenome], name: "nome_sobrenome")
 }
 
 model PalavraChave {
-  id   Int    @id @default(autoincrement())
-  nome String @unique
+    id   Int    @id @default(autoincrement())
+    nome String @unique
 
-  trabalhos TrabalhoPalavraChave[]
+    trabalhos TrabalhoPalavraChave[]
 }
 
 model TrabalhoPessoa {
-  trabalho_id Int
-  pessoa_id   Int
-  papel       PapelPessoa
+    trabalho_id Int
+    pessoa_id   Int
+    papel       PapelPessoa
 
-  trabalho Trabalho @relation(fields: [trabalho_id], references: [id])
-  pessoa   Pessoa   @relation(fields: [pessoa_id], references: [id])
+    trabalho Trabalho @relation(fields: [trabalho_id], references: [id])
+    pessoa   Pessoa   @relation(fields: [pessoa_id], references: [id])
 
-  @@id([trabalho_id, pessoa_id])
+    @@id([trabalho_id, pessoa_id])
 }
 
 model TrabalhoPalavraChave {
-  trabalho_id     Int
-  palavrachave_id Int
+    trabalho_id     Int
+    palavrachave_id Int
 
-  trabalho     Trabalho     @relation(fields: [trabalho_id], references: [id])
-  palavraChave PalavraChave @relation(fields: [palavrachave_id], references: [id])
+    trabalho     Trabalho     @relation(fields: [trabalho_id], references: [id])
+    palavraChave PalavraChave @relation(fields: [palavrachave_id], references: [id])
 
-  @@id([trabalho_id, palavrachave_id])
+    @@id([trabalho_id, palavrachave_id])
 }
