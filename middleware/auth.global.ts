@@ -15,6 +15,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     if (!to.path.startsWith('/admin')) return
     if (adminPublicas.includes(to.path)) return
 
+    if (import.meta.server) {
+        return
+    }
     // se ainda estiver carregando, aguarda até terminar (trata o F5)
     if (loading.value) {
         console.log('Middleware: A aguardar "loading"...') // DEBUG
