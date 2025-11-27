@@ -26,7 +26,7 @@
                 </template>
 
                 <template #log-cell="{ row }">
-                    {{ row.original.log }}
+                    <span class="break-words whitespace-normal">{{ row.original.log }}</span>
                 </template>
 
 
