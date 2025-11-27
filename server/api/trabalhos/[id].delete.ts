@@ -11,29 +11,36 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        const trabalho = await prisma.trabalho.findUnique({
-            where: { id: trabalho_id },
-            select: { id: true, titulo: true } // Só precisamos do título e id
-        })
-
-        if (!trabalho) {
-            throw createError({
-                statusCode: 404,
-                statusMessage: 'Trabalho não encontrado para exclusão',
+        // Usamos transação para garantir atomicidade (ou deleta tudo ou nada)
+        await prisma.$transaction(async (tx) => {
+            // 1. Busca dados básicos para o log ANTES de deletar
+            const trabalho = await tx.trabalho.findUnique({
+                where: { id: trabalho_id },
+                select: { id: true, titulo: true }
             })
-        }
-        
-        await prisma.trabalho.delete({
-            where: { id: Number(trabalho_id), }
+
+            if (!trabalho) {
+                const error: any = new Error('Trabalho não encontrado')
+                error.code = 'P2025' // Simulando código do Prisma para o catch
+                throw error
+            }
+            // 2. Limpeza manual de tabelas pivot (Boa prática para evitar erros de FK pendentes)
+            // Se o seu banco estiver com Cascade configurado, isso é opcional, mas seguro fazer via código.
+            await tx.trabalhoPessoa.deleteMany({ where: { trabalho_id } })
+            await tx.trabalhoPalavraChave.deleteMany({ where: { trabalho_id } })
+            // 3. Deleta o trabalho
+            await tx.trabalho.delete({ where: { id: trabalho_id } })
+            // 4. Registra Auditoria
+            // AGORA FUNCIONA: O banco aceita salvar o ID 'morto' na coluna trabalho_id
+            await registrarAuditoria(
+                tx,
+                admin_id,
+                AcaoAuditoria.DELETE,
+                trabalho.id,
+                `Trabalho "${trabalho.titulo}" (ID Histórico: ${trabalho.id}) foi excluído.`
+            )
         })
 
-        await registrarAuditoria(
-            prisma,
-            admin_id,
-            AcaoAuditoria.DELETE,
-            trabalho.id, // Passamos o ID que não existe mais
-            `Trabalho "${trabalho.titulo}" (ID: ${trabalho.id}) foi excluído.`
-        )
         setResponseStatus(event, 204)
         return
     } catch (error: any) {

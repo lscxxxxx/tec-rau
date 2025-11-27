@@ -10,29 +10,29 @@
                 <UForm :schema="schema" :state="form" @submit="onSubmit">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-x-7 gap-y-3">
                         <div class="col-span-3">
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Título *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Título <span class="text-red-500">*</span></h3>
                             <UInput v-model="form.titulo" class="w-full" />
                         </div>
 
                         <div>
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Data de defesa *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Data de defesa <span class="text-red-500">*</span></h3>
                             <UInput v-model="form.dataDefesa" type="date" class="w-full" />
                         </div>
 
                         <div>
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Tipo documental *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Tipo documental <span class="text-red-500">*</span></h3>
                             <USelect v-model="form.tipoDocumentalId" :items="tiposDocumentais"
                                 placeholder="Selecione o tipo" class="w-full" />
                         </div>
 
                         <div>
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Curso *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Curso <span class="text-red-500">*</span></h3>
                             <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso"
                                 class="w-full" />
                         </div>
 
                         <div>
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Arquivo</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Arquivo <span class="text-red-500">*</span></h3>
                             <UFileUpload label="Selecione ou arraste para substituir" description="PDF (max. 5MB)"
                                 v-model="form.arquivo" accept=".pdf" class="w-full" />
                             <p v-if="arquivoExistente" class="text-sm text-gray-500 mt-1">
@@ -42,7 +42,7 @@
                         </div>
 
                         <div class="col-span-3 space-y-3">
-                            <h3 class="font-semibold text-lg border-b pb-2">Autores *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2">Autores <span class="text-red-500">*</span></h3>
 
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 items-center">
                                 <UInput v-model="novoAutor.nome" placeholder="Nome" class="col-span-5"
@@ -63,13 +63,15 @@
                                 </UBadge>
                             </div>
                             <div v-else>
-                                <p class="text-sm text-gray-500">Nenhum autor adicionado.</p>
+                                <p class="text-sm text-gray-500">Nenhum autor adicionado</p>
                             </div>
                         </div>
 
                         <div class="col-span-3 space-y-3">
-                            <h3 class="font-semibold text-lg border-b pb-2">Orientadores *</h3>
-
+                            <h3 class="font-semibold text-lg border-b pb-2">
+                                Orientadores
+                                <span v-if="camposObrigatorios" class="text-red-500">*</span>
+                            </h3>
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 items-center">
                                 <UInput v-model="novoOrientador.nome" placeholder="Nome" class="col-span-5"
                                     @keydown.enter.prevent="adicionarOrientador" />
@@ -79,7 +81,6 @@
                                     <UButton label="Adicionar" icon="i-heroicons-plus" @click="adicionarOrientador" />
                                 </div>
                             </div>
-
                             <div v-if="form.orientadores.length > 0" class="flex flex-wrap gap-2 pt-2">
                                 <UBadge v-for="(orientador, index) in form.orientadores" :key="`orientador-${index}`"
                                     variant="subtle" size="lg">
@@ -89,17 +90,29 @@
                                 </UBadge>
                             </div>
                             <div v-else>
-                                <p class="text-sm text-gray-500">Nenhum orientador adicionado.</p>
+                                <p class="text-sm text-gray-500">Nenhum orientador adicionado</p>
                             </div>
                         </div>
 
                         <div class="col-span-3">
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Resumo *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">
+                                Resumo <span v-if="camposObrigatorios" class="text-red-500">*</span>
+                            </h3>
                             <UTextarea v-model="form.resumo" class="w-full" autoresize />
                         </div>
 
                         <div class="col-span-3">
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Palavras-chave *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">
+                                Referência bibliográfica <span v-if="camposObrigatorios" class="text-red-500">*</span>
+                            </h3>
+                            <UTextarea v-model="form.referencia" class="w-full" autoresize
+                                placeholder="Formato ABNT..." />
+                        </div>
+
+                        <div class="col-span-3">
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">
+                                Palavras-chave <span v-if="camposObrigatorios" class="text-red-500">*</span>
+                            </h3>
                             <div class="flex flex-col gap-2">
                                 <div class="flex items-center gap-2">
                                     <UInput v-model="novaPalavraInput" placeholder="Digite uma palavra e aperte Enter"
@@ -116,8 +129,9 @@
                                     </UBadge>
                                 </div>
                                 <div v-else>
-                                    <p class="text-sm text-gray-500">Nenhuma palavra-chave adicionada (mínimo de três
-                                        palavras-chave)
+                                    <p class="text-sm text-gray-500">
+                                        Nenhuma palavra-chave adicionada
+                                        <span v-if="camposObrigatorios">(mínimo de 3)</span>
                                     </p>
                                 </div>
                             </div>
@@ -150,29 +164,7 @@ const novoOrientador = ref({ nome: '', sobrenome: '' })
 
 const trabalhoId = computed(() => route.params.id as string)
 
-type ApiSelectOption = { id: number; nome: string }
-type ApiListResponse = { items: ApiSelectOption[] }
-
-const { data: cursosData } = useFetch<ApiListResponse>('/api/cursos', { default: () => ({ items: [] }) })
-const { data: tiposData } = useFetch<ApiListResponse>('/api/tiposdocumentais', { default: () => ({ items: [] }) })
-
-const cursos = computed(() => (cursosData.value?.items ?? []).map((c: any) => ({ label: c.nome, value: c.id, })))
-const tiposDocumentais = computed(() => (tiposData.value?.items ?? []).map((t: any) => ({ label: t.nome, value: t.id, })))
-
-const form = reactive<FormState>({
-    titulo: '',
-    dataDefesa: '',
-    resumo: '',
-    tipoDocumentalId: undefined,
-    cursoId: undefined,
-    autores: [],
-    orientadores: [],
-    palavrasChave: [],
-    arquivo: undefined,
-    idsPessoasParaRemover: [],
-    idsPalavrasChaveParaRemover: []
-})
-
+// Interfaces
 interface Pessoa {
     id?: number
     nome: string
@@ -186,6 +178,7 @@ interface TrabalhoApiResponse {
     titulo: string
     dataDefesa: string
     resumo: string
+    referencia: string
     arquivo: string | null
     tipoDocumental: { id: number; nome: string }
     curso: { id: number; nome: string }
@@ -198,6 +191,7 @@ interface FormState {
     titulo: string
     dataDefesa: string
     resumo: string
+    referencia: string
     tipoDocumentalId: number | undefined
     cursoId: number | undefined
     autores: Pessoa[]
@@ -207,65 +201,104 @@ interface FormState {
     idsPessoasParaRemover: number[]
     idsPalavrasChaveParaRemover: number[]
 }
-interface Trabalho {
-    titulo: string
-    dataDefesa: string
-    resumo: string
-    arquivo: string | null
-    tipoDocumental: { id: number; nome: string }
-    curso: { id: number; nome: string }
-    palavrasChave: string[]
-    autores: Pessoa[]
-    orientadores: Pessoa[]
-}
+
+//Dados auxiliares
+type ApiSelectOption = { id: number; nome: string }
+type ApiListResponse = { items: ApiSelectOption[] }
+
+const { data: cursosData } = useFetch<ApiListResponse>('/api/cursos', { default: () => ({ items: [] }) })
+const { data: tiposData } = useFetch<ApiListResponse>('/api/tiposdocumentais', { default: () => ({ items: [] }) })
+
+const cursos = computed(() => (cursosData.value?.items ?? []).map((c: any) => ({ label: c.nome, value: c.id, })))
+const tiposDocumentais = computed(() => (tiposData.value?.items ?? []).map((t: any) => ({ label: t.nome, value: t.id, })))
+
+const form = reactive<FormState>({
+    titulo: '',
+    dataDefesa: '',
+    resumo: '',
+    referencia: '',
+    tipoDocumentalId: undefined,
+    cursoId: undefined,
+    autores: [],
+    orientadores: [],
+    palavrasChave: [],
+    arquivo: undefined,
+    idsPessoasParaRemover: [],
+    idsPalavrasChaveParaRemover: []
+})
 
 const arquivoExistente = ref<string | null>(null)
 
+//Carregamento do trabalho
 const { data: trabalhoData } = await useFetch<TrabalhoApiResponse>(`/api/trabalhos/${trabalhoId.value}`)
 
 if (trabalhoData.value) {
     const dados = trabalhoData.value
     form.titulo = dados.titulo
-    form.resumo = dados.resumo
-    // 1. Tratamento de DATA para o input type="date" (precisa ser YYYY-MM-DD)
+    form.resumo = dados.resumo ?? ''
+    form.referencia = dados.referencia ?? ''
     if (dados.dataDefesa) { form.dataDefesa = new Date(dados.dataDefesa).toISOString().split('T')[0] }
-    // 2. IDs de relacionamentos únicos
     form.tipoDocumentalId = dados.tipoDocumental?.id
     form.cursoId = dados.curso?.id
-    // 3. Arrays de Objetos (O spread operator [...] cria uma cópia para evitar reatividade indesejada direta na resposta da API)
     form.autores = [...dados.autores]
     form.orientadores = [...dados.orientadores]
-    // 4. Palavras-chave: A API manda objetos [{id, nome}], mas o form usa strings ["nome", "nome"]
-    // Nota: Precisei ajustar o map pois sua interface no Vue estava levemente diferente da resposta da API
     form.palavrasChave = dados.palavrasChave.map((p: any) => p.nome)
-    // 5. Arquivo existente (apenas visualização)
     arquivoExistente.value = dados.arquivo
 }
 
+//Regra de negócio: Campos obrigatórios
+const camposObrigatorios = computed(() => {
+    const cursoObj = cursos.value.find(c => c.value === form.cursoId)
+    const tipoObj = tiposDocumentais.value.find(t => t.value === form.tipoDocumentalId)
+    
+    const nomeCurso = cursoObj?.label?.toLowerCase() || ''
+    const nomeTipo = tipoObj?.label?.toLowerCase() || ''
+
+    const ehDevSistemas = nomeCurso.includes('desenvolvimento de sistemas')
+    const ehPI = nomeTipo.includes('projeto integrador')
+
+    return ehDevSistemas || !ehPI
+})
+
+//Schema de validação
 const pessoaSchema = z.object({
     nome: z.string().min(1, 'Nome é obrigatório'),
     sobrenome: z.string().min(1, 'Sobrenome é obrigatório'),
 })
 
-const schema = z.object({
+const baseSchema = z.object({
     titulo: z.string().min(1, 'Título é obrigatório'),
     dataDefesa: z.string().min(1, 'Data de defesa é obrigatória'),
-    resumo: z.string().min(1, 'Resumo é obrigatório'),
+    resumo: z.string().optional(),
+    referencia: z.string().optional(),
     tipoDocumentalId: z.coerce.number({ message: 'Tipo documental é obrigatório' }),
     cursoId: z.coerce.number({ message: 'Curso é obrigatório' }),
-    arquivo: z
-        .custom<File | undefined>()
-        .optional()
-        .refine((file) => !file || file instanceof File, 'Arquivo inválido'),
+    arquivo: z.custom<File | undefined>().optional().refine((file) => !file || file instanceof File, 'Arquivo inválido'),
     autores: z.array(pessoaSchema).min(1, 'Adicione pelo menos um autor'),
-    orientadores: z.array(pessoaSchema).min(1, 'Adicione pelo menos um orientador'),
-    palavrasChave: z
-        .array(z.string())
-        .refine((arr) => arr.length >= 3, { message: 'São necessárias pelo menos três palavras-chave' }),
+    orientadores: z.array(pessoaSchema).optional(),
+    palavrasChave: z.array(z.string()).optional(),
+})
+
+const schema = baseSchema.superRefine((data, ctx) => {
+    if (camposObrigatorios.value) {
+        if (!data.resumo || data.resumo.trim().length < 10) {
+            ctx.addIssue({ code: 'custom', path: ['resumo'], message: 'Resumo é obrigatório' })
+        }
+        if (!data.referencia || data.referencia.trim().length < 5) {
+            ctx.addIssue({ code: 'custom', path: ['referencia'], message: 'Referência bibliográfica é obrigatória' })
+        }
+        if (!data.palavrasChave || data.palavrasChave.length < 3) {
+            ctx.addIssue({ code: 'custom', path: ['palavrasChave'], message: 'Mínimo de 3 palavras-chave' })
+        }
+        if (!data.orientadores || data.orientadores.length === 0) {
+             ctx.addIssue({ code: 'custom', path: ['orientadores'], message: 'Adicione pelo menos um orientador' })
+        }
+    }
 })
 
 type Schema = z.output<typeof schema>
 
+//Funções de manipulação
 function adicionarAutor() {
     const nome = novoAutor.value.nome.trim();
     const sobrenome = novoAutor.value.sobrenome.trim();
@@ -276,7 +309,6 @@ function adicionarAutor() {
     form.autores.push({ nome, sobrenome });
     novoAutor.value = { nome: '', sobrenome: '' };
 }
-
 function removerAutor(index: number) {
     const autorRemovido = form.autores[index]
     if (autorRemovido && autorRemovido.id) {
@@ -284,7 +316,6 @@ function removerAutor(index: number) {
     }
     form.autores.splice(index, 1)
 }
-
 function adicionarOrientador() {
     const nome = novoOrientador.value.nome.trim();
     const sobrenome = novoOrientador.value.sobrenome.trim();
@@ -295,7 +326,6 @@ function adicionarOrientador() {
     form.orientadores.push({ nome, sobrenome });
     novoOrientador.value = { nome: '', sobrenome: '' };
 }
-
 function removerOrientador(index: number) {
     const orientadorRemovido = form.orientadores[index]
     if (orientadorRemovido && orientadorRemovido.id) {
@@ -303,7 +333,6 @@ function removerOrientador(index: number) {
     }
     form.orientadores.splice(index, 1)
 }
-
 function adicionarPalavra() {
     const palavra = novaPalavraInput.value.trim()
     if (!palavra) return
@@ -315,7 +344,6 @@ function adicionarPalavra() {
     form.palavrasChave.push(palavra)
     novaPalavraInput.value = ''
 }
-
 function removerPalavra(index: number) {
     form.palavrasChave.splice(index, 1)
 }

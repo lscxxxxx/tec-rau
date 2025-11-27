@@ -23,9 +23,24 @@
                     :class="isSidebarOpen ? 'px-4 gap-3' : 'justify-center px-2'"
                     title="Ir para o Site (Visão Pública)">
                     <Globe class="w-6 h-6 flex-shrink-0" />
-                    <span v-show="isSidebarOpen" class="whitespace-nowrap overflow-hidden transition-all duration-300 origin-left uppercase text-sm">Ver Site</span>
+                    <span v-show="isSidebarOpen"
+                        class="whitespace-nowrap overflow-hidden transition-all duration-300 origin-left uppercase text-sm">Ver
+                        Site</span>
                 </NuxtLink>
+
                 <div class="border-b border-gray-300/50 my-2 mx-2"></div>
+
+                <NuxtLink to="/admin"
+                    class="flex items-center py-2 rounded-md hover:bg-gray-700 hover:text-white transition-colors group"
+                    :class="isSidebarOpen ? 'px-4 gap-3' : 'justify-center px-2'" title="Painel de Controle">
+
+                    <LayoutDashboard class="w-6 h-6 flex-shrink-0" />
+
+                    <span v-show="isSidebarOpen"
+                        class="whitespace-nowrap overflow-hidden transition-all duration-300 origin-left uppercase text-sm font-medium">
+                        Painel
+                    </span>
+                </NuxtLink>
 
                 <NuxtLink to="/admin/trabalhos"
                     class="flex items-center py-2 rounded-md hover:bg-gray-700 hover:text-white transition-colors group"
@@ -61,6 +76,18 @@
                         Auditoria
                     </span>
                 </NuxtLink>
+
+                <NuxtLink to="/admin/boas-praticas"
+                    class="flex items-center py-2 rounded-md hover:bg-gray-700 hover:text-white transition-colors group"
+                    :class="isSidebarOpen ? 'px-4 gap-3' : 'justify-center px-2'" title="Boas Práticas">
+
+                    <BookCheck class="w-6 h-6 flex-shrink-0" />
+
+                    <span v-show="isSidebarOpen"
+                        class="whitespace-nowrap overflow-hidden transition-all duration-300 origin-left uppercase text-sm font-medium">
+                        Boas Práticas
+                    </span>
+                </NuxtLink>
             </nav>
 
             <div class="p-4 border-t border-gray-300/50">
@@ -89,7 +116,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
-import { Book, UserCog, History, LogOut, PanelLeftClose, PanelLeftOpen, Globe } from 'lucide-vue-next'
+import { Book, UserCog, History, LogOut, PanelLeftClose, PanelLeftOpen, Globe, BookCheck, LayoutDashboard } from 'lucide-vue-next'
 
 const router = useRouter()
 const { loadUser, setUser } = useAuth()

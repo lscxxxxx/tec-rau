@@ -10,35 +10,42 @@
                 <UForm :schema="schema" :state="form" @submit="onSubmit">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-x-7 gap-y-3">
                         <div class="col-span-3">
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Título *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Título <span
+                                    class="text-red-500">*</span></h3>
                             <UInput v-model="form.titulo" class="w-full" />
                         </div>
 
                         <div>
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Data de defesa *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Data de defesa <span
+                                    class="text-red-500">*</span></h3>
                             <UInput v-model="form.dataDefesa" type="date" class="w-full" />
                         </div>
 
                         <div>
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Tipo documental *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Tipo documental <span
+                                    class="text-red-500">*</span>
+                            </h3>
                             <USelect v-model="form.tipoDocumentalId" :items="tiposDocumentais"
                                 placeholder="Selecione o tipo" class="w-full" />
                         </div>
 
                         <div>
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Curso *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Curso <span
+                                    class="text-red-500">*</span></h3>
                             <USelect v-model="form.cursoId" :items="cursos" placeholder="Selecione o curso"
                                 class="w-full" />
                         </div>
 
                         <div>
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Arquivo *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Arquivo <span
+                                    class="text-red-500">*</span></h3>
                             <UFileUpload label="Selecione ou arraste o arquivo" description="PDF (max. 5MB)"
                                 v-model="form.arquivo" accept=".pdf" class="w-full" />
                         </div>
 
                         <div class="col-span-3 space-y-3">
-                            <h3 class="font-semibold text-lg border-b pb-2">Autores *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2">Autores <span class="text-red-500">*</span>
+                            </h3>
 
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 items-center">
                                 <UInput v-model="novoAutor.nome" placeholder="Nome" class="col-span-5"
@@ -64,7 +71,10 @@
                         </div>
 
                         <div class="col-span-3 space-y-3">
-                            <h3 class="font-semibold text-lg border-b pb-2">Orientadores *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2">
+                                Orientadores
+                                <span v-if="camposObrigatorios" class="text-red-500">*</span>
+                            </h3>
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 items-center">
                                 <UInput v-model="novoOrientador.nome" placeholder="Nome" class="col-span-5"
                                     @keydown.enter.prevent="adicionarOrientador" />
@@ -83,17 +93,29 @@
                                 </UBadge>
                             </div>
                             <div v-else>
-                                <p class="text-sm text-gray-500">Nenhum orientador adicionado.</p>
+                                <p class="text-sm text-gray-500">Nenhum orientador adicionado</p>
                             </div>
                         </div>
 
                         <div class="col-span-3">
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Resumo *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">
+                                Resumo <span v-if="camposObrigatorios" class="text-red-500">*</span>
+                            </h3>
                             <UTextarea v-model="form.resumo" class="w-full" autoresize />
                         </div>
 
                         <div class="col-span-3">
-                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">Palavras-chave *</h3>
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">
+                                Referência bibliográfica <span v-if="camposObrigatorios" class="text-red-500">*</span>
+                            </h3>
+                            <UTextarea v-model="form.referencia" class="w-full" autoresize
+                                placeholder="Formato ABNT..." />
+                        </div>
+
+                        <div class="col-span-3">
+                            <h3 class="font-semibold text-lg border-b pb-2 mb-2">
+                                Palavras-chave <span v-if="camposObrigatorios" class="text-red-500">*</span>
+                            </h3>
                             <div class="flex flex-col gap-2">
                                 <div class="flex items-center gap-2">
                                     <UInput v-model="novaPalavraInput" placeholder="Digite uma palavra e aperte Enter"
@@ -110,7 +132,10 @@
                                     </UBadge>
                                 </div>
                                 <div v-else>
-                                    <p class="text-sm text-gray-500">Nenhuma palavra-chave adicionada (mínimo 3).</p>
+                                    <p class="text-sm text-gray-500">
+                                        Nenhuma palavra-chave adicionada
+                                        <span v-if="camposObrigatorios">(mínimo de 3)</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -129,9 +154,7 @@ import { reactive, ref, onMounted } from 'vue'
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 
-definePageMeta({
-    layout: 'admin' // <-- Diz ao Nuxt para usar o layouts/admin.vue
-});
+definePageMeta({ layout: 'admin' })
 
 const toast = useToast()
 const router = useRouter()
@@ -146,13 +169,14 @@ type ApiListResponse = { items: ApiSelectOption[] }
 const { data: cursosData } = useFetch<ApiListResponse>('/api/cursos', { default: () => ({ items: [] }) })
 const { data: tiposData } = useFetch<ApiListResponse>('/api/tiposdocumentais', { default: () => ({ items: [] }) })
 
-const cursos = computed(() => (cursosData.value?.items ?? []).map(c => ({ label: c.nome, value: c.id, })) )
-const tiposDocumentais = computed(() => (tiposData.value?.items ?? []).map(t => ({ label: t.nome, value: t.id, })) )
+const cursos = computed(() => (cursosData.value?.items ?? []).map(c => ({ label: c.nome, value: c.id, })))
+const tiposDocumentais = computed(() => (tiposData.value?.items ?? []).map(t => ({ label: t.nome, value: t.id, })))
 
 const form = reactive({
     titulo: '',
     dataDefesa: '',
     resumo: '',
+    referencia: '',
     arquivo: undefined as File | undefined,
     tipoDocumentalId: undefined as number | undefined,
     cursoId: undefined as number | undefined,
@@ -161,21 +185,54 @@ const form = reactive({
     palavrasChave: [] as string[],
 })
 
+const camposObrigatorios = computed(() => {
+    const cursoObj = cursos.value.find(c => c.value === form.cursoId)
+    const tipoObj = tiposDocumentais.value.find(t => t.value === form.tipoDocumentalId)
+
+    const nomeCurso = cursoObj?.label?.toLowerCase() || ''
+    const nomeTipo = tipoObj?.label?.toLowerCase() || ''
+
+    const ehDevSistemas = nomeCurso.includes('desenvolvimento de sistemas')
+    const ehPI = nomeTipo.includes('projeto integrador')
+
+    return ehDevSistemas || !ehPI
+})
+
 const pessoaSchema = z.object({
     nome: z.string().min(1, 'Nome é obrigatório'),
     sobrenome: z.string().min(1, 'Sobrenome é obrigatório'),
 })
 
-const schema = z.object({
+const baseSchema = z.object({
     titulo: z.string().min(1, 'Título é obrigatório'),
     dataDefesa: z.string().min(1, 'Data de defesa é obrigatória'),
-    resumo: z.string().min(1, 'Resumo é obrigatório'),
+    resumo: z.string().optional(),
+    referencia: z.string().optional(),
     tipoDocumentalId: z.number({ message: 'Tipo documental é obrigatório' }),
     cursoId: z.number({ message: 'Curso é obrigatório' }),
     arquivo: z.custom<File>(val => val instanceof File, 'O arquivo é obrigatório'),
     autores: z.array(pessoaSchema).min(1, 'Adicione pelo menos um autor'),
-    orientadores: z.array(pessoaSchema).min(1, 'Adicione pelo menos um orientador'),
-    palavrasChave: z.array(z.string()).refine(arr => arr.length >= 3, { message: 'São necessárias pelo menos três palavras-chave', }),
+    orientadores: z.array(pessoaSchema).optional(),
+    palavrasChave: z.array(z.string()).optional(),
+})
+
+const schema = computed(() => {
+    return baseSchema.superRefine((data, ctx) => {
+        if (camposObrigatorios.value) {
+            if (!data.resumo || data.resumo.trim().length < 10) {
+                ctx.addIssue({ code: 'custom', path: ['resumo'], message: 'Resumo é obrigatório' })
+            }
+            if (!data.referencia || data.referencia.trim().length < 5) {
+                ctx.addIssue({ code: 'custom', path: ['referencia'], message: 'Referência bibliográfica é obrigatória' })
+            }
+            if (!data.palavrasChave || data.palavrasChave.length < 3) {
+                ctx.addIssue({ code: 'custom', path: ['palavrasChave'], message: 'Mínimo de 3 palavras-chave' })
+            }
+            if (!data.orientadores || data.orientadores.length === 0) {
+                ctx.addIssue({ code: 'custom', path: ['orientadores'], message: 'Adicione pelo menos um orientador' })
+            }
+        }
+    })
 })
 
 type Schema = z.output<typeof schema>
@@ -235,7 +292,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     loading.value = true
     const formData = new FormData()
 
-    Object.entries(event.data).forEach(([key, value]) => {
+    Object.entries(event.data as Record<string, any>).forEach(([key, value]) => {
         if (value === null || value === undefined) return;
         if (key === 'autores' || key === 'orientadores') {
             formData.append(key, JSON.stringify(value));

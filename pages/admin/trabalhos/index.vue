@@ -81,7 +81,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
-import { TooltipProvider } from 'reka-ui'
 
 definePageMeta({ layout: 'admin' })
 

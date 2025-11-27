@@ -6,13 +6,14 @@ import { PapelPessoa, AcaoAuditoria } from '@prisma/client'
 import { registrarAuditoria } from '~/server/lib/auditoria'
 import prisma from '~/server/lib/prisma'
 
+// ... (Seus schemas e types permanecem iguais: pessoaSchema, jsonString, etc.) ...
+// Vou ocultar os schemas aqui para focar na lógica principal, mas mantenha-os no arquivo.
+
 const pessoaSchema = z.object({
     id: z.number().optional(),
     nome: z.string().min(1),
     sobrenome: z.string().min(1),
 })
-
-type PessoaInput = z.infer<typeof pessoaSchema>;
 
 const jsonString = <T extends z.ZodTypeAny>(schema: T) =>
     z.string().transform((val) => {
@@ -26,6 +27,7 @@ const schema = z.object({
     titulo: z.string().min(1).optional(),
     dataDefesa: z.string().min(1).optional(),
     resumo: z.string().min(1).optional(),
+    referencia: z.string().optional(),
     tipoDocumentalId: z.string().transform(val => Number(val)).optional(),
     cursoId: z.string().transform(val => Number(val)).optional(),
 
@@ -43,10 +45,7 @@ export default defineEventHandler(async (event) => {
     const idAsNumber = Number(idParam)
 
     if (!idAsNumber || isNaN(idAsNumber)) {
-        throw createError({
-            statusCode: 400,
-            statusMessage: 'ID do trabalho é inválido.',
-        });
+        throw createError({ statusCode: 400, statusMessage: 'ID do trabalho inválido.' });
     }
 
     try {
@@ -57,9 +56,6 @@ export default defineEventHandler(async (event) => {
         }, {} as Record<string, string>) ?? {}
 
         const validatedData = schema.parse(formValues)
-        console.log('=== FORM VALUES PARSED ===')
-        console.dir(validatedData, { depth: null })
-
 
         const {
             cursoId,
@@ -73,107 +69,9 @@ export default defineEventHandler(async (event) => {
             ...restoDosDados
         } = validatedData
 
-        const dadosParaPrisma: any = { ...restoDosDados }
-
-        if (dataDefesa) dadosParaPrisma.dataDefesa = new Date(dataDefesa)
-        if (cursoId) dadosParaPrisma.curso = { connect: { id: cursoId } }
-        if (tipoDocumentalId) dadosParaPrisma.tipoDocumental = { connect: { id: tipoDocumentalId } }
-
-        if (palavrasChaveParaAdicionar || idsPalavrasChaveParaRemover) {
-            if (idsPalavrasChaveParaRemover && idsPalavrasChaveParaRemover.length > 0) {
-                await prisma.trabalhoPalavraChave.deleteMany({
-                    where: {
-                        trabalho_id: idAsNumber,
-                        palavrachave_id: { in: idsPalavrasChaveParaRemover },
-                    },
-                });
-            }
-            if (palavrasChaveParaAdicionar && palavrasChaveParaAdicionar.length > 0) {
-                const palavrasChaveSalvas = await Promise.all(
-                    palavrasChaveParaAdicionar.map((nome: string) =>
-                        prisma.palavraChave.upsert({
-                            where: { nome },
-                            update: {},
-                            create: { nome },
-                        })
-                    )
-                );
-                await prisma.trabalhoPalavraChave.createMany({
-                    data: palavrasChaveSalvas.map(pc => ({
-                        trabalho_id: idAsNumber,
-                        palavrachave_id: pc.id,
-                    })),
-                    skipDuplicates: true,
-                });
-            }
-        }
-
-        const trabalhoExistente = await prisma.trabalho.findUnique({
-            where: { id: idAsNumber },
-            include: { pessoas: true }
-        })
-
-        if (idsPessoasParaRemover?.length) {
-            await prisma.trabalhoPessoa.deleteMany({
-                where: {
-                    trabalho_id: idAsNumber,
-                    pessoa_id: { in: idsPessoasParaRemover },
-                },
-            });
-        }
-        if (autoresParaAdicionar?.length) {
-            for (const a of autoresParaAdicionar) {
-                const pessoa = a.id ? await prisma.pessoa.findUnique({ where: { id: a.id } })
-                    : await prisma.pessoa.upsert({
-                        where: { nome_sobrenome: { nome: a.nome.trim(), sobrenome: a.sobrenome.trim() } },
-                        update: {},
-                        create: { nome: a.nome.trim(), sobrenome: a.sobrenome.trim() }
-                    })
-                const jaExiste = await prisma.trabalhoPessoa.findFirst({
-                    where: {
-                        trabalho_id: idAsNumber,
-                        pessoa_id: pessoa!.id,
-                        papel: PapelPessoa.AUTOR,
-                    },
-                })
-                if (!jaExiste) {
-                    await prisma.trabalhoPessoa.create({
-                        data: {
-                            trabalho_id: idAsNumber,
-                            pessoa_id: pessoa!.id,
-                            papel: PapelPessoa.AUTOR,
-                        },
-                    })
-                }
-            }
-        }
-        if (orientadoresParaAdicionar?.length) {
-            for (const o of orientadoresParaAdicionar) {
-                const pessoa = o.id ? await prisma.pessoa.findUnique({ where: { id: o.id } })
-                    : await prisma.pessoa.upsert({
-                        where: { nome_sobrenome: { nome: o.nome.trim(), sobrenome: o.sobrenome.trim() } },
-                        update: {},
-                        create: { nome: o.nome.trim(), sobrenome: o.sobrenome.trim() }
-                    })
-                const jaExiste = await prisma.trabalhoPessoa.findFirst({
-                    where: {
-                        trabalho_id: idAsNumber,
-                        pessoa_id: pessoa!.id,
-                        papel: PapelPessoa.ORIENTADOR,
-                    },
-                })
-                if (!jaExiste) {
-                    await prisma.trabalhoPessoa.create({
-                        data: {
-                            trabalho_id: idAsNumber,
-                            pessoa_id: pessoa!.id,
-                            papel: PapelPessoa.ORIENTADOR,
-                        },
-                    })
-                }
-            }
-        }
-
+        // 1. Lógica de Arquivo (Fazemos fora da transação de BD, mas só deletamos o antigo no final)
+        let novoCaminhoArquivo: string | undefined
+        let arquivoAntigoParaDeletar: string | undefined
 
         const arquivoData = formData?.find(d => d.name === 'arquivo')
         if (arquivoData) {
@@ -187,38 +85,111 @@ export default defineEventHandler(async (event) => {
             const uploadDir = resolve(process.cwd(), 'public/uploads')
             const filePath = `${uploadDir}/${uniqueFileName}`
 
+            // Salva o novo arquivo
             mkdirSync(uploadDir, { recursive: true })
             writeFileSync(filePath, arquivoData.data)
 
-            dadosParaPrisma.arquivo = `/uploads/${uniqueFileName}`
+            novoCaminhoArquivo = `/uploads/${uniqueFileName}`
 
+            // Marca o antigo para deleção (só deletamos se a transaction do banco der certo)
             if (trabalhoAntigo?.arquivo) {
-                const oldFilePath = resolve(process.cwd(), `public${trabalhoAntigo.arquivo}`)
-                if (existsSync(oldFilePath)) {
-                    unlinkSync(oldFilePath)
-                }
+                arquivoAntigoParaDeletar = resolve(process.cwd(), `public${trabalhoAntigo.arquivo}`)
             }
         }
 
-        const trabalhoAtualizado = await prisma.trabalho.update({
-            where: { id: idAsNumber },
-            data: dadosParaPrisma,
-            include: {
-                pessoas: { include: { pessoa: true }, },
-                palavrasChave: { include: { palavraChave: true }, },
-            },
-        });
+        // 2. INÍCIO DA TRANSAÇÃO
+        const trabalhoFinal = await prisma.$transaction(async (tx) => {
+            // --- Atualizações de Relacionamentos (Usando 'tx') ---
+            // Remover Palavras-chave
+            if (idsPalavrasChaveParaRemover?.length) {
+                await tx.trabalhoPalavraChave.deleteMany({
+                    where: { trabalho_id: idAsNumber, palavrachave_id: { in: idsPalavrasChaveParaRemover } },
+                });
+            }
 
-        await registrarAuditoria(
-            prisma,
-            admin_id,
-            AcaoAuditoria.UPDATE,
-            trabalhoAtualizado.id,
-            `Trabalho "${trabalhoAtualizado.titulo}" foi atualizado.`
-        )
-        return trabalhoAtualizado
+            // Adicionar Palavras-chave
+            if (palavrasChaveParaAdicionar?.length) {
+                // Upsert das palavras (garante que existem)
+                const palavrasIds = await Promise.all(
+                    palavrasChaveParaAdicionar.map(async (nome) => {
+                        const pc = await tx.palavraChave.upsert({ where: { nome }, update: {}, create: { nome }, })
+                        return pc.id
+                    })
+                )
+                // Criação do vínculo N:N
+                await tx.trabalhoPalavraChave.createMany({
+                    data: palavrasIds.map(pid => ({ trabalho_id: idAsNumber, palavrachave_id: pid })),
+                    skipDuplicates: true,
+                });
+            }
+
+            // Remover Pessoas
+            if (idsPessoasParaRemover?.length) {
+                await tx.trabalhoPessoa.deleteMany({
+                    where: { trabalho_id: idAsNumber, pessoa_id: { in: idsPessoasParaRemover } },
+                });
+            }
+            // Função auxiliar interna para adicionar pessoas dentro da transação
+            const adicionarPessoasTx = async (lista: typeof autoresParaAdicionar, papel: PapelPessoa) => {
+                if (!lista?.length) return
+                for (const p of lista) {
+                    const pessoa = p.id
+                        ? await tx.pessoa.findUnique({ where: { id: p.id } })
+                        : await tx.pessoa.upsert({
+                            where: { nome_sobrenome: { nome: p.nome.trim(), sobrenome: p.sobrenome.trim() } },
+                            update: {},
+                            create: { nome: p.nome.trim(), sobrenome: p.sobrenome.trim() }
+                        })
+                    if (pessoa) {
+                        // Verifica se já existe vínculo para evitar erro de Unique Constraint
+                        const existe = await tx.trabalhoPessoa.findUnique({
+                            where: { trabalho_id_pessoa_id: { trabalho_id: idAsNumber, pessoa_id: pessoa.id } }
+                        })
+                        // Se não existe, cria. Se existe e o papel for diferente, atualiza.
+                        if (!existe) {
+                            await tx.trabalhoPessoa.create({ data: { trabalho_id: idAsNumber, pessoa_id: pessoa.id, papel } })
+                        }
+                    }
+                }
+            }
+
+            await adicionarPessoasTx(autoresParaAdicionar, PapelPessoa.AUTOR)
+            await adicionarPessoasTx(orientadoresParaAdicionar, PapelPessoa.ORIENTADOR)
+
+            // --- Atualização Principal do Trabalho ---
+            const dadosUpdate: any = { ...restoDosDados }
+            if (dataDefesa) dadosUpdate.dataDefesa = new Date(dataDefesa)
+            if (cursoId) dadosUpdate.curso = { connect: { id: cursoId } }
+            if (tipoDocumentalId) dadosUpdate.tipoDocumental = { connect: { id: tipoDocumentalId } }
+            if (novoCaminhoArquivo) dadosUpdate.arquivo = novoCaminhoArquivo
+
+            const atualizado = await tx.trabalho.update({
+                where: { id: idAsNumber },
+                data: dadosUpdate,
+                include: {
+                    pessoas: { include: { pessoa: true } },
+                    palavrasChave: { include: { palavraChave: true } },
+                },
+            });
+            // --- Auditoria (DENTRO DA TRANSAÇÃO) ---
+            // Passamos 'tx' para garantir que se o log falhar, o update do trabalho é desfeito
+            await registrarAuditoria(
+                tx,
+                admin_id,
+                AcaoAuditoria.UPDATE,
+                atualizado.id,
+                `Trabalho "${atualizado.titulo}" foi atualizado.`
+            )
+            return atualizado
+        })
+        // FIM DA TRANSAÇÃO
+        // Se chegou aqui, o banco atualizou com sucesso. Podemos deletar o arquivo velho.
+        if (arquivoAntigoParaDeletar && existsSync(arquivoAntigoParaDeletar)) {
+            unlinkSync(arquivoAntigoParaDeletar)
+        }
+        return trabalhoFinal
     } catch (error: any) {
-        console.error('--- ERRO NA API DE EDIÇÃO DE TRABALHO ---', error)
+        console.error('--- ERRO NA API DE EDIÇÃO ---', error)
         if (error instanceof z.ZodError) {
             throw createError({ statusCode: 400, statusMessage: 'Erro de validação', data: error.issues })
         }

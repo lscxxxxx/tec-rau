@@ -20,7 +20,6 @@
                 </div>
 
                 <div v-else-if="trabalho" class="overflow-x-auto">
-                    <!-- Estrutura baseada em Description List (DL) com Grid -->
                     <dl class="text-sm divide-y divide-gray-200 rounded-lg overflow-hidden border border-gray-200">
 
                         <!-- Título -->
@@ -45,7 +44,7 @@
                         </div>
 
                         <!-- Orientador(es) -->
-                        <div
+                        <div v-if="trabalho.orientadores && trabalho.orientadores.length > 0"
                             class="grid grid-cols-5 gap-4 py-3 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-600 col-span-1 pl-4 flex items-center">Orientador(es)
                             </dt>
@@ -77,7 +76,7 @@
                         </div>
 
                         <!-- Palavras-chave -->
-                        <div
+                        <div v-if="trabalho.palavrasChave && trabalho.palavrasChave.length > 0"
                             class="grid grid-cols-5 gap-4 py-3 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-600 col-span-1 pl-4 flex items-center">Palavras-chave
                             </dt>
@@ -103,11 +102,20 @@
                         </div>
 
                         <!-- Resumo -->
-                        <div
+                        <div v-if="trabalho.resumo"
                             class="grid grid-cols-5 gap-4 py-3 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-900 col-span-1 pl-4 pt-1">Resumo</dt>
                             <dd class="col-span-4 font-medium text-gray-600 text-justify leading-relaxed pr-6">
                                 {{ trabalho?.resumo }}
+                            </dd>
+                        </div>
+
+                        <!-- Referência bibliográfica -->
+                        <div v-if="trabalho.referencia"
+                            class="grid grid-cols-5 gap-4 py-3 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            <dt class="font-semibold text-gray-900 col-span-1 pl-6 pt-1">Referência</dt>
+                            <dd class="col-span-4 font-medium text-gray-600 text-justify leading-relaxed pr-6">
+                                {{ trabalho.referencia }}
                             </dd>
                         </div>
 
@@ -141,9 +149,7 @@
 import { computed } from 'vue'
 import { Eye, Download } from 'lucide-vue-next'
 
-definePageMeta({
-    layout: 'admin'
-});
+definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)
@@ -168,8 +174,8 @@ interface PalavraChave {
 interface Trabalho {
     id: number
     titulo: string
-    resumo?: string
-    refbibliografica?: string
+    resumo?: string | null
+    referencia?: string | null
     dataDefesa: string
     tipoDocumental?: TipoDocumental
     curso?: Curso

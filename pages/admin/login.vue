@@ -25,7 +25,7 @@
 
 				<div class="mb-5">
 					<label class="block text-gray-700 text-sm font-bold mb-2 pl-1" for="usuario">
-						E-mail ou Usuário
+						E-mail
 					</label>
 					<div class="relative">
 						<input

@@ -108,7 +108,7 @@ const filtroPalavraChaveId = ref<number | undefined>(undefined)
 const tituloPagina = computed(() => {
     const query = route.query.q as string
     if (query) return `Resultados de busca por "${query}"`
-    if (filtroCursoId.value) return 'Resultados por Comunidade'
+    if (filtroCursoId.value) return 'Resultados por Curso'
     if (filtroTipoDocumentalId.value) return 'Resultados por Tipo Documental'
     if (filtroPessoaId.value) return 'Resultados por Autor'
     if (filtroPalavraChaveId.value) return 'Resultados por Palavra-Chave'

@@ -20,8 +20,13 @@
 
             <UCard>
                 <template #header>
-                    <h2 class="uppercase text-xl font-semibold"><strong>{{ trabalho?.titulo }}</strong></h2>
+                    <div class="flex justify-between items-center gap-4">
+                        <h2 class="uppercase text-xl font-semibold"><strong>{{ trabalho?.titulo }}</strong></h2>
+                        <UButton class="cursor-pointer" icon="i-heroicons-share" color="neutral" variant="ghost" size="lg" title="Compartilhar"
+                            @click="compartilharPagina" />
+                    </div>
                 </template>
+
                 <div v-if="pending" class="text-center py-10">
                     Carregando trabalho...
                 </div>
@@ -32,7 +37,8 @@
                 </div>
 
                 <div v-else-if="trabalho" class="overflow-x-auto">
-                    <dl class="text-sm divide-y divide-gray-200 rounded-lg overflow-hidden">
+                    <dl class="text-sm divide-y divide-gray-200 rounded-lg overflow-hidden border border-gray-200">
+
                         <!-- Título -->
                         <div
                             class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
@@ -57,7 +63,7 @@
                         </div>
 
                         <!-- Orientador(es) -->
-                        <div
+                        <div v-if="trabalho.orientadores && trabalho.orientadores.length > 0"
                             class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-600 col-span-1 pl-3">Orientador(es)</dt>
                             <dd class="col-span-3 text-gray-800 flex flex-wrap">
@@ -89,13 +95,15 @@
                         </div>
 
                         <!-- Palavras-chave -->
-                        <div
+                        <div v-if="trabalho.palavrasChave && trabalho.palavrasChave.length > 0"
                             class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-600 col-span-1 pl-3">Palavras-chave</dt>
                             <dd class="col-span-3 text-gray-800 flex flex-wrap">
-                                <span v-for="(p, idx) in trabalho.palavrasChave" :key="idx" 
+                                <span v-for="(p, idx) in trabalho.palavrasChave" :key="idx"
                                     class="inline-flex items-center rounded-full px-2 py-1 text-sm font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1">
-                                    <NuxtLink :to="`/pesquisa?palavraChaveId=${p.id}`" class="hover:underline">{{ p.nome }}</NuxtLink>
+                                    <NuxtLink :to="`/pesquisa?palavraChaveId=${p.id}`" class="hover:underline">{{ p.nome
+                                        }}
+                                    </NuxtLink>
                                 </span>
                             </dd>
                         </div>
@@ -110,11 +118,20 @@
                         </div>
 
                         <!-- Resumo -->
-                        <div
+                        <div v-if="trabalho.resumo"
                             class="grid grid-cols-4 gap-4 py-2 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
                             <dt class="font-semibold text-gray-900 col-span-1 pl-3">Resumo</dt>
                             <dd class="col-span-3 font-medium text-gray-600 text-justify leading-relaxed pr-3">
                                 {{ trabalho?.resumo }}
+                            </dd>
+                        </div>
+
+                        <!-- Referência bibliográfica -->
+                        <div v-if="trabalho.referencia"
+                            class="grid grid-cols-5 gap-4 py-3 even:bg-gray-50 odd:bg-white hover:bg-gray-100 transition-colors">
+                            <dt class="font-semibold text-gray-900 col-span-1 pl-6 pt-1">Referência</dt>
+                            <dd class="col-span-4 font-medium text-gray-600 text-justify leading-relaxed pr-6">
+                                {{ trabalho.referencia }}
                             </dd>
                         </div>
 
@@ -148,6 +165,7 @@
 import { computed } from 'vue'
 import { Zap, Settings, FolderCode, Home, ChevronRight, Eye, Download } from 'lucide-vue-next'
 
+const toast = useToast()
 const route = useRoute()
 const id = computed(() => route.params.id as string)
 console.log(`${id.value}`)
@@ -172,8 +190,8 @@ interface PalavraChave {
 interface Trabalho {
     id: number
     titulo: string
-    resumo?: string
-    refbibliografica?: string
+    resumo?: string | null
+    referencia?: string | null
     dataDefesa: string
     tipoDocumental?: TipoDocumental
     curso?: Curso
@@ -223,4 +241,20 @@ const dataFormatada = computed(() => {
     if (!trabalho.value?.dataDefesa) return ''
     return new Date(trabalho.value.dataDefesa).toLocaleDateString("pt-BR", { timeZone: 'UTC' })
 })
+
+function compartilharPagina() {
+    const urlAtual = window.location.href
+    const tituloTrabalho = trabalho.value?.titulo || 'Trabalho Acadêmico'
+
+    navigator.clipboard.writeText(urlAtual).then(() => {
+        toast.add({
+            title: 'Link copiado!',
+            description: 'A URL foi copiada para sua área de transferência.',
+            color: 'success',
+            icon: 'i-heroicons-check-circle'
+        })
+    }).catch(() => {
+        toast.add({ title: 'Erro ao copiar', color: 'error' })
+    })
+}
 </script>

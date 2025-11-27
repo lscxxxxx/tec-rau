@@ -5,25 +5,30 @@
                 <h1 class="text-3xl font-bold">Logs de Auditoria</h1>
             </div>
 
-            <UTable :rows="auditorias" :columns="columns" :loading="pending"
+            <UTable :data="auditorias" :columns="columns" :loading="pending"
                 class="bg-white shadow-md rounded-md overflow-hidden">
                 <template #id-cell="{ row }">
-                    <span class="break-words whitespace-normal">{{ row.id }}</span>
+                    {{ row.original.id }}
                 </template>
+
                 <template #dataModificacao-cell="{ row }">
                     {{ new Date(row.original.dataModificacao).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) }}
                 </template>
+
                 <template #admin-cell="{ row }">
                     {{ row.original.admin?.nome ?? 'Admin não encontrado' }}
                 </template>
+
                 <template #acao-cell="{ row }">
                     <UBadge :color="corDaAcao[row.original.acao]">
                         {{ row.original.acao }}
                     </UBadge>
                 </template>
+
                 <template #log-cell="{ row }">
                     {{ row.original.log }}
                 </template>
+
 
                 <template #loading-state>
                     <div class="flex items-center justify-center h-32">
@@ -38,7 +43,8 @@
                 </template>
             </UTable>
 
-            <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
+            <div v-if="totalItems > limit"
+                class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
                 <UPagination v-model="page" :page-count="limit" :total="totalItems" />
             </div>
         </main>
@@ -46,7 +52,6 @@
 </template>
 
 <script setup lang="ts">
-import { useAuth } from '~/composables/useAuth'
 import { ref, computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import UBadge from '#ui/components/Badge.vue'
@@ -82,7 +87,7 @@ const corDaAcao: Record<Auditoria["acao"], UBadgeColor> = {
 
 const key = computed(() => `auditoria-p${page.value}`)
 const { data, pending, refresh } = useAsyncData(
-    key.value,
+    key,
     () => $fetch<AuditoriaApiResponse>(`/api/auditorias?page=${page.value}&limit=${limit.value}`),
     { default: () => ({ items: [], totalItems: 0, page: 1, limit: limit.value }), watch: [page] }
 )

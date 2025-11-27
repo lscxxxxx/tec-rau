@@ -14,16 +14,61 @@
         <div class="bg-gray-200 rounded-lg">
             <div class="grid grid-cols-[3fr_1fr_auto] gap-4 p-4 items-center">
                 <UInput size="xl" icon="i-lucide-search" placeholder="Pesquise por..." v-model="queryPesquisa" />
-                <USelect size="xl" class="cursor-pointer" multiple v-model="opcoesSelecionadas" value-key="id" :items="opcoesPesquisa" />
+                <USelect size="xl" class="cursor-pointer" v-model="opcoesSelecionadas" value-key="id"
+                    :items="opcoesPesquisa" />
                 <UButton size="xl" color="primary" class="uppercase font-semibold px-6 cursor-pointer" @click="buscar"
                     @keydown.enter="buscar">Buscar
                 </UButton>
             </div>
         </div>
 
-        <h2 class="text-2xl font-semibold mt-10 mb-4">Comunidades</h2>
-        <div v-if="pendingCursos" class="text-center py-10">Carregando comunidades...</div>
-        <div v-else-if="errorCursos" class="py-10 text-center text-red-500">Erro ao carregar comunidades</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-12">
+            <div
+                class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow duration-300">
+                <div class="p-3 bg-green-50 rounded-lg text-[#006633]">
+                    <FileText class="w-8 h-8" />
+                </div>
+                <div>
+                    <h3 class="text-3xl font-bold text-gray-800">
+                        <span v-if="stats">{{ stats.totalTrabalhos }}</span>
+                        <USkeleton v-else class="h-8 w-12 inline-block" />
+                    </h3>
+                    <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Trabalhos Publicados</p>
+                </div>
+            </div>
+
+            <div
+                class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow duration-300">
+                <div class="p-3 bg-blue-50 rounded-lg text-blue-600">
+                    <Users class="w-8 h-8" />
+                </div>
+                <div>
+                    <h3 class="text-3xl font-bold text-gray-800">
+                        <span v-if="stats">{{ stats.totalAutores }}</span>
+                        <USkeleton v-else class="h-8 w-12 inline-block" />
+                    </h3>
+                    <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Autores Cadastrados</p>
+                </div>
+            </div>
+
+            <div
+                class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow duration-300">
+                <div class="p-3 bg-purple-50 rounded-lg text-purple-600">
+                    <GraduationCap class="w-8 h-8" />
+                </div>
+                <div>
+                    <h3 class="text-3xl font-bold text-gray-800">
+                        <span v-if="stats">{{ stats.totalCursos }}</span>
+                        <USkeleton v-else class="h-8 w-12 inline-block" />
+                    </h3>
+                    <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Cursos Ofertados</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-semibold mt-10 mb-4">Cursos</h2>
+        <div v-if="pendingCursos" class="text-center py-10">Carregando cursos...</div>
+        <div v-else-if="errorCursos" class="py-10 text-center text-red-500">Erro ao carregar cursos</div>
         <div v-else-if="cursosList.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-5 py-5">
             <NuxtLink v-for="curso in cursosList" :key="curso.id" :to="`/pesquisa?cursoId=${curso.id}`"
                 class="flex items-center gap-3 bg-[#f7f7f7] border border-[#ddd] rounded-lg p-5 transition duration-200 hover:bg-gray-100 hover:border-gray-400 cursor-pointer grou">
@@ -35,25 +80,32 @@
                 </div>
             </NuxtLink>
         </div>
-        <div v-else class="py-10 text-center text-gray-500">Nenhuma comunidade encontrada</div>
+        <div v-else class="py-10 text-center text-gray-500">Nenhum curso encontrada</div>
 
         <h2 class="text-2xl font-semibold mt-10 mb-4">Facetas</h2>
-        <UAccordion :items="accordionItems" :ui="{ trigger: 'py-4 cursor-pointer', label: 'text-xl text-gray-900 hover:text-green-700 cursor-pointer' }">
+        <UAccordion :items="accordionItems"
+            :ui="{ trigger: 'py-4 cursor-pointer', label: 'text-xl text-gray-900 hover:text-green-700 cursor-pointer' }">
             <template #tipos>
                 <div class="flex flex-wrap gap-3 p-2">
                     <NuxtLink v-for="tipo in tiposDocumentais" :key="tipo.id"
-                        :to="`/pesquisa?tipoDocumentalId=${tipo.id}`" class="rounded-full px-4 py-2 text-base font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1 hover:underline">{{ tipo.nome }}</NuxtLink>
+                        :to="`/pesquisa?tipoDocumentalId=${tipo.id}`"
+                        class="rounded-full px-4 py-2 text-base font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1 hover:underline">
+                        {{ tipo.nome }}</NuxtLink>
                 </div>
             </template>
             <template #autores>
                 <div class="flex flex-wrap gap-3 p-2">
-                    <NuxtLink v-for="autor in autoresPopulares" :key="autor.id" :to="`/pesquisa?pessoaId=${autor.id}`" class="rounded-full px-4 py-2 text-base font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1 hover:underline">{{ autor.sobrenome.toUpperCase() }}, {{ autor.nome }}</NuxtLink>
+                    <NuxtLink v-for="autor in autoresPopulares" :key="autor.id" :to="`/pesquisa?pessoaId=${autor.id}`"
+                        class="rounded-full px-4 py-2 text-base font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1 hover:underline">
+                        {{ autor.sobrenome.toUpperCase() }}, {{ autor.nome }}</NuxtLink>
                 </div>
             </template>
             <template #palavras>
                 <div class="flex flex-wrap gap-3 p-2">
                     <NuxtLink v-for="palavra in palavrasChavePopulares" :key="palavra.id"
-                        :to="`/pesquisa?palavraChaveId=${palavra.id}`" class="rounded-full px-4 py-2 text-base font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1 hover:underline">{{ palavra.nome }}</NuxtLink>
+                        :to="`/pesquisa?palavraChaveId=${palavra.id}`"
+                        class="rounded-full px-4 py-2 text-base font-medium bg-[rgba(47,158,64,0.25)] text-[#2F9E40] mr-1 hover:underline">
+                        {{ palavra.nome }}</NuxtLink>
                 </div>
             </template>
         </UAccordion>
@@ -74,28 +126,13 @@
             </ul>
         </div>
         <div v-else class="py-10 text-center text-gray-500">Nenhuma submissão recente encontrada</div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 py-5 text-center my-10 bg-gray-50 p-8 rounded-lg">
-            <div>
-                <h3 class="text-4xl font-bold text-green-700">{{ stats?.totalTrabalhos ?? '...' }}</h3>
-                <p class="text-gray-600 mt-2">Trabalhos Publicados</p>
-            </div>
-            <div>
-                <h3 class="text-4xl font-bold text-green-700">{{ stats?.totalAutores ?? '...' }}</h3>
-                <p class="text-gray-600 mt-2">Autores Cadastrados</p>
-            </div>
-            <div>
-                <h3 class="text-4xl font-bold text-green-700">{{ stats?.totalCursos ?? '...' }}</h3>
-                <p class="text-gray-600 mt-2">Comunidades</p>
-            </div>
-        </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { SelectItem } from '@nuxt/ui'
-import { Zap, Settings, FolderCode } from 'lucide-vue-next'
+import { Zap, Settings, FolderCode, FileText, Users, GraduationCap } from 'lucide-vue-next'
 import type { Component } from 'vue'
 
 const router = useRouter()
@@ -179,7 +216,7 @@ const { data, pending, error } = useAsyncData(
 )
 const trabalhosRecentes = computed(() => data.value?.items ?? [])
 
-// Comunidades
+// Cursos
 const iconesCursos: Record<string, Component> = {
     'Desenvolvimento de Sistemas': FolderCode,
     'Eletrotécnica': Zap,
